@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+.turbo
+coverage/
+*.local
+
+# Anchor / Solana
+target/
+.anchor/
+test-ledger/

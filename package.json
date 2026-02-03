@@ -1,0 +1,31 @@
+{
+  "name": "morpheus",
+  "version": "1.0.0",
+  "description": "24/7 autonomous market intelligence network for Solana",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch research-engine/src/index.ts",
+    "api": "tsx watch api/src/index.ts",
+    "scoring": "tsx watch scoring/src/index.ts",
+    "build": "tsc",
+    "test": "vitest",
+    "signals": "tsx scripts/test-signals.ts",
+    "demo": "tsx scripts/demo.ts"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.95.0",
+    "axios": "^1.7.0",
+    "hono": "^4.0.0",
+    "technicalindicators": "^3.1.0",
+    "ws": "^8.16.0",
+    "dotenv": "^16.4.0",
+    "date-fns": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.2.0"
+  }
+}
