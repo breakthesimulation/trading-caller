@@ -220,7 +220,7 @@ export { MorpheusEngine };
 // CLI entrypoint
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('╔══════════════════════════════════════════╗');
-  console.log('║         MORPHEUS Research Engine         ║');
+  console.log('║          SIGNAL Research Engine          ║');
   console.log('║   24/7 Autonomous Market Intelligence    ║');
   console.log('╚══════════════════════════════════════════╝');
   console.log('');

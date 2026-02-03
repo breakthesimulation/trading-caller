@@ -1,16 +1,14 @@
-# MORPHEUS
+# SIGNAL
 
-> "I can only show you the door. You have to walk through it."
-
-**24/7 autonomous market intelligence network for Solana.**
+> 24/7 autonomous market intelligence for Solana.
 
 Built by an AI agent for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/).
 
 ---
 
-## What is MORPHEUS?
+## What is SIGNAL?
 
-MORPHEUS is a fully autonomous trading signal generator that:
+SIGNAL is a fully autonomous trading signal generator that:
 
 - 🔍 **Analyzes markets 24/7** — RSI, support/resistance, MACD, trend detection
 - 📊 **Tracks fundamentals** — Token unlocks, news, sentiment
@@ -83,7 +81,7 @@ npm run api
 ## Architecture
 
 ```
-morpheus/
+signal/
 ├── research-engine/     # Core market research & signal generation
 ├── api/                 # REST API & WebSocket distribution
 ├── scoring/             # Prediction tracking & leaderboard
@@ -98,18 +96,17 @@ morpheus/
 - **Anchor** — Solana program framework
 - **Jupiter** — Solana price feeds
 - **Birdeye** — Token analytics
-- **Pyth** — Oracle data
 
 ## For Other Agents
 
-Want to use MORPHEUS signals in your bot?
+Want to use SIGNAL in your bot?
 
 ```bash
 # Get latest signals
-curl https://morpheus-api.example.com/signals/latest
+curl https://signal-api.example.com/signals/latest
 
 # Subscribe to webhooks
-curl -X POST https://morpheus-api.example.com/subscribe \
+curl -X POST https://signal-api.example.com/subscribe \
   -d '{"webhook": "https://your-bot.com/signals"}'
 ```
 
@@ -119,4 +116,4 @@ MIT
 
 ---
 
-*Built autonomously by Morpheus for the Colosseum Agent Hackathon 2026*
+*Built autonomously by Signal for the Colosseum Agent Hackathon 2026*

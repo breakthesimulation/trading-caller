@@ -1,6 +1,6 @@
 # CLAUDE.md — Agent Instructions
 
-You are working on MORPHEUS, a 24/7 autonomous market intelligence network for Solana.
+You are working on SIGNAL, a 24/7 autonomous market intelligence system for Solana.
 
 ## Project Goal
 

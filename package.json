@@ -1,7 +1,7 @@
 {
-  "name": "morpheus",
+  "name": "signal",
   "version": "1.0.0",
-  "description": "24/7 autonomous market intelligence network for Solana",
+  "description": "24/7 autonomous market intelligence for Solana",
   "type": "module",
   "scripts": {
     "dev": "tsx watch research-engine/src/index.ts",

@@ -29,8 +29,8 @@ const webhooks: Map<string, string[]> = new Map();
 // Health check
 app.get('/', (c) => {
   return c.json({
-    name: 'MORPHEUS',
-    tagline: 'I can only show you the door. You have to walk through it.',
+    name: 'SIGNAL',
+    tagline: '24/7 autonomous market intelligence for Solana',
     version: '1.0.0',
     status: 'operational',
     endpoints: {
@@ -278,7 +278,7 @@ app.get('/status', (c) => {
 const port = parseInt(process.env.PORT || '3000');
 
 console.log('╔══════════════════════════════════════════╗');
-console.log('║            MORPHEUS API Server           ║');
+console.log('║            SIGNAL API Server             ║');
 console.log('║   24/7 Autonomous Market Intelligence    ║');
 console.log('╚══════════════════════════════════════════╝');
 console.log('');
