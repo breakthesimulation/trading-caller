@@ -1,9 +1,7 @@
-// Jupiter API Integration for Solana Price Data
+// Jupiter/Price Data Integration for Solana
+// Using DexScreener for prices since Jupiter API now requires auth
 
 import type { Token, OHLCV } from '../signals/types.js';
-
-const JUPITER_PRICE_API = 'https://price.jup.ag/v6';
-const JUPITER_API = 'https://api.jup.ag';
 
 // Common Solana token addresses
 export const KNOWN_TOKENS: Record<string, Token> = {
@@ -49,39 +47,57 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     address: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
     decimals: 6,
   },
+  PYTH: {
+    symbol: 'PYTH',
+    name: 'Pyth Network',
+    address: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3',
+    decimals: 6,
+  },
+  JTO: {
+    symbol: 'JTO',
+    name: 'Jito',
+    address: 'jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL',
+    decimals: 9,
+  },
+  ORCA: {
+    symbol: 'ORCA',
+    name: 'Orca',
+    address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
+    decimals: 6,
+  },
 };
 
-export interface JupiterPriceResponse {
-  data: {
-    [address: string]: {
-      id: string;
-      mintSymbol: string;
-      vsToken: string;
-      vsTokenSymbol: string;
-      price: number;
-    };
-  };
-  timeTaken: number;
-}
+const DEXSCREENER_API = 'https://api.dexscreener.com/latest';
 
 /**
- * Get current price for a token from Jupiter
+ * Get current price for a token using DexScreener
  */
 export async function getPrice(tokenAddress: string): Promise<number | null> {
   try {
     const response = await fetch(
-      `${JUPITER_PRICE_API}/price?ids=${tokenAddress}`
+      `${DEXSCREENER_API}/dex/tokens/${tokenAddress}`
     );
     
     if (!response.ok) {
-      console.error(`Jupiter price API error: ${response.status}`);
+      console.error(`DexScreener API error: ${response.status}`);
       return null;
     }
 
-    const data: JupiterPriceResponse = await response.json();
-    return data.data[tokenAddress]?.price || null;
+    const data = await response.json();
+    
+    // Find Solana pairs and get the most liquid one
+    const solanaPairs = data.pairs?.filter((p: any) => p.chainId === 'solana') || [];
+    
+    if (solanaPairs.length === 0) {
+      return null;
+    }
+
+    // Sort by liquidity and get best price
+    solanaPairs.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+    
+    return parseFloat(solanaPairs[0].priceUsd) || null;
   } catch (error) {
-    console.error('Error fetching Jupiter price:', error);
+    console.error('Error fetching price:', error);
     return null;
   }
 }
@@ -90,31 +106,27 @@ export async function getPrice(tokenAddress: string): Promise<number | null> {
  * Get prices for multiple tokens
  */
 export async function getPrices(tokenAddresses: string[]): Promise<Record<string, number>> {
-  try {
-    const ids = tokenAddresses.join(',');
-    const response = await fetch(`${JUPITER_PRICE_API}/price?ids=${ids}`);
-    
-    if (!response.ok) {
-      console.error(`Jupiter price API error: ${response.status}`);
-      return {};
+  const prices: Record<string, number> = {};
+  
+  // DexScreener doesn't have batch endpoint, fetch individually with delay
+  for (const address of tokenAddresses) {
+    try {
+      const price = await getPrice(address);
+      if (price !== null) {
+        prices[address] = price;
+      }
+      // Small delay to avoid rate limits
+      await new Promise(r => setTimeout(r, 200));
+    } catch (e) {
+      continue;
     }
-
-    const data: JupiterPriceResponse = await response.json();
-    const prices: Record<string, number> = {};
-    
-    for (const [address, info] of Object.entries(data.data)) {
-      prices[address] = info.price;
-    }
-    
-    return prices;
-  } catch (error) {
-    console.error('Error fetching Jupiter prices:', error);
-    return {};
   }
+  
+  return prices;
 }
 
 /**
- * Get token info from Jupiter
+ * Get token info
  */
 export async function getTokenInfo(tokenAddress: string): Promise<Token | null> {
   // Check known tokens first
@@ -125,18 +137,25 @@ export async function getTokenInfo(tokenAddress: string): Promise<Token | null> 
   }
 
   try {
-    const response = await fetch(`${JUPITER_API}/tokens/v1/${tokenAddress}`);
+    const response = await fetch(`${DEXSCREENER_API}/dex/tokens/${tokenAddress}`);
     
     if (!response.ok) {
       return null;
     }
 
     const data = await response.json();
+    const solanaPairs = data.pairs?.filter((p: any) => p.chainId === 'solana') || [];
+    
+    if (solanaPairs.length === 0) {
+      return null;
+    }
+
+    const pair = solanaPairs[0];
     return {
-      symbol: data.symbol,
-      name: data.name,
-      address: data.address,
-      decimals: data.decimals,
+      symbol: pair.baseToken.symbol,
+      name: pair.baseToken.name,
+      address: pair.baseToken.address,
+      decimals: 9, // Default
     };
   } catch (error) {
     console.error('Error fetching token info:', error);
@@ -145,56 +164,8 @@ export async function getTokenInfo(tokenAddress: string): Promise<Token | null> 
 }
 
 /**
- * Get all tradeable tokens from Jupiter
+ * Get all tradeable tokens - returns known tokens
  */
 export async function getAllTokens(): Promise<Token[]> {
-  try {
-    const response = await fetch(`${JUPITER_API}/tokens/v1/all`);
-    
-    if (!response.ok) {
-      console.error(`Jupiter tokens API error: ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-    return data.map((t: any) => ({
-      symbol: t.symbol,
-      name: t.name,
-      address: t.address,
-      decimals: t.decimals,
-    }));
-  } catch (error) {
-    console.error('Error fetching all tokens:', error);
-    return [];
-  }
-}
-
-/**
- * Get quote for a swap (useful for checking liquidity)
- */
-export async function getQuote(
-  inputMint: string,
-  outputMint: string,
-  amount: number,
-  slippage: number = 50 // 0.5%
-): Promise<any | null> {
-  try {
-    const params = new URLSearchParams({
-      inputMint,
-      outputMint,
-      amount: amount.toString(),
-      slippageBps: slippage.toString(),
-    });
-
-    const response = await fetch(`${JUPITER_API}/quote?${params}`);
-    
-    if (!response.ok) {
-      return null;
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching quote:', error);
-    return null;
-  }
+  return Object.values(KNOWN_TOKENS);
 }
