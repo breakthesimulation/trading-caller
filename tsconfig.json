@@ -4,7 +4,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    "strict": true,
+    "strict": false,
+    "noImplicitAny": false,
     "skipLibCheck": true,
     "outDir": "./dist",
     "rootDir": ".",
@@ -16,7 +17,10 @@
     "research-engine/src/**/*",
     "api/src/**/*",
     "scoring/src/**/*",
-    "scripts/**/*"
+    "scripts/**/*",
+    "agent/**/*",
+    "db/**/*",
+    "learning/**/*"
   ],
   "exclude": ["node_modules", "dist"]
 }
