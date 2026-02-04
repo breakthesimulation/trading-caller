@@ -89,6 +89,7 @@ export interface TradingSignal {
   riskLevel: RiskLevel;
   technicalAnalysis?: TechnicalAnalysis;
   fundamentalAnalysis?: FundamentalAnalysis;
+  indicators?: Record<string, number>;
 }
 
 export interface AnalystCall {

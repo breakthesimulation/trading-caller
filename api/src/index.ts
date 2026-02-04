@@ -8,6 +8,11 @@ import 'dotenv/config';
 
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
 import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-engine/src/signals/types.js';
+import hackathon from '../../agent/hackathon.js';
+import scheduler from '../../agent/scheduler.js';
+import tracker from '../../learning/tracker.js';
+import learner from '../../learning/learner.js';
+import { db } from '../../db/index.js';
 
 const app = new Hono();
 
@@ -18,6 +23,9 @@ app.use('*', prettyJSON());
 
 // Initialize engine
 const engine = new TradingCallerEngine();
+
+// Connect scheduler to engine
+scheduler.setEngine(engine);
 
 // In-memory storage (would be database in production)
 const calls: AnalystCall[] = [];
@@ -261,16 +269,121 @@ app.post('/subscribe', async (c) => {
 
 app.get('/status', (c) => {
   const status = engine.status();
+  const schedulerStatus = scheduler.getStatus();
   
   return c.json({
     success: true,
     engine: status,
+    scheduler: schedulerStatus,
     api: {
       calls: calls.length,
       analysts: analysts.size,
       subscribers: webhooks.size,
     },
   });
+});
+
+// ============ HACKATHON ENDPOINTS ============
+
+// Get hackathon agent status
+app.get('/hackathon/status', async (c) => {
+  try {
+    const status = await hackathon.getStatus();
+    return c.json({ success: true, ...status });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
+// Get our project
+app.get('/hackathon/project', async (c) => {
+  try {
+    const { project } = await hackathon.getMyProject();
+    return c.json({ success: true, project });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
+// Get leaderboard
+app.get('/hackathon/leaderboard', async (c) => {
+  try {
+    const leaderboard = await hackathon.getLeaderboard();
+    return c.json({ success: true, ...leaderboard });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
+// ============ LEARNING ENDPOINTS ============
+
+// Get performance stats
+app.get('/learning/stats', (c) => {
+  const stats = tracker.getPerformanceStats();
+  return c.json({ success: true, stats });
+});
+
+// Get token performance
+app.get('/learning/tokens', (c) => {
+  const performance = tracker.getTokenPerformance();
+  return c.json({ success: true, ...performance });
+});
+
+// Get learning insights
+app.get('/learning/insights', async (c) => {
+  try {
+    const insights = await learner.generateInsights();
+    return c.json({ success: true, insights });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
+// Get indicator patterns
+app.get('/learning/patterns', (c) => {
+  const indicatorPatterns = learner.analyzeIndicatorPatterns();
+  const tokenPatterns = learner.analyzeTokenPerformance();
+  return c.json({ success: true, indicatorPatterns, tokenPatterns });
+});
+
+// ============ SCHEDULER ENDPOINTS ============
+
+// Get scheduler status
+app.get('/scheduler/status', (c) => {
+  const status = scheduler.getStatus();
+  return c.json({ success: true, ...status });
+});
+
+// Trigger a task manually
+app.post('/scheduler/trigger/:task', async (c) => {
+  const task = c.req.param('task') as 'heartbeat' | 'outcomeCheck' | 'forumEngagement' | 'marketScan' | 'learning';
+  
+  const validTasks = ['heartbeat', 'outcomeCheck', 'forumEngagement', 'marketScan', 'learning'];
+  if (!validTasks.includes(task)) {
+    return c.json({ success: false, error: `Invalid task: ${task}` }, 400);
+  }
+
+  try {
+    await scheduler.triggerTask(task);
+    return c.json({ success: true, message: `Task ${task} triggered` });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
 });
 
 // ============ START SERVER ============
@@ -286,6 +399,30 @@ console.log(`Starting server on port ${port}...`);
 
 // Start engine in background
 engine.start();
+
+// Initialize hackathon agent and start scheduler
+(async () => {
+  console.log('[API] Initializing hackathon agent...');
+  
+  try {
+    const { registered, project } = await hackathon.initializeAgent();
+    
+    if (registered) {
+      // Ensure project exists
+      if (!project) {
+        console.log('[API] Creating hackathon project...');
+        await hackathon.ensureProject();
+      }
+      
+      // Start scheduler for periodic tasks
+      console.log('[API] Starting scheduler...');
+      scheduler.start();
+    }
+  } catch (error) {
+    console.error('[API] Hackathon initialization failed:', error);
+    console.log('[API] Continuing without hackathon integration...');
+  }
+})();
 
 export default {
   port,
