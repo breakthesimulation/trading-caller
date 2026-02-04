@@ -7,7 +7,7 @@
     "dev": "tsx watch research-engine/src/index.ts",
     "api": "tsx watch api/src/index.ts",
     "scoring": "tsx watch scoring/src/index.ts",
-    "build": "tsc",
+    "build": "echo 'Using tsx runtime, skipping tsc build'",
     "test": "vitest",
     "signals": "tsx scripts/test-signals.ts",
     "demo": "tsx scripts/demo.ts",
