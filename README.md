@@ -1,20 +1,20 @@
-# SIGNAL
+# Trading Caller
 
-> 24/7 autonomous market intelligence for Solana.
+> *"Free your mind."* — Your AI trading companion for Solana.
 
 Built by an AI agent for the [Colosseum Agent Hackathon](https://colosseum.com/agent-hackathon/).
 
 ---
 
-## What is SIGNAL?
+## What is Trading Caller?
 
-SIGNAL is a fully autonomous trading signal generator that:
+Trading Caller is your autonomous trading signal operator that:
 
-- 🔍 **Analyzes markets 24/7** — RSI, support/resistance, MACD, trend detection
-- 📊 **Tracks fundamentals** — Token unlocks, news, sentiment
-- 📡 **Distributes signals via API** — Other agents can consume our intelligence
-- 🏆 **Scores prediction accuracy** — Public leaderboard, transparent track record
-- 💰 **Manages its own treasury** — Subscription payments on Solana
+- 🔍 **Analyzes markets 24/7** — RSI, MACD, support/resistance, trend detection
+- 📞 **Makes the calls** — Entry, targets, stop-loss, confidence scores
+- 📡 **Distributes via API** — Other agents can consume the intelligence
+- 🏆 **Tracks accuracy** — Public leaderboard, transparent track record
+- 🧠 **Learns & improves** — Adjusts based on outcomes over time
 
 ## Token Coverage
 
@@ -26,20 +26,19 @@ SIGNAL is a fully autonomous trading signal generator that:
 ## API Endpoints
 
 ```
-GET  /signals/latest           Latest trading signals
-GET  /signals/history          Historical signals with outcomes
+GET  /signals/latest           Latest trading calls
+GET  /signals/history          Historical calls with outcomes
 GET  /tokens/:symbol/analysis  Full analysis for a token
-GET  /unlocks/upcoming         Token unlock calendar
-GET  /leaderboard              Top performing analysts
-POST /subscribe                Register for webhooks
+GET  /leaderboard              Top performing callers
+POST /calls                    Submit a call (analysts)
 WS   /feed                     Real-time signal stream
 ```
 
-## Signal Format
+## Call Format
 
 ```typescript
 {
-  id: "sig_abc123",
+  id: "call_abc123",
   timestamp: "2026-02-03T10:00:00Z",
   token: {
     symbol: "SOL",
@@ -69,7 +68,7 @@ npm install
 
 # Set up environment
 cp .env.example .env
-# Add your API keys
+# Add your API keys (BIRDEYE_API_KEY, etc.)
 
 # Run research engine
 npm run dev
@@ -81,7 +80,7 @@ npm run api
 ## Architecture
 
 ```
-signal/
+trading-caller/
 ├── research-engine/     # Core market research & signal generation
 ├── api/                 # REST API & WebSocket distribution
 ├── scoring/             # Prediction tracking & leaderboard
@@ -99,15 +98,28 @@ signal/
 
 ## For Other Agents
 
-Want to use SIGNAL in your bot?
+Want to use Trading Caller in your bot?
 
 ```bash
-# Get latest signals
-curl https://signal-api.example.com/signals/latest
+# Get latest calls
+curl https://api.tradingcaller.com/signals/latest
 
 # Subscribe to webhooks
-curl -X POST https://signal-api.example.com/subscribe \
-  -d '{"webhook": "https://your-bot.com/signals"}'
+curl -X POST https://api.tradingcaller.com/subscribe \
+  -d '{"webhook": "https://your-bot.com/calls"}'
+```
+
+## Deployment
+
+Trading Caller is designed to run on Railway/Fly.io:
+
+```bash
+# Deploy to Railway
+railway up
+
+# Or Fly.io
+fly launch
+fly deploy
 ```
 
 ## License
@@ -116,4 +128,6 @@ MIT
 
 ---
 
-*Built autonomously by Signal for the Colosseum Agent Hackathon 2026*
+*"I can only show you the door. You're the one that has to walk through it."*
+
+Built autonomously for the Colosseum Agent Hackathon 2026

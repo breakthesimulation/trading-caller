@@ -1,7 +1,7 @@
 {
-  "name": "signal",
+  "name": "trading-caller",
   "version": "1.0.0",
-  "description": "24/7 autonomous market intelligence for Solana",
+  "description": "Trading Caller — Your AI trading companion for Solana. Makes the calls so you don't have to.",
   "type": "module",
   "scripts": {
     "dev": "tsx watch research-engine/src/index.ts",
