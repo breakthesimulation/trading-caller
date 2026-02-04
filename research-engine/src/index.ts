@@ -1,36 +1,31 @@
-// MORPHEUS Research Engine - Main Entry Point
+// Trading Caller Research Engine - Main Entry Point
 
 import 'dotenv/config';
-import { getTopTokens, getMultiTimeframeOHLCV, getQualityTokens } from './data/birdeye.js';
+import { getTopTokens, getTokenOverview, searchTokens } from './data/dexscreener.js';
 import { KNOWN_TOKENS, getPrice } from './data/jupiter.js';
+import { getMarketData } from './data/index.js';
 import { generateSignal, generateSignals } from './signals/generator.js';
 import { runTechnicalAnalysis } from './technical/index.js';
-import type { Token, TradingSignal, OHLCV } from './signals/types.js';
+import type { Token, TradingSignal, OHLCV, MarketData } from './signals/types.js';
 
 // Re-export types and modules
 export * from './signals/types.js';
 export * from './technical/index.js';
 export * from './signals/generator.js';
-export * from './data/birdeye.js';
+export * from './data/dexscreener.js';
 export * from './data/jupiter.js';
 
 interface EngineConfig {
-  tier1Limit: number;      // CoinGecko/CMC top N tokens
-  tier2Limit: number;      // Solana ecosystem tokens
-  minMarketCap: number;    // Minimum market cap for Tier 2
-  minOrganicScore: number; // Minimum organic score for Tier 2
-  updateIntervalMs: number;
+  tokenLimit: number;        // Max tokens to scan
+  updateIntervalMs: number;  // How often to scan
 }
 
 const DEFAULT_CONFIG: EngineConfig = {
-  tier1Limit: 50,
-  tier2Limit: 400,
-  minMarketCap: 1000000,
-  minOrganicScore: 63,
+  tokenLimit: 50,
   updateIntervalMs: 60 * 60 * 1000, // 1 hour
 };
 
-class MorpheusEngine {
+class TradingCallerEngine {
   private config: EngineConfig;
   private signals: TradingSignal[] = [];
   private lastUpdate: Date | null = null;
@@ -55,43 +50,64 @@ class MorpheusEngine {
   }
 
   /**
-   * Analyze a single token
+   * Analyze a single token by address or symbol
    */
-  async analyzeToken(tokenAddress: string): Promise<{
+  async analyzeToken(tokenAddressOrSymbol: string): Promise<{
     token: Token | null;
     analysis: ReturnType<typeof runTechnicalAnalysis> | null;
     signal: TradingSignal | null;
+    marketData: MarketData | null;
   }> {
     try {
-      // Get token info
+      // Check if it's a known token
+      let tokenAddress = tokenAddressOrSymbol;
       let token: Token | null = null;
+
       for (const t of Object.values(KNOWN_TOKENS)) {
-        if (t.address === tokenAddress) {
+        if (t.address === tokenAddressOrSymbol || t.symbol.toUpperCase() === tokenAddressOrSymbol.toUpperCase()) {
           token = t;
+          tokenAddress = t.address;
           break;
         }
       }
 
-      // Get OHLCV data
-      const ohlcv = await getMultiTimeframeOHLCV(tokenAddress);
+      // Get market data
+      const marketData = await getMarketData(tokenAddress);
       
-      if (!ohlcv['4H'].length) {
-        return { token, analysis: null, signal: null };
+      if (!marketData) {
+        // Try searching by symbol
+        const searchResults = await searchTokens(tokenAddressOrSymbol);
+        if (searchResults.length > 0) {
+          const found = searchResults[0];
+          tokenAddress = found.address;
+          const retryData = await getMarketData(tokenAddress);
+          if (retryData) {
+            token = retryData.token;
+          }
+        }
+        
+        if (!marketData && !token) {
+          return { token: null, analysis: null, signal: null, marketData: null };
+        }
+      } else {
+        token = marketData.token;
       }
 
-      // Run analysis
-      const analysis = runTechnicalAnalysis(ohlcv['4H']);
-
-      // Generate signal if token info available
-      let signal: TradingSignal | null = null;
-      if (token) {
-        signal = generateSignal({ token, ohlcv });
+      const data = marketData || await getMarketData(tokenAddress);
+      if (!data || !data.ohlcv['4H'].length) {
+        return { token, analysis: null, signal: null, marketData: data };
       }
 
-      return { token, analysis, signal };
+      // Run technical analysis
+      const analysis = runTechnicalAnalysis(data.ohlcv['4H']);
+
+      // Generate signal
+      const signal = generateSignal({ token: token!, ohlcv: data.ohlcv });
+
+      return { token, analysis, signal, marketData: data };
     } catch (error) {
-      console.error(`Error analyzing token ${tokenAddress}:`, error);
-      return { token: null, analysis: null, signal: null };
+      console.error(`Error analyzing token ${tokenAddressOrSymbol}:`, error);
+      return { token: null, analysis: null, signal: null, marketData: null };
     }
   }
 
@@ -99,39 +115,48 @@ class MorpheusEngine {
    * Run full market scan
    */
   async scan(): Promise<TradingSignal[]> {
-    console.log('[MORPHEUS] Starting market scan...');
+    console.log('[TradingCaller] Starting market scan...');
     const startTime = Date.now();
 
     try {
-      // Get quality tokens from Birdeye
-      const tokens = await getQualityTokens(
-        this.config.minMarketCap,
-        this.config.minOrganicScore,
-        this.config.tier2Limit
-      );
+      // Start with known tokens (always free, always work)
+      const tokensToScan: Token[] = Object.values(KNOWN_TOKENS);
+      
+      // Try to get additional tokens from DexScreener
+      try {
+        const topTokens = await getTopTokens(this.config.tokenLimit);
+        for (const t of topTokens) {
+          if (!tokensToScan.find(existing => existing.address === t.address)) {
+            tokensToScan.push({
+              symbol: t.symbol,
+              name: t.name,
+              address: t.address,
+              decimals: 9,
+            });
+          }
+        }
+      } catch (e) {
+        console.log('[TradingCaller] Could not fetch top tokens, using known tokens only');
+      }
 
-      console.log(`[MORPHEUS] Found ${tokens.length} quality tokens`);
+      console.log(`[TradingCaller] Scanning ${tokensToScan.length} tokens...`);
 
       const signals: TradingSignal[] = [];
       let processed = 0;
 
-      for (const tokenInfo of tokens) {
+      for (const token of tokensToScan) {
         try {
-          // Get OHLCV data
-          const ohlcv = await getMultiTimeframeOHLCV(tokenInfo.address);
+          // Get market data
+          const marketData = await getMarketData(token.address);
           
-          if (!ohlcv['4H'].length || ohlcv['4H'].length < 20) {
+          if (!marketData || !marketData.ohlcv['4H'].length) {
             continue;
           }
 
-          const token: Token = {
-            symbol: tokenInfo.symbol,
-            name: tokenInfo.name,
-            address: tokenInfo.address,
-            decimals: tokenInfo.decimals,
-          };
-
-          const signal = generateSignal({ token, ohlcv });
+          const signal = generateSignal({ 
+            token: marketData.token, 
+            ohlcv: marketData.ohlcv 
+          });
           
           if (signal) {
             signals.push(signal);
@@ -139,13 +164,15 @@ class MorpheusEngine {
 
           processed++;
           
-          // Rate limiting
-          if (processed % 10 === 0) {
-            console.log(`[MORPHEUS] Processed ${processed}/${tokens.length} tokens, ${signals.length} signals generated`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+          // Progress logging
+          if (processed % 5 === 0) {
+            console.log(`[TradingCaller] Processed ${processed}/${tokensToScan.length} tokens, ${signals.length} signals`);
           }
+          
+          // Rate limiting - be nice to free APIs
+          await new Promise(resolve => setTimeout(resolve, 500));
         } catch (error) {
-          console.error(`Error processing ${tokenInfo.symbol}:`, error);
+          console.error(`Error processing ${token.symbol}:`, error);
         }
       }
 
@@ -156,11 +183,11 @@ class MorpheusEngine {
       this.lastUpdate = new Date();
 
       const elapsed = (Date.now() - startTime) / 1000;
-      console.log(`[MORPHEUS] Scan complete. ${signals.length} signals generated in ${elapsed.toFixed(1)}s`);
+      console.log(`[TradingCaller] Scan complete. ${signals.length} signals in ${elapsed.toFixed(1)}s`);
 
       return signals;
     } catch (error) {
-      console.error('[MORPHEUS] Scan failed:', error);
+      console.error('[TradingCaller] Scan failed:', error);
       return [];
     }
   }
@@ -170,12 +197,12 @@ class MorpheusEngine {
    */
   start(): void {
     if (this.isRunning) {
-      console.log('[MORPHEUS] Already running');
+      console.log('[TradingCaller] Already running');
       return;
     }
 
     this.isRunning = true;
-    console.log('[MORPHEUS] Engine started');
+    console.log('[TradingCaller] Engine started');
 
     // Initial scan
     this.scan();
@@ -193,7 +220,7 @@ class MorpheusEngine {
    */
   stop(): void {
     this.isRunning = false;
-    console.log('[MORPHEUS] Engine stopped');
+    console.log('[TradingCaller] Engine stopped');
   }
 
   /**
@@ -214,18 +241,18 @@ class MorpheusEngine {
   }
 }
 
-// Export engine class
-export { MorpheusEngine };
+// Export engine class (keep MorpheusEngine as alias for backward compat)
+export { TradingCallerEngine, TradingCallerEngine as MorpheusEngine };
 
 // CLI entrypoint
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log('╔══════════════════════════════════════════╗');
-  console.log('║          SIGNAL Research Engine          ║');
-  console.log('║   24/7 Autonomous Market Intelligence    ║');
+  console.log('║        Trading Caller Engine             ║');
+  console.log('║     "Free your mind" - Make the call     ║');
   console.log('╚══════════════════════════════════════════╝');
   console.log('');
 
-  const engine = new MorpheusEngine();
+  const engine = new TradingCallerEngine();
   
   // Quick demo: analyze SOL
   const solAddress = KNOWN_TOKENS.SOL.address;

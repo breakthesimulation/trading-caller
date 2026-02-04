@@ -1,4 +1,4 @@
-// MORPHEUS API Server
+// Trading Caller API Server
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
@@ -6,7 +6,7 @@ import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import 'dotenv/config';
 
-import { MorpheusEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
+import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
 import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-engine/src/signals/types.js';
 
 const app = new Hono();
@@ -17,7 +17,7 @@ app.use('*', logger());
 app.use('*', prettyJSON());
 
 // Initialize engine
-const engine = new MorpheusEngine();
+const engine = new TradingCallerEngine();
 
 // In-memory storage (would be database in production)
 const calls: AnalystCall[] = [];
@@ -29,8 +29,8 @@ const webhooks: Map<string, string[]> = new Map();
 // Health check
 app.get('/', (c) => {
   return c.json({
-    name: 'SIGNAL',
-    tagline: '24/7 autonomous market intelligence for Solana',
+    name: 'Trading Caller',
+    tagline: 'Free your mind — AI trading calls for Solana',
     version: '1.0.0',
     status: 'operational',
     endpoints: {
@@ -278,8 +278,8 @@ app.get('/status', (c) => {
 const port = parseInt(process.env.PORT || '3000');
 
 console.log('╔══════════════════════════════════════════╗');
-console.log('║            SIGNAL API Server             ║');
-console.log('║   24/7 Autonomous Market Intelligence    ║');
+console.log('║        Trading Caller API Server         ║');
+console.log('║     "Free your mind" - Make the call     ║');
 console.log('╚══════════════════════════════════════════╝');
 console.log('');
 console.log(`Starting server on port ${port}...`);
