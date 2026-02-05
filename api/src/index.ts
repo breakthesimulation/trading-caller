@@ -66,17 +66,20 @@ app.get('/', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
-    version: '1.0.0',
+    version: '1.1.0',
     status: 'operational',
     endpoints: {
       signals: '/signals/latest',
       history: '/signals/history',
       analysis: '/tokens/:symbol/analysis',
+      funding: '/funding',
+      fundingByToken: '/funding/:symbol',
+      squeezeAlerts: '/funding/alerts/squeeze',
       unlocks: '/unlocks/upcoming',
       leaderboard: '/leaderboard',
       subscribe: 'POST /subscribe',
-      feed: 'WS /feed',
     },
+    trackedTokens: ['SOL', 'JUP', 'BONK', 'WIF', 'PYTH', 'JTO', 'RAY', 'ORCA', 'BOME', 'POPCAT', 'MEW'],
   });
 });
 
@@ -147,6 +150,123 @@ app.get('/tokens/:symbol/analysis', async (c) => {
     signal: result.signal,
   });
 });
+
+// ============ FUNDING RATE ENDPOINTS ============
+
+import funding from '../../research-engine/src/data/funding.js';
+
+// Get funding rate analysis for a token
+app.get('/funding/:symbol', async (c) => {
+  const symbol = c.req.param('symbol').toUpperCase();
+  
+  try {
+    const analysis = await funding.analyzeFunding(symbol);
+    
+    if (!analysis) {
+      return c.json({
+        success: false,
+        error: `No funding data available for ${symbol}. Try SOL, JUP, BONK, or WIF.`,
+      }, 404);
+    }
+    
+    return c.json({
+      success: true,
+      ...analysis,
+      interpretation: interpretFunding(analysis),
+    });
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch funding data',
+    }, 500);
+  }
+});
+
+// Get squeeze alerts - tokens with potential squeeze setups
+app.get('/funding/alerts/squeeze', async (c) => {
+  const symbols = ['SOL', 'JUP', 'BONK', 'WIF', 'PYTH', 'JTO', 'RAY'];
+  
+  try {
+    const alerts = await funding.getSqueezeAlerts(symbols);
+    
+    return c.json({
+      success: true,
+      count: alerts.length,
+      alerts: alerts.map(a => ({
+        ...a,
+        interpretation: interpretFunding(a),
+      })),
+      scannedTokens: symbols,
+      scanTime: new Date().toISOString(),
+    });
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to scan for squeezes',
+    }, 500);
+  }
+});
+
+// Get funding summary for all tracked tokens
+app.get('/funding', async (c) => {
+  const symbols = ['SOL', 'JUP', 'BONK', 'WIF', 'PYTH', 'JTO', 'RAY', 'ORCA'];
+  
+  try {
+    const analyses = await funding.getMultipleFundingAnalysis(symbols);
+    
+    const results = Array.from(analyses.entries()).map(([symbol, data]) => ({
+      symbol,
+      ...data,
+      interpretation: interpretFunding(data),
+    }));
+    
+    // Sort by absolute funding rate (most extreme first)
+    results.sort((a, b) => Math.abs(b.avgFundingRate) - Math.abs(a.avgFundingRate));
+    
+    return c.json({
+      success: true,
+      count: results.length,
+      funding: results,
+      scanTime: new Date().toISOString(),
+    });
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch funding data',
+    }, 500);
+  }
+});
+
+// Helper to interpret funding data
+function interpretFunding(analysis: any): string {
+  const { avgFundingRate, sentiment, squeezePotential, squeezeAlert } = analysis;
+  
+  let interpretation = '';
+  
+  if (squeezeAlert && squeezePotential === 'SHORT_SQUEEZE') {
+    interpretation = `⚠️ SHORT SQUEEZE ALERT: Funding at ${avgFundingRate.toFixed(4)}% with heavy shorting. Potential bounce incoming.`;
+  } else if (squeezeAlert && squeezePotential === 'LONG_SQUEEZE') {
+    interpretation = `⚠️ LONG SQUEEZE ALERT: Funding at ${avgFundingRate.toFixed(4)}% with heavy longing. Potential dump incoming.`;
+  } else if (squeezePotential === 'SHORT_SQUEEZE') {
+    interpretation = `📊 Short squeeze setup: Negative funding (${avgFundingRate.toFixed(4)}%) with shorts piling up.`;
+  } else if (squeezePotential === 'LONG_SQUEEZE') {
+    interpretation = `📊 Long squeeze setup: High funding (${avgFundingRate.toFixed(4)}%) with longs crowded.`;
+  } else if (sentiment === 'EXTREME_LONG') {
+    interpretation = `🔴 Extremely bullish positioning (${avgFundingRate.toFixed(4)}%). Contrarian bearish signal.`;
+  } else if (sentiment === 'EXTREME_SHORT') {
+    interpretation = `🟢 Extremely bearish positioning (${avgFundingRate.toFixed(4)}%). Contrarian bullish signal.`;
+  } else if (sentiment === 'BULLISH') {
+    interpretation = `📈 Bullish positioning (${avgFundingRate.toFixed(4)}%).`;
+  } else if (sentiment === 'BEARISH') {
+    interpretation = `📉 Bearish positioning (${avgFundingRate.toFixed(4)}%).`;
+  } else {
+    interpretation = `➖ Neutral funding (${avgFundingRate.toFixed(4)}%).`;
+  }
+  
+  return interpretation;
+}
+
+// ============ TOKEN UNLOCKS ============
 
 // Get upcoming token unlocks
 app.get('/unlocks/upcoming', (c) => {

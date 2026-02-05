@@ -65,6 +65,50 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
     decimals: 6,
   },
+  // Memecoins
+  BOME: {
+    symbol: 'BOME',
+    name: 'Book of Meme',
+    address: 'ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82',
+    decimals: 6,
+  },
+  POPCAT: {
+    symbol: 'POPCAT',
+    name: 'Popcat',
+    address: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+    decimals: 9,
+  },
+  MEW: {
+    symbol: 'MEW',
+    name: 'cat in a dogs world',
+    address: 'MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5',
+    decimals: 5,
+  },
+  SLERF: {
+    symbol: 'SLERF',
+    name: 'Slerf',
+    address: '7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8DzFx7LoiVkM3',
+    decimals: 9,
+  },
+  // DeFi
+  MNGO: {
+    symbol: 'MNGO',
+    name: 'Mango',
+    address: 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
+    decimals: 6,
+  },
+  HNT: {
+    symbol: 'HNT',
+    name: 'Helium',
+    address: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
+    decimals: 8,
+  },
+  RNDR: {
+    symbol: 'RNDR',
+    name: 'Render',
+    address: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
+    decimals: 8,
+  },
 };
 
 const DEXSCREENER_API = 'https://api.dexscreener.com/latest';
