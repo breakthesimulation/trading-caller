@@ -8,11 +8,24 @@ import 'dotenv/config';
 
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
 import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-engine/src/signals/types.js';
-import hackathon from '../../agent/hackathon.js';
-import scheduler from '../../agent/scheduler.js';
-import tracker from '../../learning/tracker.js';
-import learner from '../../learning/learner.js';
-import { db } from '../../db/index.js';
+
+// Optional imports - these may fail on some platforms (e.g., better-sqlite3 native module)
+let hackathon: any = null;
+let scheduler: any = null;
+let tracker: any = null;
+let learner: any = null;
+let db: any = null;
+
+try {
+  hackathon = (await import('../../agent/hackathon.js')).default;
+  scheduler = (await import('../../agent/scheduler.js')).default;
+  tracker = (await import('../../learning/tracker.js')).default;
+  learner = (await import('../../learning/learner.js')).default;
+  db = (await import('../../db/index.js')).db;
+  console.log('[TradingCaller] All modules loaded successfully');
+} catch (err) {
+  console.warn('[TradingCaller] Some modules failed to load (database/agent features disabled):', err);
+}
 
 const app = new Hono();
 
@@ -24,8 +37,10 @@ app.use('*', prettyJSON());
 // Initialize engine
 const engine = new TradingCallerEngine();
 
-// Connect scheduler to engine
-scheduler.setEngine(engine);
+// Connect scheduler to engine (if loaded)
+if (scheduler?.setEngine) {
+  scheduler.setEngine(engine);
+}
 
 // In-memory storage (would be database in production)
 const calls: AnalystCall[] = [];
