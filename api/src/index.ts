@@ -443,6 +443,8 @@ app.post('/scheduler/trigger/:task', async (c) => {
 
 // ============ START SERVER ============
 
+import { serve } from '@hono/node-server';
+
 const port = parseInt(process.env.PORT || '3000');
 
 console.log('╔══════════════════════════════════════════╗');
@@ -483,7 +485,13 @@ setTimeout(async () => {
   }
 }, 5000); // Delay to let server start first
 
-export default {
-  port,
+// Explicitly start the server (needed for Node.js with tsx)
+serve({
   fetch: app.fetch,
-};
+  port,
+  hostname: '0.0.0.0', // Listen on all interfaces for Railway
+});
+
+console.log(`[TradingCaller] Server listening on http://0.0.0.0:${port}`);
+
+export default app;
