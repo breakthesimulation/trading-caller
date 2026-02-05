@@ -16,10 +16,5 @@ export { default as forum } from './forum.js';
 export * from './brain.js';
 export { default as brain } from './brain.js';
 
-// Default export with all modules
-export default {
-  hackathon: await import('./hackathon.js').then(m => m.default),
-  heartbeat: await import('./heartbeat.js').then(m => m.default),
-  forum: await import('./forum.js').then(m => m.default),
-  brain: await import('./brain.js').then(m => m.default),
-};
+// Note: Import modules directly from their files if needed
+// Top-level await default export removed for Railway compatibility
