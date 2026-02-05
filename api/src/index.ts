@@ -9,22 +9,28 @@ import 'dotenv/config';
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
 import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-engine/src/signals/types.js';
 
-// Optional imports - these may fail on some platforms (e.g., better-sqlite3 native module)
+// Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
-let tracker: any = null;
-let learner: any = null;
 let db: any = null;
+let modulesLoaded = false;
 
-try {
-  hackathon = (await import('../../agent/hackathon.js')).default;
-  scheduler = (await import('../../agent/scheduler.js')).default;
-  tracker = (await import('../../learning/tracker.js')).default;
-  learner = (await import('../../learning/learner.js')).default;
-  db = (await import('../../db/index.js')).db;
-  console.log('[TradingCaller] All modules loaded successfully');
-} catch (err) {
-  console.warn('[TradingCaller] Some modules failed to load (database/agent features disabled):', err);
+async function loadOptionalModules() {
+  if (modulesLoaded) return;
+  try {
+    const [hackathonMod, schedulerMod, dbMod] = await Promise.all([
+      import('../../agent/hackathon.js').catch(() => null),
+      import('../../agent/scheduler.js').catch(() => null),
+      import('../../db/index.js').catch(() => null),
+    ]);
+    hackathon = hackathonMod?.default || null;
+    scheduler = schedulerMod?.default || null;
+    db = dbMod?.db || null;
+    modulesLoaded = true;
+    console.log('[TradingCaller] Optional modules loaded');
+  } catch (err) {
+    console.warn('[TradingCaller] Optional module loading failed:', err);
+  }
 }
 
 const app = new Hono();
@@ -415,29 +421,33 @@ console.log(`Starting server on port ${port}...`);
 // Start engine in background
 engine.start();
 
-// Initialize hackathon agent and start scheduler
-(async () => {
-  console.log('[API] Initializing hackathon agent...');
-  
+// Initialize optional modules and hackathon agent
+setTimeout(async () => {
   try {
-    const { registered, project } = await hackathon.initializeAgent();
+    await loadOptionalModules();
     
-    if (registered) {
-      // Ensure project exists
-      if (!project) {
-        console.log('[API] Creating hackathon project...');
-        await hackathon.ensureProject();
-      }
+    if (hackathon) {
+      console.log('[API] Initializing hackathon agent...');
+      const { registered, project } = await hackathon.initializeAgent();
       
-      // Start scheduler for periodic tasks
-      console.log('[API] Starting scheduler...');
-      scheduler.start();
+      if (registered) {
+        if (!project) {
+          console.log('[API] Creating hackathon project...');
+          await hackathon.ensureProject();
+        }
+        
+        if (scheduler?.start) {
+          console.log('[API] Starting scheduler...');
+          scheduler.start();
+        }
+      }
+    } else {
+      console.log('[API] Hackathon module not available, skipping...');
     }
   } catch (error) {
     console.error('[API] Hackathon initialization failed:', error);
-    console.log('[API] Continuing without hackathon integration...');
   }
-})();
+}, 5000); // Delay to let server start first
 
 export default {
   port,
