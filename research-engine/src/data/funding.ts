@@ -31,17 +31,31 @@ export interface FundingSummary {
 
 /**
  * Map Solana token symbols to perpetual trading symbols
+ * Extended with all major tradeable perps
  */
 const PERP_SYMBOL_MAP: Record<string, string> = {
+  // Major tokens
   'SOL': 'SOLUSDT',
   'JUP': 'JUPUSDT', 
-  'BONK': 'BONKUSDT',
-  'WIF': 'WIFUSDT',
   'PYTH': 'PYTHUSDT',
   'JTO': 'JTOUSDT',
   'RNDR': 'RNDRUSDT',
   'RAY': 'RAYUSDT',
   'ORCA': 'ORCAUSDT',
+  'HNT': 'HNTUSDT',
+  // Memecoins with perps
+  'BONK': 'BONKUSDT',
+  'WIF': 'WIFUSDT',
+  'BOME': 'BOMEUSDT',
+  'MEW': 'MEWUSDT',
+  'POPCAT': 'POPCATUSDT',
+  'PNUT': 'PNUTUSDT',
+  // Political/AI tokens with perps
+  'TRUMP': 'TRUMPUSDT',
+  'AI16Z': 'AI16ZUSDT',
+  'GOAT': 'GOATUSDT',
+  'FARTCOIN': 'FARTCOINUSDT',
+  'PENGU': 'PENGUUSDT',
 };
 
 /**

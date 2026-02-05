@@ -102,68 +102,116 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
 
 /**
  * Determine trading action based on analysis
+ * More aggressive thresholds to generate actionable signals
  */
 function determineAction(
   analysis4H: TechnicalAnalysis,
   analysis1D: TechnicalAnalysis,
   sentiment: number
 ): SignalAction {
-  // Strong bullish conditions
+  // === HIGH CONVICTION SIGNALS ===
+  
+  // Strong bullish: Oversold with bullish momentum
   if (
-    sentiment > 40 &&
+    sentiment > 25 &&
     analysis4H.rsi.signal === 'OVERSOLD' &&
     analysis4H.trend.direction !== 'DOWN'
   ) {
     return 'LONG';
   }
 
-  // Strong bearish conditions
+  // Strong bearish: Overbought with bearish momentum
   if (
-    sentiment < -40 &&
+    sentiment < -25 &&
     analysis4H.rsi.signal === 'OVERBOUGHT' &&
     analysis4H.trend.direction !== 'UP'
   ) {
     return 'SHORT';
   }
 
-  // Trend following with confirmation
+  // === TREND FOLLOWING ===
+  
+  // Uptrend with MACD confirmation
   if (
     analysis4H.trend.direction === 'UP' &&
-    analysis4H.trend.strength > 50 &&
+    analysis4H.trend.strength > 35 &&
     analysis4H.macd.trend === 'BULLISH' &&
-    sentiment > 20
+    sentiment > 10
   ) {
     return 'LONG';
   }
 
+  // Downtrend with MACD confirmation
   if (
     analysis4H.trend.direction === 'DOWN' &&
-    analysis4H.trend.strength > 50 &&
+    analysis4H.trend.strength > 35 &&
     analysis4H.macd.trend === 'BEARISH' &&
-    sentiment < -20
+    sentiment < -10
   ) {
     return 'SHORT';
   }
 
-  // Mean reversion setups
+  // === MACD CROSSOVER SIGNALS ===
+  
+  // Bullish crossover with supportive RSI
   if (
-    analysis4H.rsi.value < 25 &&
-    analysis1D.rsi.value < 35 &&
-    analysis4H.macd.crossover === 'BULLISH_CROSS'
+    analysis4H.macd.crossover === 'BULLISH_CROSS' &&
+    analysis4H.rsi.value < 60 &&
+    analysis4H.trend.direction !== 'DOWN'
+  ) {
+    return 'LONG';
+  }
+
+  // Bearish crossover with supportive RSI
+  if (
+    analysis4H.macd.crossover === 'BEARISH_CROSS' &&
+    analysis4H.rsi.value > 40 &&
+    analysis4H.trend.direction !== 'UP'
+  ) {
+    return 'SHORT';
+  }
+
+  // === MEAN REVERSION ===
+  
+  // Deep oversold bounce setup
+  if (
+    analysis4H.rsi.value < 35 &&
+    analysis1D.rsi.value < 45 &&
+    (analysis4H.macd.crossover === 'BULLISH_CROSS' || analysis4H.macd.histogram > 0)
+  ) {
+    return 'LONG';
+  }
+
+  // Extended overbought rejection
+  if (
+    analysis4H.rsi.value > 65 &&
+    analysis1D.rsi.value > 55 &&
+    (analysis4H.macd.crossover === 'BEARISH_CROSS' || analysis4H.macd.histogram < 0)
+  ) {
+    return 'SHORT';
+  }
+
+  // === MOMENTUM PLAYS ===
+  
+  // Strong momentum with trend alignment
+  if (
+    sentiment > 30 &&
+    analysis4H.trend.direction === 'UP' &&
+    analysis4H.rsi.value > 50 && analysis4H.rsi.value < 70
   ) {
     return 'LONG';
   }
 
   if (
-    analysis4H.rsi.value > 75 &&
-    analysis1D.rsi.value > 65 &&
-    analysis4H.macd.crossover === 'BEARISH_CROSS'
+    sentiment < -30 &&
+    analysis4H.trend.direction === 'DOWN' &&
+    analysis4H.rsi.value < 50 && analysis4H.rsi.value > 30
   ) {
     return 'SHORT';
   }
 
-  // Avoid unclear situations
-  if (Math.abs(sentiment) < 15) {
+  // Avoid truly unclear situations
+  if (Math.abs(sentiment) < 8) {
     return 'HOLD';
   }
 

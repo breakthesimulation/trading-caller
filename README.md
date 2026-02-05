@@ -67,6 +67,16 @@ POST /calls                     Submit a call (analysts)
 GET  /status                    Engine & scheduler status
 ```
 
+### Market Intelligence
+
+```
+GET  /market/overview           Comprehensive market dashboard
+POST /market/scan               Force new market scan
+GET  /funding                   Funding rates for tracked tokens
+GET  /funding/:symbol           Funding analysis for specific token
+GET  /funding/alerts/squeeze    Squeeze setup detection
+```
+
 ### Hackathon API
 
 ```

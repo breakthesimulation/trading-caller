@@ -189,6 +189,10 @@ export function start(): void {
   setTimeout(async () => {
     console.log('[Scheduler] Running initial tasks...');
     await runHeartbeatTask();
+    
+    // Also run an initial market scan after startup
+    console.log('[Scheduler] Running initial market scan...');
+    await runMarketScanTask();
   }, 5000);
 }
 

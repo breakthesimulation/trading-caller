@@ -3,14 +3,16 @@
 
 import type { Token, OHLCV } from '../signals/types.js';
 
-// Common Solana token addresses
+// Common Solana token addresses - Expanded with trending tokens
 export const KNOWN_TOKENS: Record<string, Token> = {
+  // Major L1
   SOL: {
     symbol: 'SOL',
     name: 'Solana',
     address: 'So11111111111111111111111111111111111111112',
     decimals: 9,
   },
+  // Stablecoins
   USDC: {
     symbol: 'USDC',
     name: 'USD Coin',
@@ -23,6 +25,7 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     address: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
     decimals: 6,
   },
+  // Major DeFi
   JUP: {
     symbol: 'JUP',
     name: 'Jupiter',
@@ -33,18 +36,6 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     symbol: 'RAY',
     name: 'Raydium',
     address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
-    decimals: 6,
-  },
-  BONK: {
-    symbol: 'BONK',
-    name: 'Bonk',
-    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
-    decimals: 5,
-  },
-  WIF: {
-    symbol: 'WIF',
-    name: 'dogwifhat',
-    address: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
     decimals: 6,
   },
   PYTH: {
@@ -65,7 +56,38 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
     decimals: 6,
   },
-  // Memecoins
+  MNGO: {
+    symbol: 'MNGO',
+    name: 'Mango',
+    address: 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
+    decimals: 6,
+  },
+  // Infrastructure
+  HNT: {
+    symbol: 'HNT',
+    name: 'Helium',
+    address: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
+    decimals: 8,
+  },
+  RNDR: {
+    symbol: 'RNDR',
+    name: 'Render',
+    address: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
+    decimals: 8,
+  },
+  // === TOP MEMECOINS ===
+  BONK: {
+    symbol: 'BONK',
+    name: 'Bonk',
+    address: 'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+    decimals: 5,
+  },
+  WIF: {
+    symbol: 'WIF',
+    name: 'dogwifhat',
+    address: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm',
+    decimals: 6,
+  },
   BOME: {
     symbol: 'BOME',
     name: 'Book of Meme',
@@ -90,24 +112,86 @@ export const KNOWN_TOKENS: Record<string, Token> = {
     address: '7BgBvyjrZX1YKz4oh9mjb8ZScatkkwb8DzFx7LoiVkM3',
     decimals: 9,
   },
-  // DeFi
-  MNGO: {
-    symbol: 'MNGO',
-    name: 'Mango',
-    address: 'MangoCzJ36AjZyKwVj3VnYU4GTonjfVEnJmvvWaxLac',
+  // === AI & AGENT TOKENS (HOT 2024/2025) ===
+  AI16Z: {
+    symbol: 'AI16Z',
+    name: 'ai16z',
+    address: 'HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC',
+    decimals: 9,
+  },
+  GRIFFAIN: {
+    symbol: 'GRIFFAIN',
+    name: 'Griffain',
+    address: 'KENJSUYLASHUMfHyy5o4Hp2FdNqZg1AsUPhfH2kYvEP',
+    decimals: 9,
+  },
+  FARTCOIN: {
+    symbol: 'FARTCOIN',
+    name: 'Fartcoin',
+    address: '9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump',
     decimals: 6,
   },
-  HNT: {
-    symbol: 'HNT',
-    name: 'Helium',
-    address: 'hntyVP6YFm1Hg25TN9WGLqM12b8TQmcknKrdu1oxWux',
-    decimals: 8,
+  GOAT: {
+    symbol: 'GOAT',
+    name: 'Goatseus Maximus',
+    address: 'CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump',
+    decimals: 6,
   },
-  RNDR: {
-    symbol: 'RNDR',
-    name: 'Render',
-    address: 'rndrizKT3MK1iimdxRdWabcF7Zg7AR5T4nud4EkHBof',
-    decimals: 8,
+  ZEREBRO: {
+    symbol: 'ZEREBRO',
+    name: 'Zerebro',
+    address: 'ZEREBRO111111111111111111111111111111111111',
+    decimals: 9,
+  },
+  ARC: {
+    symbol: 'ARC',
+    name: 'Arc',
+    address: '61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump',
+    decimals: 6,
+  },
+  VIRTUAL: {
+    symbol: 'VIRTUAL',
+    name: 'Virtual Protocol',
+    address: 'VIRTUALxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+    decimals: 9,
+  },
+  // === POLITICAL MEMES ===
+  TRUMP: {
+    symbol: 'TRUMP',
+    name: 'Official Trump',
+    address: '6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN',
+    decimals: 9,
+  },
+  MELANIA: {
+    symbol: 'MELANIA',
+    name: 'Melania Meme',
+    address: 'FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P',
+    decimals: 6,
+  },
+  // === OTHER HOT TOKENS ===
+  PNUT: {
+    symbol: 'PNUT',
+    name: 'Peanut the Squirrel',
+    address: '2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump',
+    decimals: 6,
+  },
+  PENGU: {
+    symbol: 'PENGU',
+    name: 'Pudgy Penguins',
+    address: '2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv',
+    decimals: 6,
+  },
+  CHILLGUY: {
+    symbol: 'CHILLGUY',
+    name: 'Just a Chill Guy',
+    address: 'Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump',
+    decimals: 6,
+  },
+  MOODENG: {
+    symbol: 'MOODENG',
+    name: 'Moo Deng',
+    address: 'ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY',
+    decimals: 6,
   },
 };
 

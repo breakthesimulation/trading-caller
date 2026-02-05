@@ -266,6 +266,94 @@ function interpretFunding(analysis: any): string {
   return interpretation;
 }
 
+// ============ MARKET OVERVIEW ============
+
+// Get comprehensive market overview
+app.get('/market/overview', async (c) => {
+  try {
+    // Get latest signals
+    const signals = engine.getLatestSignals(10);
+    
+    // Get funding for major tokens
+    const fundingSymbols = ['SOL', 'JUP', 'BONK', 'WIF', 'JTO'];
+    const fundingData = await funding.getMultipleFundingAnalysis(fundingSymbols);
+    
+    // Get squeeze alerts
+    const squeezAlerts = await funding.getSqueezeAlerts(fundingSymbols);
+    
+    // Calculate market sentiment from signals
+    const longSignals = signals.filter(s => s.action === 'LONG').length;
+    const shortSignals = signals.filter(s => s.action === 'SHORT').length;
+    const marketSentiment = longSignals > shortSignals ? 'BULLISH' 
+      : shortSignals > longSignals ? 'BEARISH' 
+      : 'NEUTRAL';
+    
+    return c.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      overview: {
+        totalSignals: signals.length,
+        longSignals,
+        shortSignals,
+        marketSentiment,
+        avgConfidence: signals.length > 0 
+          ? Math.round(signals.reduce((sum, s) => sum + s.confidence, 0) / signals.length)
+          : 0,
+      },
+      topSignals: signals.slice(0, 5).map(s => ({
+        token: s.token.symbol,
+        action: s.action,
+        confidence: s.confidence,
+        entry: s.entry,
+        targets: s.targets,
+        stopLoss: s.stopLoss,
+      })),
+      fundingSummary: Array.from(fundingData.entries()).map(([symbol, data]) => ({
+        symbol,
+        rate: data.avgFundingRate.toFixed(4) + '%',
+        sentiment: data.sentiment,
+        squeezeRisk: data.squeezePotential,
+      })),
+      squeezeAlerts: squeezAlerts.map(a => ({
+        symbol: a.symbol,
+        type: a.squeezePotential,
+        fundingRate: a.avgFundingRate.toFixed(4) + '%',
+        interpretation: interpretFunding(a),
+      })),
+    });
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to generate overview',
+    }, 500);
+  }
+});
+
+// Force a new market scan (useful for testing)
+app.post('/market/scan', async (c) => {
+  try {
+    console.log('[API] Triggering manual market scan...');
+    const signals = await engine.scan();
+    
+    return c.json({
+      success: true,
+      message: 'Market scan completed',
+      signalsGenerated: signals.length,
+      topSignals: signals.slice(0, 5).map(s => ({
+        token: s.token.symbol,
+        action: s.action,
+        confidence: s.confidence,
+        reasoning: s.reasoning?.technical,
+      })),
+    });
+  } catch (error) {
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Scan failed',
+    }, 500);
+  }
+});
+
 // ============ TOKEN UNLOCKS ============
 
 // Get upcoming token unlocks
