@@ -582,26 +582,30 @@ setTimeout(async () => {
   try {
     await loadOptionalModules();
     
+    // Always start scheduler if available (for market scans, learning, etc.)
+    if (scheduler?.start) {
+      console.log('[API] Starting scheduler...');
+      scheduler.start();
+    }
+    
+    // Initialize hackathon agent separately
     if (hackathon) {
       console.log('[API] Initializing hackathon agent...');
-      const { registered, project } = await hackathon.initializeAgent();
-      
-      if (registered) {
-        if (!project) {
+      try {
+        const { registered, project } = await hackathon.initializeAgent();
+        
+        if (registered && !project) {
           console.log('[API] Creating hackathon project...');
           await hackathon.ensureProject();
         }
-        
-        if (scheduler?.start) {
-          console.log('[API] Starting scheduler...');
-          scheduler.start();
-        }
+      } catch (hackathonError) {
+        console.error('[API] Hackathon initialization failed (non-fatal):', hackathonError);
       }
     } else {
       console.log('[API] Hackathon module not available, skipping...');
     }
   } catch (error) {
-    console.error('[API] Hackathon initialization failed:', error);
+    console.error('[API] Module initialization failed:', error);
   }
 }, 5000); // Delay to let server start first
 
