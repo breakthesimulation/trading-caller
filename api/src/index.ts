@@ -13,19 +13,25 @@ import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-en
 let hackathon: any = null;
 let scheduler: any = null;
 let db: any = null;
+let tracker: any = null;
+let learner: any = null;
 let modulesLoaded = false;
 
 async function loadOptionalModules() {
   if (modulesLoaded) return;
   try {
-    const [hackathonMod, schedulerMod, dbMod] = await Promise.all([
+    const [hackathonMod, schedulerMod, dbMod, trackerMod, learnerMod] = await Promise.all([
       import('../../agent/hackathon.js').catch(() => null),
       import('../../agent/scheduler.js').catch(() => null),
       import('../../db/index.js').catch(() => null),
+      import('../../learning/tracker.js').catch(() => null),
+      import('../../learning/learner.js').catch(() => null),
     ]);
     hackathon = hackathonMod?.default || null;
     scheduler = schedulerMod?.default || null;
     db = dbMod?.db || null;
+    tracker = trackerMod?.default || null;
+    learner = learnerMod?.default || null;
     modulesLoaded = true;
     console.log('[TradingCaller] Optional modules loaded');
   } catch (err) {
@@ -290,7 +296,7 @@ app.post('/subscribe', async (c) => {
 
 app.get('/status', (c) => {
   const status = engine.status();
-  const schedulerStatus = scheduler.getStatus();
+  const schedulerStatus = scheduler?.getStatus?.() || { status: 'not_loaded' };
   
   return c.json({
     success: true,
@@ -308,6 +314,9 @@ app.get('/status', (c) => {
 
 // Get hackathon agent status
 app.get('/hackathon/status', async (c) => {
+  if (!hackathon) {
+    return c.json({ success: false, error: 'Hackathon module not loaded' }, 503);
+  }
   try {
     const status = await hackathon.getStatus();
     return c.json({ success: true, ...status });
@@ -321,6 +330,9 @@ app.get('/hackathon/status', async (c) => {
 
 // Get our project
 app.get('/hackathon/project', async (c) => {
+  if (!hackathon) {
+    return c.json({ success: false, error: 'Hackathon module not loaded' }, 503);
+  }
   try {
     const { project } = await hackathon.getMyProject();
     return c.json({ success: true, project });
@@ -334,6 +346,9 @@ app.get('/hackathon/project', async (c) => {
 
 // Get leaderboard
 app.get('/hackathon/leaderboard', async (c) => {
+  if (!hackathon) {
+    return c.json({ success: false, error: 'Hackathon module not loaded' }, 503);
+  }
   try {
     const leaderboard = await hackathon.getLeaderboard();
     return c.json({ success: true, ...leaderboard });
@@ -349,18 +364,27 @@ app.get('/hackathon/leaderboard', async (c) => {
 
 // Get performance stats
 app.get('/learning/stats', (c) => {
+  if (!tracker) {
+    return c.json({ success: false, error: 'Learning module not loaded' }, 503);
+  }
   const stats = tracker.getPerformanceStats();
   return c.json({ success: true, stats });
 });
 
 // Get token performance
 app.get('/learning/tokens', (c) => {
+  if (!tracker) {
+    return c.json({ success: false, error: 'Learning module not loaded' }, 503);
+  }
   const performance = tracker.getTokenPerformance();
   return c.json({ success: true, ...performance });
 });
 
 // Get learning insights
 app.get('/learning/insights', async (c) => {
+  if (!learner) {
+    return c.json({ success: false, error: 'Learning module not loaded' }, 503);
+  }
   try {
     const insights = await learner.generateInsights();
     return c.json({ success: true, insights });
@@ -374,6 +398,9 @@ app.get('/learning/insights', async (c) => {
 
 // Get indicator patterns
 app.get('/learning/patterns', (c) => {
+  if (!learner) {
+    return c.json({ success: false, error: 'Learning module not loaded' }, 503);
+  }
   const indicatorPatterns = learner.analyzeIndicatorPatterns();
   const tokenPatterns = learner.analyzeTokenPerformance();
   return c.json({ success: true, indicatorPatterns, tokenPatterns });
@@ -383,12 +410,19 @@ app.get('/learning/patterns', (c) => {
 
 // Get scheduler status
 app.get('/scheduler/status', (c) => {
+  if (!scheduler) {
+    return c.json({ success: false, error: 'Scheduler not loaded' }, 503);
+  }
   const status = scheduler.getStatus();
   return c.json({ success: true, ...status });
 });
 
 // Trigger a task manually
 app.post('/scheduler/trigger/:task', async (c) => {
+  if (!scheduler) {
+    return c.json({ success: false, error: 'Scheduler not loaded' }, 503);
+  }
+  
   const task = c.req.param('task') as 'heartbeat' | 'outcomeCheck' | 'forumEngagement' | 'marketScan' | 'learning';
   
   const validTasks = ['heartbeat', 'outcomeCheck', 'forumEngagement', 'marketScan', 'learning'];
