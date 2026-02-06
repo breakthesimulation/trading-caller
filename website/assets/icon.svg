@@ -1,0 +1,50 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Primary gradient -->
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#AB9FF2"/>
+      <stop offset="50%" stop-color="#7B61FF"/>
+      <stop offset="100%" stop-color="#5E4AE3"/>
+    </linearGradient>
+    <!-- Accent gradient -->
+    <linearGradient id="iconAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D9FF"/>
+      <stop offset="100%" stop-color="#7B61FF"/>
+    </linearGradient>
+    <!-- Background gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A1A1F"/>
+      <stop offset="100%" stop-color="#0E0E10"/>
+    </linearGradient>
+    <!-- Glow -->
+    <filter id="iconGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background rounded square -->
+  <rect width="64" height="64" rx="14" fill="url(#bgGradient)"/>
+  
+  <!-- Subtle border -->
+  <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" stroke="url(#iconGradient)" stroke-opacity="0.3" fill="none"/>
+  
+  <g filter="url(#iconGlow)">
+    <!-- Central beacon/diamond -->
+    <path d="M32 12L44 32L32 52L20 32L32 12Z" fill="url(#iconGradient)"/>
+    
+    <!-- Inner highlight -->
+    <path d="M32 18L38 32L32 46L26 32L32 18Z" fill="white" fill-opacity="0.15"/>
+    
+    <!-- Signal waves - left -->
+    <path d="M14 22C8 27 8 37 14 42" stroke="url(#iconAccent)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M8 16C-1 25 -1 39 8 48" stroke="url(#iconAccent)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.35"/>
+    
+    <!-- Signal waves - right -->
+    <path d="M50 22C56 27 56 37 50 42" stroke="url(#iconAccent)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+    <path d="M56 16C65 25 65 39 56 48" stroke="url(#iconAccent)" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.35"/>
+  </g>
+</svg>

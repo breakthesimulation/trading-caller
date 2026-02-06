@@ -95,6 +95,12 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
     reasoning,
     riskLevel,
     technicalAnalysis: analysis4H.analysis,
+    indicators: {
+      rsi_4h: analysis4H.analysis.rsi.value,
+      rsi_1d: analysis1D.analysis.rsi.value,
+      trend_strength: analysis4H.analysis.trend.strength,
+      macd_histogram: analysis4H.analysis.macd.histogram,
+    },
   };
 
   return signal;
@@ -103,12 +109,51 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
 /**
  * Determine trading action based on analysis
  * More aggressive thresholds to generate actionable signals
+ * ENHANCED: RSI oversold/overbought now primary signal driver
  */
 function determineAction(
   analysis4H: TechnicalAnalysis,
   analysis1D: TechnicalAnalysis,
   sentiment: number
 ): SignalAction {
+  // === EXTREME RSI SIGNALS (HIGHEST PRIORITY) ===
+  
+  // Extreme oversold (RSI < 20) - Strong LONG signal
+  if (analysis4H.rsi.value <= 20) {
+    return 'LONG';
+  }
+  
+  // Extreme overbought (RSI > 80) - Strong SHORT signal
+  if (analysis4H.rsi.value >= 80) {
+    return 'SHORT';
+  }
+  
+  // === RSI-BASED SIGNALS (HIGH PRIORITY) ===
+  
+  // Oversold with any positive confirmation
+  if (
+    analysis4H.rsi.signal === 'OVERSOLD' && (
+      sentiment > 0 ||
+      analysis4H.macd.histogram > 0 ||
+      analysis4H.macd.crossover === 'BULLISH_CROSS' ||
+      analysis1D.rsi.value < 40
+    )
+  ) {
+    return 'LONG';
+  }
+  
+  // Overbought with any negative confirmation
+  if (
+    analysis4H.rsi.signal === 'OVERBOUGHT' && (
+      sentiment < 0 ||
+      analysis4H.macd.histogram < 0 ||
+      analysis4H.macd.crossover === 'BEARISH_CROSS' ||
+      analysis1D.rsi.value > 60
+    )
+  ) {
+    return 'SHORT';
+  }
+  
   // === HIGH CONVICTION SIGNALS ===
   
   // Strong bullish: Oversold with bullish momentum
@@ -277,6 +322,7 @@ function calculateLevels(
 
 /**
  * Calculate signal confidence (0-100)
+ * Enhanced with RSI-based confidence boosting
  */
 function calculateConfidence(
   analysis4H: TechnicalAnalysis,
@@ -285,13 +331,34 @@ function calculateConfidence(
 ): number {
   let confidence = 50; // Base confidence
 
-  // RSI alignment bonus
+  // === ENHANCED RSI WEIGHTING ===
+  
+  // Extreme RSI levels get significant confidence boost
+  if (analysis4H.rsi.value <= 20 || analysis4H.rsi.value >= 80) {
+    confidence += 20; // Extreme levels
+  } else if (analysis4H.rsi.value <= 25 || analysis4H.rsi.value >= 75) {
+    confidence += 15; // Strong levels
+  } else if (analysis4H.rsi.signal === 'OVERSOLD' || analysis4H.rsi.signal === 'OVERBOUGHT') {
+    confidence += 10; // Standard oversold/overbought
+  }
+
+  // RSI alignment bonus (both timeframes agreeing)
   if (
     (analysis4H.rsi.signal === 'OVERSOLD' && analysis1D.rsi.signal === 'OVERSOLD') ||
     (analysis4H.rsi.signal === 'OVERBOUGHT' && analysis1D.rsi.signal === 'OVERBOUGHT')
   ) {
     confidence += 15;
   }
+  
+  // Partial alignment (one timeframe supporting)
+  if (
+    (analysis4H.rsi.signal === 'OVERSOLD' && analysis1D.rsi.value < 40) ||
+    (analysis4H.rsi.signal === 'OVERBOUGHT' && analysis1D.rsi.value > 60)
+  ) {
+    confidence += 5;
+  }
+
+  // === OTHER INDICATORS ===
 
   // MACD alignment bonus
   if (analysis4H.macd.trend === analysis1D.macd.trend && analysis4H.macd.trend !== 'NEUTRAL') {
@@ -355,6 +422,7 @@ function determineTimeframe(
 
 /**
  * Build reasoning object for signal
+ * Enhanced with RSI-focused reasoning
  */
 function buildReasoning(
   analysis4H: { analysis: TechnicalAnalysis; summary: string },
@@ -362,8 +430,28 @@ function buildReasoning(
   fundamentalContext?: string,
   sentimentContext?: string
 ): { technical: string; fundamental: string; sentiment: string } {
+  const rsi4H = analysis4H.analysis.rsi;
+  const rsi1D = analysis1D.analysis.rsi;
+  
+  // Build RSI-focused reasoning
+  let rsiReasoning = '';
+  if (rsi4H.value <= 20) {
+    rsiReasoning = `EXTREME OVERSOLD: RSI(4H)=${rsi4H.value} — high probability bounce zone. `;
+  } else if (rsi4H.value >= 80) {
+    rsiReasoning = `EXTREME OVERBOUGHT: RSI(4H)=${rsi4H.value} — high probability pullback zone. `;
+  } else if (rsi4H.signal === 'OVERSOLD') {
+    rsiReasoning = `OVERSOLD: RSI(4H)=${rsi4H.value} — potential reversal zone. `;
+  } else if (rsi4H.signal === 'OVERBOUGHT') {
+    rsiReasoning = `OVERBOUGHT: RSI(4H)=${rsi4H.value} — potential reversal zone. `;
+  }
+  
+  // Add alignment info
+  if (rsi4H.signal === rsi1D.signal && rsi4H.signal !== 'NEUTRAL') {
+    rsiReasoning += `Multi-timeframe RSI alignment (1D RSI=${rsi1D.value}). `;
+  }
+  
   return {
-    technical: `4H: ${analysis4H.summary}. Daily: RSI ${analysis1D.analysis.rsi.value}, trend ${analysis1D.analysis.trend.direction.toLowerCase()}`,
+    technical: `${rsiReasoning}${analysis4H.summary}. Daily: trend ${analysis1D.analysis.trend.direction.toLowerCase()}`,
     fundamental: fundamentalContext || 'No significant fundamental factors',
     sentiment: sentimentContext || 'Neutral market sentiment',
   };

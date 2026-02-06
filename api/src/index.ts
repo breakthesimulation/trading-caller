@@ -16,6 +16,9 @@ import { performanceScheduler, performanceTracker } from '../../performance/inde
 // Volume scanner module
 import volumeRoutes, { getScanner } from '../../volume-scanner/src/routes.js';
 
+// RSI oversold/overbought scanner
+import { rsiRoutes } from '../../oversold/src/index.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -74,6 +77,9 @@ app.route('/', performanceRoutes);
 // Mount volume scanner routes
 app.route('/', volumeRoutes);
 
+// Mount RSI scanner routes
+app.route('/', rsiRoutes);
+
 // Health check
 app.get('/', (c) => {
   return c.json({
@@ -103,6 +109,13 @@ app.get('/', (c) => {
       volumeScan: 'POST /volume/scan',
       volumeStart: 'POST /volume/start',
       volumeStop: 'POST /volume/stop',
+      
+      // RSI Scanner (NEW)
+      rsiStatus: '/rsi/status',
+      rsiOversold: '/rsi/oversold',
+      rsiOverbought: '/rsi/overbought',
+      rsiScan: '/rsi/scan',
+      rsiToken: '/rsi/:symbol',
       
       // Funding & squeeze
       funding: '/funding',

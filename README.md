@@ -94,7 +94,7 @@ GET  /learning/insights         AI-generated insights
 GET  /learning/patterns         Indicator & token patterns
 ```
 
-### Volume Scanner API (NEW)
+### Volume Scanner API
 
 ```
 GET  /volume/status             Scanner status & config
@@ -109,6 +109,21 @@ POST /volume/alerts/subscribe   Subscribe chat to Telegram alerts
 GET  /volume/alerts/subscribe/:chatId   Get subscription status
 DELETE /volume/alerts/subscribe/:chatId   Unsubscribe
 ```
+
+### RSI Scanner API (NEW)
+
+```
+GET  /rsi/status                Scanner status & thresholds
+GET  /rsi/oversold              Get currently oversold tokens (RSI < 30)
+GET  /rsi/overbought            Get currently overbought tokens (RSI > 70)
+GET  /rsi/scan                  Full RSI scan of all tokens
+GET  /rsi/:symbol               Get RSI for a specific token
+POST /rsi/cache/clear           Clear the RSI cache
+```
+
+**Query Parameters:**
+- `threshold` — Custom RSI threshold (default: 30 for oversold, 70 for overbought)
+- `timeframe` — `1H`, `4H`, or `1D` (default: `4H`)
 
 ### Scheduler API
 
@@ -215,6 +230,61 @@ Type: BULLISH | Severity: HIGH
 
 SOL, JUP, BONK, WIF, PYTH, JTO, RAY, ORCA, BOME, POPCAT, MEW, TRUMP, MELANIA, AI16Z, PENGU, FARTCOIN, GOAT, PNUT, MOODENG, CHILLGUY
 
+## RSI Oversold/Overbought Scanner
+
+The RSI scanner identifies tokens with extreme RSI readings that may indicate reversal opportunities.
+
+### Signal Logic
+
+| RSI Value | Signal | Suggested Action | Confidence Boost |
+|-----------|--------|------------------|------------------|
+| ≤ 20 | EXTREME OVERSOLD | LONG | +20 |
+| 21-30 | OVERSOLD | LONG | +10-15 |
+| 31-69 | NEUTRAL | — | — |
+| 70-79 | OVERBOUGHT | SHORT | +10-15 |
+| ≥ 80 | EXTREME OVERBOUGHT | SHORT | +20 |
+
+### Integration with Signal Generation
+
+RSI readings are now weighted more heavily in signal generation:
+- Extreme RSI levels trigger automatic LONG/SHORT signals
+- Multi-timeframe RSI alignment boosts confidence by up to 20%
+- RSI values are included in signal indicators
+
+### Example Response
+
+```bash
+# Get oversold tokens
+curl http://localhost:3000/rsi/oversold
+
+{
+  "success": true,
+  "count": 2,
+  "threshold": 30,
+  "timeframe": "4H",
+  "tokens": [
+    {
+      "symbol": "BONK",
+      "name": "Bonk",
+      "rsi": 24.5,
+      "price": 0.0000123,
+      "priceChange24h": -8.2,
+      "signal": {
+        "signalType": "OVERSOLD",
+        "strength": "MODERATE",
+        "suggestedAction": "LONG",
+        "confidenceBoost": 15
+      }
+    }
+  ],
+  "interpretation": "2 token(s) showing oversold RSI - potential LONG opportunities"
+}
+```
+
+### Note on External Data Sources
+
+The scanner was designed to integrate with [oversold.lol](https://oversold.lol) for RSI data, but their site has Vercel bot protection that blocks programmatic access. The scanner currently uses internal RSI calculations via Birdeye price data. If oversold.lol releases a public API or provides access, the `oversold-lol.ts` module has stubs ready for integration.
+
 ## Architecture
 
 ```
@@ -231,7 +301,14 @@ trading-caller/
 │   ├── tracker.ts        # Signal outcome tracking
 │   └── learner.ts        # Pattern analysis & insights
 ├── research-engine/      # Core market research & signals
-├── volume-scanner/       # Volume spike detection (NEW)
+├── oversold/             # RSI oversold/overbought scanner (NEW)
+│   └── src/
+│       ├── types.ts      # Type definitions
+│       ├── scanner.ts    # Internal RSI scanning
+│       ├── oversold-lol.ts # External API stub (blocked)
+│       ├── routes.ts     # API routes
+│       └── index.ts      # Entry point
+├── volume-scanner/       # Volume spike detection
 │   └── src/
 │       ├── types.ts      # Type definitions
 │       ├── tokens.ts     # Tracked token list

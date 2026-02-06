@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free your mind — AI trading calls for Solana. Real-time trading signals powered by technical analysis.">
+  <meta name="theme-color" content="#0a0b0d">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="Trading Caller — AI Trading Signals">
+  <meta property="og:description" content="Free your mind — AI trading calls for Solana">
+  <meta property="og:type" content="website">
+  
+  <title>Trading Caller — AI Trading Signals for Solana</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="/" class="logo">
+        <img src="assets/logo.svg" alt="Trading Caller" />
+      </a>
+      
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span id="last-update">Live</span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main Content -->
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span class="hero-badge-icon">🤖</span>
+          <span>Powered by AI Analysis</span>
+        </div>
+        
+        <h1><span class="text-white">Trading</span><span class="text-gradient">Caller</span></h1>
+        <p class="hero-tagline">Free your mind — AI trading calls for Solana</p>
+        
+        <!-- Controls -->
+        <div class="controls">
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="ALL">All</button>
+            <button class="filter-btn" data-filter="LONG">Long</button>
+            <button class="filter-btn" data-filter="SHORT">Short</button>
+          </div>
+          
+          <select id="sort-select" class="sort-select">
+            <option value="confidence">Sort by Confidence</option>
+            <option value="timestamp">Sort by Time</option>
+            <option value="risk">Sort by Risk (Low first)</option>
+          </select>
+        </div>
+        
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-item">
+            <div class="stat-value" id="total-signals">—</div>
+            <div class="stat-label">Active Signals</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value long" id="long-count">—</div>
+            <div class="stat-label">Long Positions</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value short" id="short-count">—</div>
+            <div class="stat-label">Short Positions</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Signals Grid -->
+    <section class="container">
+      <div class="signals-grid" id="signals-grid">
+        <!-- Signals will be rendered here by JavaScript -->
+        <div class="loading" style="grid-column: 1 / -1;">
+          <div class="loading-spinner"></div>
+          <p>Loading signals...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>⚠️ Not financial advice. Trade at your own risk.</p>
+      <p style="margin-top: 8px;">
+        Built with 💜 by <a href="#">Trading Caller</a> • 
+        Auto-refreshes every 30 seconds
+      </p>
+    </div>
+  </footer>
+  
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+  
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
