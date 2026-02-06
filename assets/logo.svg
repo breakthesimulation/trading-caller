@@ -1,0 +1,13 @@
+<svg width="180" height="48" viewBox="0 0 180 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon -->
+  <rect width="48" height="48" rx="14" fill="#E9E3FF"/>
+  <path d="M16 32 L24 16 L32 32" stroke="#7B61FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M12 26 L18 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30 26 L36 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="24" cy="14" r="3" fill="#22C55E"/>
+  <circle cx="12" cy="26" r="2" fill="#AB9FF2"/>
+  <circle cx="36" cy="26" r="2" fill="#AB9FF2"/>
+  
+  <!-- Text: Trading Caller -->
+  <text x="58" y="31" font-family="Inter, -apple-system, sans-serif" font-size="18" font-weight="700" fill="#1A1A1A">Trading Caller</text>
+</svg>

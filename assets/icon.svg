@@ -1,0 +1,13 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="48" height="48" rx="14" fill="#E9E3FF"/>
+  <!-- Trading signal arrow -->
+  <path d="M16 32 L24 16 L32 32" stroke="#7B61FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Signal lines -->
+  <path d="M12 26 L18 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30 26 L36 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+  <!-- Top signal dot -->
+  <circle cx="24" cy="14" r="3" fill="#22C55E"/>
+  <!-- Side dots -->
+  <circle cx="12" cy="26" r="2" fill="#AB9FF2"/>
+  <circle cx="36" cy="26" r="2" fill="#AB9FF2"/>
+</svg>

@@ -4,6 +4,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
+import { serveStatic } from '@hono/node-server/serve-static';
 import 'dotenv/config';
 
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
@@ -80,8 +81,17 @@ app.route('/', volumeRoutes);
 // Mount RSI scanner routes
 app.route('/', rsiRoutes);
 
-// Health check
-app.get('/', (c) => {
+// ============ STATIC FILES ============
+// Serve frontend files from project root
+app.get('/app.js', serveStatic({ path: './app.js' }));
+app.get('/styles.css', serveStatic({ path: './styles.css' }));
+app.get('/assets/*', serveStatic({ root: './' }));
+
+// Serve index.html for root and unknown routes (SPA fallback)
+app.get('/', serveStatic({ path: './index.html' }));
+
+// Health/status check (moved to /api)
+app.get('/api', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
