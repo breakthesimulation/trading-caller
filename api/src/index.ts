@@ -13,6 +13,9 @@ import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-en
 import performanceRoutes from './performance-routes.js';
 import { performanceScheduler, performanceTracker } from '../../performance/index.js';
 
+// Volume scanner module
+import volumeRoutes, { getScanner } from '../../volume-scanner/src/routes.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -68,12 +71,15 @@ const webhooks: Map<string, string[]> = new Map();
 // Mount performance routes
 app.route('/', performanceRoutes);
 
+// Mount volume scanner routes
+app.route('/', volumeRoutes);
+
 // Health check
 app.get('/', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
-    version: '1.2.0',
+    version: '1.3.0',
     status: 'operational',
     endpoints: {
       // Signal generation
@@ -81,12 +87,22 @@ app.get('/', (c) => {
       history: '/signals/history',
       analysis: '/tokens/:symbol/analysis',
       
-      // Performance tracking (NEW)
+      // Performance tracking
       performance: '/signals/performance',
       signalStatus: '/signals/:id/status',
       trackedSignals: '/signals/tracked',
       tokenLeaderboard: '/leaderboard/tokens',
       tokenPerformance: '/leaderboard/tokens/:symbol',
+      
+      // Volume Scanner (NEW)
+      volumeStatus: '/volume/status',
+      volumeTop: '/volume/top',
+      volumeSpikes: '/volume/spikes',
+      volumeBaselines: '/volume/baselines',
+      volumeSubscribe: 'POST /volume/alerts/subscribe',
+      volumeScan: 'POST /volume/scan',
+      volumeStart: 'POST /volume/start',
+      volumeStop: 'POST /volume/stop',
       
       // Funding & squeeze
       funding: '/funding',
@@ -720,6 +736,16 @@ setTimeout(async () => {
     // Start performance scheduler (every 10 minutes price checks)
     console.log('[API] Starting performance scheduler...');
     performanceScheduler.start();
+    
+    // Initialize and start volume scanner
+    console.log('[API] Initializing volume scanner...');
+    try {
+      const volumeScanner = await getScanner();
+      volumeScanner.start();
+      console.log('[API] Volume scanner started (scanning every 5 minutes)');
+    } catch (volumeError) {
+      console.error('[API] Volume scanner initialization failed (non-fatal):', volumeError);
+    }
     
     // Always start scheduler if available (for market scans, learning, etc.)
     if (scheduler?.start) {

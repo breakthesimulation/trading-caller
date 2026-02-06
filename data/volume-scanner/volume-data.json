@@ -1,0 +1,168 @@
+{
+  "baselines": {
+    "So11111111111111111111111111111111111111112": {
+      "tokenAddress": "So11111111111111111111111111111111111111112",
+      "symbol": "SOL",
+      "avgHourlyVolume": 18345180.767500002,
+      "avgHourlyTxns": 8905.875,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN": {
+      "tokenAddress": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
+      "symbol": "JUP",
+      "avgHourlyVolume": 109115.07583333332,
+      "avgHourlyTxns": 1195.4583333333333,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263": {
+      "tokenAddress": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+      "symbol": "BONK",
+      "avgHourlyVolume": 892.9558333333333,
+      "avgHourlyTxns": 39.583333333333336,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm": {
+      "tokenAddress": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+      "symbol": "WIF",
+      "avgHourlyVolume": 66116.96125000001,
+      "avgHourlyTxns": 126.04166666666667,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3": {
+      "tokenAddress": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
+      "symbol": "PYTH",
+      "avgHourlyVolume": 14499.622916666667,
+      "avgHourlyTxns": 74.41666666666667,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL": {
+      "tokenAddress": "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
+      "symbol": "JTO",
+      "avgHourlyVolume": 17101.46625,
+      "avgHourlyTxns": 104.45833333333333,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R": {
+      "tokenAddress": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+      "symbol": "RAY",
+      "avgHourlyVolume": 108282.43125000001,
+      "avgHourlyTxns": 377.125,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE": {
+      "tokenAddress": "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
+      "symbol": "ORCA",
+      "avgHourlyVolume": 11605.010833333334,
+      "avgHourlyTxns": 189.45833333333334,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82": {
+      "tokenAddress": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+      "symbol": "BOME",
+      "avgHourlyVolume": 87405.39041666668,
+      "avgHourlyTxns": 159.20833333333334,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr": {
+      "tokenAddress": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+      "symbol": "POPCAT",
+      "avgHourlyVolume": 48670.17249999999,
+      "avgHourlyTxns": 170.20833333333334,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5": {
+      "tokenAddress": "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
+      "symbol": "MEW",
+      "avgHourlyVolume": 50938.75541666666,
+      "avgHourlyTxns": 161.875,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN": {
+      "tokenAddress": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
+      "symbol": "TRUMP",
+      "avgHourlyVolume": 2627228.3233333332,
+      "avgHourlyTxns": 414.9583333333333,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P": {
+      "tokenAddress": "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P",
+      "symbol": "MELANIA",
+      "avgHourlyVolume": 7087.299166666667,
+      "avgHourlyTxns": 24.041666666666668,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC": {
+      "tokenAddress": "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC",
+      "symbol": "AI16Z",
+      "avgHourlyVolume": 3515.5383333333334,
+      "avgHourlyTxns": 142.75,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv": {
+      "tokenAddress": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+      "symbol": "PENGU",
+      "avgHourlyVolume": 48236.11666666667,
+      "avgHourlyTxns": 87.625,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump": {
+      "tokenAddress": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+      "symbol": "FARTCOIN",
+      "avgHourlyVolume": 119631.71291666666,
+      "avgHourlyTxns": 336.5833333333333,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump": {
+      "tokenAddress": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+      "symbol": "GOAT",
+      "avgHourlyVolume": 25392.42375,
+      "avgHourlyTxns": 121.41666666666667,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump": {
+      "tokenAddress": "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump",
+      "symbol": "PNUT",
+      "avgHourlyVolume": 27944.04625,
+      "avgHourlyTxns": 96.08333333333333,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY": {
+      "tokenAddress": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
+      "symbol": "MOODENG",
+      "avgHourlyVolume": 23142.452083333334,
+      "avgHourlyTxns": 131.54166666666666,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    },
+    "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump": {
+      "tokenAddress": "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump",
+      "symbol": "CHILLGUY",
+      "avgHourlyVolume": 17477.927083333332,
+      "avgHourlyTxns": 161,
+      "lastUpdated": "2026-02-06T06:11:16.488Z",
+      "dataPoints": 1
+    }
+  },
+  "recentSpikes": [],
+  "sentAlerts": [],
+  "subscriptions": [],
+  "lastScan": "2026-02-06T06:11:16.488Z"
+}

@@ -94,6 +94,22 @@ GET  /learning/insights         AI-generated insights
 GET  /learning/patterns         Indicator & token patterns
 ```
 
+### Volume Scanner API (NEW)
+
+```
+GET  /volume/status             Scanner status & config
+GET  /volume/top                Top tokens by current volume
+GET  /volume/spikes             Recent volume spikes detected
+GET  /volume/baselines          Volume baseline data
+GET  /volume/tokens             Tracked tokens list
+POST /volume/scan               Trigger manual scan
+POST /volume/start              Start scheduled scanning
+POST /volume/stop               Stop scheduled scanning
+POST /volume/alerts/subscribe   Subscribe chat to Telegram alerts
+GET  /volume/alerts/subscribe/:chatId   Get subscription status
+DELETE /volume/alerts/subscribe/:chatId   Unsubscribe
+```
+
 ### Scheduler API
 
 ```
@@ -129,6 +145,76 @@ Tasks: `heartbeat`, `outcomeCheck`, `forumEngagement`, `marketScan`, `learning`
 }
 ```
 
+## Volume Spike Scanner
+
+The volume scanner monitors 20+ Solana tokens for unusual volume activity and sends Telegram alerts.
+
+### Features
+
+- **Real-time monitoring** — Scans every 5 minutes
+- **Spike detection** — Alerts when 1h volume is 2x+ the 24h average
+- **Classification** — Bullish/Bearish/Neutral based on price action
+- **Severity levels** — LOW, MEDIUM, HIGH, EXTREME
+- **Telegram alerts** — Instant notifications with DexScreener links
+- **Cooldown** — Max 1 alert per token per hour (no spam)
+
+### Setting Up Telegram Alerts
+
+1. **Create a Bot:**
+   - Open Telegram and search for `@BotFather`
+   - Send `/newbot` and follow the prompts
+   - Copy the token (format: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
+
+2. **Get Your Chat ID:**
+   - **For personal alerts:** Message `@userinfobot` or `@RawDataBot`
+   - **For group alerts:** Add `@RawDataBot` to your group and check the chat ID
+   - Chat IDs are positive for users, negative for groups
+
+3. **Configure Environment:**
+   ```bash
+   TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
+   TELEGRAM_CHAT_ID=123456789
+   ```
+
+4. **Subscribe via API (optional):**
+   ```bash
+   # Subscribe a chat
+   curl -X POST http://localhost:3000/volume/alerts/subscribe \
+     -H "Content-Type: application/json" \
+     -d '{"chatId": "123456789", "minSeverity": "MEDIUM"}'
+   ```
+
+### Volume Spike Alert Format
+
+```
+🚨 VOLUME SPIKE DETECTED 🟢
+
+BONK (Bonk)
+
+📊 Volume
+• Current 1h: $2.5M
+• Avg hourly: $500K
+• Spike: 5.0x (+400%)
+
+📈 Price
+• Current: $0.00001234
+• 1h change: +8.5%
+• 24h change: +15.2%
+
+🔄 Transactions (1h)
+• Buys: 1,234 | Sells: 567
+• B/S Ratio: 2.18x
+• Velocity: 3.2x
+
+Type: BULLISH | Severity: HIGH
+
+🔗 View on DexScreener
+```
+
+### Tracked Tokens
+
+SOL, JUP, BONK, WIF, PYTH, JTO, RAY, ORCA, BOME, POPCAT, MEW, TRUMP, MELANIA, AI16Z, PENGU, FARTCOIN, GOAT, PNUT, MOODENG, CHILLGUY
+
 ## Architecture
 
 ```
@@ -145,6 +231,17 @@ trading-caller/
 │   ├── tracker.ts        # Signal outcome tracking
 │   └── learner.ts        # Pattern analysis & insights
 ├── research-engine/      # Core market research & signals
+├── volume-scanner/       # Volume spike detection (NEW)
+│   └── src/
+│       ├── types.ts      # Type definitions
+│       ├── tokens.ts     # Tracked token list
+│       ├── dexscreener.ts # DexScreener API client
+│       ├── detector.ts   # Spike detection logic
+│       ├── telegram.ts   # Telegram notifications
+│       ├── storage.ts    # Baseline & alert storage
+│       ├── scanner.ts    # Main scanner module
+│       ├── routes.ts     # API routes
+│       └── index.ts      # Entry point
 ├── scoring/              # Prediction tracking & leaderboard
 ├── scripts/              # CLI utilities
 │   ├── hackathon-register.ts
@@ -168,6 +265,8 @@ trading-caller/
 |----------|----------|-------------|
 | `HACKATHON_API_KEY` | Yes* | Colosseum hackathon API key |
 | `ANTHROPIC_API_KEY` | No | Claude API for AI features |
+| `TELEGRAM_BOT_TOKEN` | No | Telegram bot token for alerts |
+| `TELEGRAM_CHAT_ID` | No | Default chat ID for alerts |
 | `PORT` | No | Server port (default: 3000) |
 
 *Required for hackathon participation
