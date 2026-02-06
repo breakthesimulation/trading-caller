@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trading Caller - AI Trading Calls for Solana</title>
+  <meta name="description" content="Free your mind — AI-powered trading signals, RSI scanner, volume alerts, and more for Solana.">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container header-content">
+      <a href="#" class="logo" onclick="showSection('signals'); return false;">
+        <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="14" fill="#E9E3FF"/>
+          <path d="M16 32 L24 16 L32 32" stroke="#7B61FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M12 26 L18 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+          <path d="M30 26 L36 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="24" cy="14" r="3" fill="#22C55E"/>
+          <circle cx="12" cy="26" r="2" fill="#AB9FF2"/>
+          <circle cx="36" cy="26" r="2" fill="#AB9FF2"/>
+        </svg>
+        Trading Caller
+      </a>
+      <nav class="nav" id="main-nav">
+        <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
+        <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
+        <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
+        <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
+        <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
+        <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
+      </nav>
+      <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation -->
+  <div class="mobile-nav" id="mobile-nav">
+    <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
+    <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
+    <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
+    <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
+    <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
+    <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <h1 id="hero-title">AI Trading Signals</h1>
+      <p id="hero-subtitle">Free your mind — AI-powered trading calls for Solana. Signals, volume alerts, RSI analysis, and more.</p>
+    </section>
+
+    <!-- ==================== SIGNALS SECTION ==================== -->
+    <section id="signals-section" class="page-section active">
+      <!-- Performance Stats -->
+      <div class="stats-grid" id="signals-stats">
+        <div class="stat-card highlight">
+          <div class="stat-value" id="stat-win-rate">--</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-avg-return">--</div>
+          <div class="stat-label">Avg Return</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total-signals">--</div>
+          <div class="stat-label">Total Signals</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-active">--</div>
+          <div class="stat-label">Active Now</div>
+        </div>
+      </div>
+
+      <!-- Latest Signals -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📡</span> Latest Signals</h2>
+          <button class="btn btn-ghost" onclick="refreshSignals()">↻ Refresh</button>
+        </div>
+        <div class="signals-grid" id="signals-grid">
+          <!-- Dynamic signal cards -->
+        </div>
+      </div>
+
+      <!-- Signal History -->
+      <div class="card card-cream">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📜</span> Signal History</h2>
+          <span class="table-count" id="signals-history-count">Loading...</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Type</th>
+                <th>Entry</th>
+                <th>Target</th>
+                <th>Stop</th>
+                <th>Result</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="signals-history-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VOLUME SECTION ==================== -->
+    <section id="volume-section" class="page-section">
+      <!-- Volume Stats -->
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-value" id="volume-status">--</div>
+          <div class="stat-label">Scanner Status</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="volume-tokens">--</div>
+          <div class="stat-label">Tokens Tracked</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="volume-spikes-count">--</div>
+          <div class="stat-label">Active Spikes</div>
+        </div>
+      </div>
+
+      <!-- Volume Spikes Alert -->
+      <div class="card card-purple">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">⚡</span> Volume Spikes</h2>
+          <span class="badge badge-warning">Live</span>
+        </div>
+        <div class="opportunities-grid" id="volume-spikes-grid">
+          <!-- Dynamic spike cards -->
+        </div>
+      </div>
+
+      <!-- Top Volume Tokens -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📊</span> Top Volume Tokens</h2>
+          <button class="btn btn-ghost" onclick="refreshVolume()">↻ Refresh</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>24h Volume</th>
+                <th>Volume Change</th>
+                <th>Price</th>
+                <th>Price Change</th>
+              </tr>
+            </thead>
+            <tbody id="volume-table-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== RSI SECTION ==================== -->
+    <section id="rsi-section" class="page-section">
+      <!-- Toggle -->
+      <div class="toggle-container">
+        <div class="toggle-group">
+          <button class="toggle-btn oversold active" data-mode="oversold">📈 Oversold</button>
+          <button class="toggle-btn overbought" data-mode="overbought">📉 Overbought</button>
+        </div>
+      </div>
+
+      <!-- Search Section -->
+      <div class="search-section">
+        <div class="search-row">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="rsi-search-input" placeholder="Search token (e.g., SOL, BONK, PEPE)">
+          </div>
+          <button class="scan-btn" id="rsi-scan-btn"><span>⚡</span> Scan</button>
+        </div>
+
+        <!-- RSI Slider -->
+        <div class="slider-section">
+          <span class="slider-label">RSI Threshold</span>
+          <div class="slider-wrapper">
+            <input type="range" class="rsi-slider" id="rsi-slider" min="10" max="50" value="30">
+          </div>
+          <span class="slider-value" id="rsi-value">30</span>
+        </div>
+      </div>
+
+      <!-- Extreme Opportunities -->
+      <div class="card card-purple">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">✨</span> Extreme Opportunities</h2>
+        </div>
+        <div class="opportunities-grid" id="rsi-opportunities-grid">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+
+      <!-- RSI Table -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📈</span> <span id="rsi-table-title">Most Oversold</span></h2>
+          <span class="table-count" id="rsi-table-count">Loading...</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Price</th>
+                <th>RSI</th>
+                <th>24h Change</th>
+                <th>Market Cap</th>
+              </tr>
+            </thead>
+            <tbody id="rsi-table-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FUNDING SECTION ==================== -->
+    <section id="funding-section" class="page-section">
+      <!-- Squeeze Alerts -->
+      <div class="card card-dark">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🔥</span> Squeeze Alerts</h2>
+          <span class="badge badge-danger">High Funding</span>
+        </div>
+        <div class="opportunities-grid" id="funding-squeeze-grid">
+          <!-- Dynamic squeeze alerts -->
+        </div>
+      </div>
+
+      <!-- Funding Rates Table -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">💰</span> Current Funding Rates</h2>
+          <button class="btn btn-ghost" onclick="refreshFunding()">↻ Refresh</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Token</th>
+                <th>Funding Rate</th>
+                <th>Predicted</th>
+                <th>Open Interest</th>
+                <th>Signal</th>
+              </tr>
+            </thead>
+            <tbody id="funding-table-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== UNLOCKS SECTION ==================== -->
+    <section id="unlocks-section" class="page-section">
+      <!-- Upcoming Unlocks -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🔓</span> Upcoming Token Unlocks</h2>
+          <button class="btn btn-ghost" onclick="refreshUnlocks()">↻ Refresh</button>
+        </div>
+        <div class="unlocks-list" id="unlocks-list">
+          <!-- Dynamic unlock cards -->
+        </div>
+      </div>
+
+      <!-- Unlocks Calendar View -->
+      <div class="card card-cream">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📅</span> Unlock Calendar</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Token</th>
+                <th>Amount</th>
+                <th>% of Supply</th>
+                <th>Value (USD)</th>
+                <th>Impact</th>
+              </tr>
+            </thead>
+            <tbody id="unlocks-table-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== LEADERBOARD SECTION ==================== -->
+    <section id="leaderboard-section" class="page-section">
+      <!-- Top Performers -->
+      <div class="card card-purple">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🏆</span> Top Performing Tokens</h2>
+        </div>
+        <div class="leaderboard-podium" id="leaderboard-podium">
+          <!-- Top 3 tokens -->
+        </div>
+      </div>
+
+      <!-- Token Leaderboard -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📊</span> Token Rankings</h2>
+          <div class="toggle-group toggle-sm">
+            <button class="toggle-btn active" data-period="24h">24h</button>
+            <button class="toggle-btn" data-period="7d">7d</button>
+            <button class="toggle-btn" data-period="30d">30d</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Token</th>
+                <th>Price</th>
+                <th>Change</th>
+                <th>Volume</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-table-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Signal Performance -->
+      <div class="card card-dark">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🎯</span> Signal Leaderboard</h2>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Token</th>
+                <th>Signal Type</th>
+                <th>Signals</th>
+                <th>Win Rate</th>
+                <th>Avg Return</th>
+              </tr>
+            </thead>
+            <tbody id="signal-leaderboard-body">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Token Detail Modal -->
+  <div class="modal-overlay" id="token-modal" style="display: none;">
+    <div class="modal-content">
+      <!-- Dynamic content loaded by JS -->
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>Trading Caller — Free your mind. Not financial advice. DYOR.</p>
+      <p style="margin-top: 8px; opacity: 0.6;">AI-powered signals for Solana</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
