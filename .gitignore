@@ -7,6 +7,13 @@ dist/
 coverage/
 *.local
 
+# Data files (runtime generated)
+data/tracked_signals.json
+data/calls.json
+data/forum_posts.json
+data/learning_weights.json
+data/project_votes.json
+
 # Anchor / Solana
 target/
 .anchor/

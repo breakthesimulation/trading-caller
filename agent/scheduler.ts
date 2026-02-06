@@ -14,6 +14,7 @@ import heartbeat from './heartbeat.js';
 import forum from './forum.js';
 import { tracker, learner } from '../learning/index.js';
 import { TradingCallerEngine } from '../research-engine/src/index.js';
+import { performanceTracker } from '../performance/index.js';
 
 interface SchedulerState {
   started: boolean;
@@ -96,6 +97,12 @@ async function runMarketScanTask(): Promise<void> {
     
     // Record all generated signals for outcome tracking
     for (const signal of signals) {
+      // Skip HOLD/AVOID signals - only track actionable ones
+      if (signal.action === 'HOLD' || signal.action === 'AVOID') {
+        continue;
+      }
+      
+      // Track with legacy tracker (for backward compatibility)
       tracker.recordSignal({
         id: signal.id,
         token: signal.token,
@@ -108,9 +115,28 @@ async function runMarketScanTask(): Promise<void> {
         reasoning: signal.reasoning?.technical,
         indicators: signal.indicators || {},
       });
+      
+      // Track with new performance tracker (for detailed tracking)
+      const trackedSignal = performanceTracker.trackSignal({
+        id: signal.id,
+        token: signal.token,
+        action: signal.action as 'LONG' | 'SHORT',
+        entry: signal.entry,
+        targets: signal.targets,
+        stopLoss: signal.stopLoss,
+        confidence: signal.confidence,
+        timeframe: signal.timeframe,
+        reasoning: signal.reasoning?.technical,
+        indicators: signal.indicators || {},
+      });
+      
+      if (!trackedSignal) {
+        console.log(`[Scheduler] Signal ${signal.id} for ${signal.token.symbol} was rejected (invalid data)`);
+      }
     }
     
-    console.log(`[Scheduler] Market scan complete: ${signals.length} signals generated`);
+    const actionableSignals = signals.filter(s => s.action !== 'HOLD' && s.action !== 'AVOID');
+    console.log(`[Scheduler] Market scan complete: ${signals.length} signals generated, ${actionableSignals.length} actionable`);
   } catch (error) {
     console.error('[Scheduler] Market scan task failed:', error);
   }

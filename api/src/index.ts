@@ -9,6 +9,10 @@ import 'dotenv/config';
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../research-engine/src/index.js';
 import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-engine/src/signals/types.js';
 
+// Performance tracking module
+import performanceRoutes from './performance-routes.js';
+import { performanceScheduler, performanceTracker } from '../../performance/index.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -61,20 +65,35 @@ const webhooks: Map<string, string[]> = new Map();
 
 // ============ PUBLIC ENDPOINTS ============
 
+// Mount performance routes
+app.route('/', performanceRoutes);
+
 // Health check
 app.get('/', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
-    version: '1.1.0',
+    version: '1.2.0',
     status: 'operational',
     endpoints: {
+      // Signal generation
       signals: '/signals/latest',
       history: '/signals/history',
       analysis: '/tokens/:symbol/analysis',
+      
+      // Performance tracking (NEW)
+      performance: '/signals/performance',
+      signalStatus: '/signals/:id/status',
+      trackedSignals: '/signals/tracked',
+      tokenLeaderboard: '/leaderboard/tokens',
+      tokenPerformance: '/leaderboard/tokens/:symbol',
+      
+      // Funding & squeeze
       funding: '/funding',
       fundingByToken: '/funding/:symbol',
       squeezeAlerts: '/funding/alerts/squeeze',
+      
+      // Other
       unlocks: '/unlocks/upcoming',
       leaderboard: '/leaderboard',
       subscribe: 'POST /subscribe',
@@ -335,10 +354,38 @@ app.post('/market/scan', async (c) => {
     console.log('[API] Triggering manual market scan...');
     const signals = await engine.scan();
     
+    // Track actionable signals with performance tracker
+    let tracked = 0;
+    for (const signal of signals) {
+      if (signal.action === 'HOLD' || signal.action === 'AVOID') {
+        continue;
+      }
+      
+      const trackedSignal = performanceTracker.trackSignal({
+        id: signal.id,
+        token: signal.token,
+        action: signal.action as 'LONG' | 'SHORT',
+        entry: signal.entry,
+        targets: signal.targets,
+        stopLoss: signal.stopLoss,
+        confidence: signal.confidence,
+        timeframe: signal.timeframe,
+        reasoning: signal.reasoning?.technical,
+        indicators: signal.indicators || {},
+      });
+      
+      if (trackedSignal) {
+        tracked++;
+      }
+    }
+    
+    console.log(`[API] Market scan complete: ${signals.length} signals, ${tracked} tracked`);
+    
     return c.json({
       success: true,
       message: 'Market scan completed',
       signalsGenerated: signals.length,
+      signalsTracked: tracked,
       topSignals: signals.slice(0, 5).map(s => ({
         token: s.token.symbol,
         action: s.action,
@@ -670,9 +717,13 @@ setTimeout(async () => {
   try {
     await loadOptionalModules();
     
+    // Start performance scheduler (every 10 minutes price checks)
+    console.log('[API] Starting performance scheduler...');
+    performanceScheduler.start();
+    
     // Always start scheduler if available (for market scans, learning, etc.)
     if (scheduler?.start) {
-      console.log('[API] Starting scheduler...');
+      console.log('[API] Starting main scheduler...');
       scheduler.start();
     }
     
