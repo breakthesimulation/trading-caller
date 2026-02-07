@@ -20,6 +20,9 @@ import volumeRoutes, { getScanner } from '../../volume-scanner/src/routes.js';
 // RSI oversold/overbought scanner
 import { rsiRoutes } from '../../oversold/src/index.js';
 
+// Backtesting module
+import { backtestRoutes } from '../../backtesting/src/index.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -80,6 +83,9 @@ app.route('/', volumeRoutes);
 
 // Mount RSI scanner routes
 app.route('/', rsiRoutes);
+
+// Mount backtesting routes
+app.route('/', backtestRoutes);
 
 // ============ STATIC FILES ============
 // Serve frontend files from project root

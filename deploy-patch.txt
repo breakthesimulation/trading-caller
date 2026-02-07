@@ -1,0 +1,8 @@
+mutation DeployService {
+  serviceDeploy(input: {
+    serviceId: "fc41e7a1-5d69-46b7-b884-203172fecacc"
+  }) {
+    id
+    status
+  }
+}

@@ -110,7 +110,46 @@ GET  /volume/alerts/subscribe/:chatId   Get subscription status
 DELETE /volume/alerts/subscribe/:chatId   Unsubscribe
 ```
 
-### RSI Scanner API (NEW)
+### Backtesting API (NEW)
+
+```
+GET  /backtest/strategies       List all available strategies
+POST /backtest/run              Run a single backtest
+POST /backtest/batch            Run multiple backtests
+GET  /backtest/results          View all backtest results
+GET  /backtest/results/:id      Get specific backtest details
+GET  /backtest/analysis/strategies   Best performing strategies
+GET  /backtest/analysis/symbols/:symbol  Stats for specific token
+GET  /backtest/health            System status
+```
+
+**Strategies Available:**
+- RSI Oversold Long - Buy when RSI < 30
+- RSI Extreme Oversold - Buy when RSI < 25
+- RSI Overbought Short - Short when RSI > 70
+- RSI + Trend Alignment - Only buy oversold when trend is bullish
+- MACD Crossover - Momentum-based entries
+- RSI + MACD Combined - Multi-indicator confirmation
+- Conservative RSI - Tight stops, modest targets
+- Aggressive RSI - Wide stops, large targets
+
+**Example Usage:**
+```bash
+# Run a backtest
+curl -X POST http://localhost:3000/backtest/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "symbol": "SOL",
+    "address": "So11111111111111111111111111111111111111112",
+    "strategyName": "RSI Oversold Long",
+    "timeframe": "4H"
+  }'
+
+# Get best strategies
+curl http://localhost:3000/backtest/analysis/strategies
+```
+
+### RSI Scanner API
 
 ```
 GET  /rsi/status                Scanner status & thresholds
@@ -296,12 +335,20 @@ trading-caller/
 │   ├── brain.ts          # AI brain (Claude)
 │   └── scheduler.ts      # Cron job management
 ├── api/                  # REST API server
+├── backtesting/          # Backtesting system (NEW)
+│   └── src/
+│       ├── types.ts      # Type definitions
+│       ├── engine.ts     # Backtesting engine
+│       ├── database.ts   # SQLite storage
+│       ├── strategies.ts # Predefined strategies
+│       ├── routes.ts     # API routes
+│       └── index.ts      # Entry point
 ├── db/                   # SQLite database
 ├── learning/             # Outcome tracking & self-improvement
 │   ├── tracker.ts        # Signal outcome tracking
 │   └── learner.ts        # Pattern analysis & insights
 ├── research-engine/      # Core market research & signals
-├── oversold/             # RSI oversold/overbought scanner (NEW)
+├── oversold/             # RSI oversold/overbought scanner
 │   └── src/
 │       ├── types.ts      # Type definitions
 │       ├── scanner.ts    # Internal RSI scanning
@@ -322,8 +369,12 @@ trading-caller/
 ├── scoring/              # Prediction tracking & leaderboard
 ├── scripts/              # CLI utilities
 │   ├── hackathon-register.ts
-│   └── hackathon-status.ts
-└── programs/             # Solana on-chain (Anchor)
+│   ├── hackathon-status.ts
+│   └── run-backtests.ts  # Run comprehensive backtests
+├── programs/             # Solana on-chain (Anchor)
+├── STRATEGY.md           # Trading strategy guide
+├── BACKTEST_RESULTS.md   # Backtesting findings
+└── README.md             # You are here
 ```
 
 ## Scheduled Tasks
