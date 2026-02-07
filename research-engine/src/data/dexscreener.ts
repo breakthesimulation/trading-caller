@@ -142,6 +142,7 @@ export async function getTokenPrice(address: string): Promise<number | null> {
 
 /**
  * Get token overview
+ * FIXED: Ensure we return the correct token, not the quote token (USDC/USDT)
  */
 export async function getTokenOverview(address: string): Promise<TokenInfo | null> {
   try {
@@ -150,10 +151,21 @@ export async function getTokenOverview(address: string): Promise<TokenInfo | nul
     
     const p = pairs[0]; // Most liquid pair
     
+    // CRITICAL FIX: Determine which token in the pair matches our input address
+    // Sometimes baseToken is USDC/USDT and we want the quoteToken, and vice versa
+    const targetToken = p.baseToken.address.toLowerCase() === address.toLowerCase() 
+      ? p.baseToken 
+      : p.quoteToken;
+    
+    // If neither matches (shouldn't happen), fall back to baseToken
+    const token = targetToken.address.toLowerCase() === address.toLowerCase() 
+      ? targetToken 
+      : p.baseToken;
+    
     return {
-      address: p.baseToken.address,
-      symbol: p.baseToken.symbol,
-      name: p.baseToken.name,
+      address: address, // Use the input address to ensure consistency
+      symbol: token.symbol,
+      name: token.name,
       price: parseFloat(p.priceUsd) || 0,
       priceChange24h: p.priceChange?.h24 || 0,
       volume24h: p.volume?.h24 || 0,

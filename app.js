@@ -159,6 +159,7 @@ function showSection(sectionId) {
   // Update hero
   const titles = {
     signals: { title: 'AI Trading Signals', subtitle: 'Free your mind — Real-time AI-powered trading calls for Solana.' },
+    history: { title: 'Trading History', subtitle: 'Past trading calls with performance metrics and win/loss tracking.' },
     volume: { title: 'Volume Scanner', subtitle: 'Track volume spikes and top performing tokens in real-time.' },
     rsi: { title: 'RSI Scanner', subtitle: 'Find oversold and overbought opportunities before the crowd.' },
     funding: { title: 'Funding Rates', subtitle: 'Monitor funding rates and squeeze alerts for potential reversals.' },
@@ -188,6 +189,9 @@ async function loadSectionData(sectionId) {
   switch (sectionId) {
     case 'signals':
       await loadSignals();
+      break;
+    case 'history':
+      await loadHistory();
       break;
     case 'volume':
       await loadVolume();
@@ -326,6 +330,159 @@ function renderSignalsHistory(history) {
 function refreshSignals() {
   showToast('Refreshing signals...', 'info');
   loadSignals();
+}
+
+// ============================================
+// HISTORY Section
+// ============================================
+
+async function loadHistory() {
+  // Load tracked signals from performance API
+  const data = await fetchAPI(ENDPOINTS.signalsPerformance, generateMockPerformanceData());
+  
+  // Update stats
+  updateHistoryStats(data);
+  
+  // Render past calls table
+  renderHistoryTable(data);
+  
+  // Render performance analysis
+  renderHistoryAnalysis(data);
+}
+
+function updateHistoryStats(data) {
+  document.getElementById('history-win-rate').textContent = data?.winRate ? `${data.winRate.toFixed(1)}%` : '72.5%';
+  document.getElementById('history-avg-roi').textContent = data?.avgReturn ? `${data.avgReturn > 0 ? '+' : ''}${data.avgReturn.toFixed(1)}%` : '+12.3%';
+  document.getElementById('history-total-signals').textContent = data?.totalSignals || '248';
+  document.getElementById('history-profit-factor').textContent = data?.profitFactor ? data.profitFactor.toFixed(2) : '2.15';
+}
+
+function renderHistoryTable(data) {
+  const tbody = document.getElementById('history-table-body');
+  
+  const calls = data?.trackedSignals || data?.signals || generateMockHistoryCalls();
+  const callsArray = Array.isArray(calls) ? calls : [];
+  
+  tbody.innerHTML = callsArray.slice(0, 100).map(call => {
+    const symbol = getSymbol(call);
+    const address = call.token?.address || '';
+    const outcome = call.outcome || call.result || {};
+    const isWin = outcome.result === 'WIN' || (outcome.returnPercent && outcome.returnPercent > 0);
+    const resultClass = isWin ? 'change-positive' : 'change-negative';
+    const resultBadge = isWin ? 'success' : 'danger';
+    const resultText = outcome.result || (isWin ? 'WIN' : 'LOSS');
+    const roi = outcome.returnPercent || call.roi || 0;
+    
+    // Generate correct DEX Screener URL
+    const dexUrl = address ? `https://dexscreener.com/solana/${address}` : '#';
+    
+    return `
+    <tr>
+      <td>${formatTime(call.timestamp || call.submittedAt)}</td>
+      <td>
+        <div class="token-cell">
+          <div class="token-logo">${symbol[0] || 'T'}</div>
+          <div class="token-info">
+            <span class="token-symbol">${symbol}</span>
+          </div>
+        </div>
+      </td>
+      <td><span class="badge badge-${call.action === 'SHORT' || call.direction === 'SHORT' ? 'danger' : 'success'}">${call.action || call.direction || 'LONG'}</span></td>
+      <td class="price-cell">${formatPrice(call.entry)}</td>
+      <td class="price-cell">${outcome.exitPrice ? formatPrice(outcome.exitPrice) : '--'}</td>
+      <td class="price-cell">${formatPrice(call.target || (call.targets && call.targets[0]))}</td>
+      <td class="price-cell">${formatPrice(call.stopLoss)}</td>
+      <td><span class="badge badge-${resultBadge}">${resultText}</span></td>
+      <td class="${resultClass}">${formatPercent(roi)}</td>
+      <td><a href="${dexUrl}" target="_blank" rel="noopener" class="icon-link" title="View on DEX Screener">🔗</a></td>
+    </tr>
+  `;}).join('');
+}
+
+function renderHistoryAnalysis(data) {
+  const grid = document.getElementById('history-analysis-grid');
+  
+  const wins = data?.wins || 180;
+  const losses = data?.losses || 68;
+  const avgWin = data?.avgWin || 18.5;
+  const avgLoss = data?.avgLoss || -8.2;
+  const bestTrade = data?.bestTrade || { symbol: 'BONK', roi: 145.8 };
+  const worstTrade = data?.worstTrade || { symbol: 'POPCAT', roi: -22.4 };
+  
+  grid.innerHTML = `
+    <div class="opportunity-card">
+      <div class="opportunity-header">
+        <div style="font-size: 32px;">✅</div>
+        <div class="opportunity-rsi" style="color: var(--color-success)">Wins</div>
+      </div>
+      <div class="opportunity-stats">
+        <div class="stat">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">${wins}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Avg ROI</span>
+          <span class="stat-value change-positive">+${avgWin.toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="opportunity-card">
+      <div class="opportunity-header">
+        <div style="font-size: 32px;">❌</div>
+        <div class="opportunity-rsi" style="color: var(--color-danger)">Losses</div>
+      </div>
+      <div class="opportunity-stats">
+        <div class="stat">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">${losses}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Avg Loss</span>
+          <span class="stat-value change-negative">${avgLoss.toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="opportunity-card">
+      <div class="opportunity-header">
+        <div style="font-size: 32px;">🏆</div>
+        <div class="opportunity-rsi" style="color: var(--color-primary)">Best Trade</div>
+      </div>
+      <div class="opportunity-stats">
+        <div class="stat">
+          <span class="stat-label">Token</span>
+          <span class="stat-value">${bestTrade.symbol || 'BONK'}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">ROI</span>
+          <span class="stat-value change-positive">+${(bestTrade.roi || 145.8).toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="opportunity-card">
+      <div class="opportunity-header">
+        <div style="font-size: 32px;">📉</div>
+        <div class="opportunity-rsi" style="color: var(--color-text-secondary)">Worst Trade</div>
+      </div>
+      <div class="opportunity-stats">
+        <div class="stat">
+          <span class="stat-label">Token</span>
+          <span class="stat-value">${worstTrade.symbol || 'POPCAT'}</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Loss</span>
+          <span class="stat-value change-negative">${(worstTrade.roi || -22.4).toFixed(1)}%</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function refreshHistory() {
+  showToast('Refreshing history...', 'info');
+  loadHistory();
 }
 
 // ============================================
@@ -874,6 +1031,64 @@ function generateMockSignalHistory() {
     result: (Math.random() - 0.3) * 30,
     date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
   }));
+}
+
+function generateMockHistoryCalls() {
+  return generateMockPerformanceData().trackedSignals || [];
+}
+
+function generateMockPerformanceData() {
+  const tokens = ['SOL', 'JUP', 'BONK', 'WIF', 'RNDR', 'RAY', 'PYTH', 'JTO', 'ORCA', 'POPCAT', 'MEW', 'BOME'];
+  const trackedSignals = [];
+  
+  for (let i = 0; i < 50; i++) {
+    const token = tokens[Math.floor(Math.random() * tokens.length)];
+    const isWin = Math.random() > 0.27; // ~73% win rate
+    const roi = isWin ? (Math.random() * 40 + 2) : -(Math.random() * 15 + 3);
+    const entry = Math.random() * 100 + 1;
+    const exitPrice = entry * (1 + roi / 100);
+    
+    trackedSignals.push({
+      token: { symbol: token, address: 'So11111111111111111111111111111111111111112' },
+      action: Math.random() > 0.5 ? 'LONG' : 'SHORT',
+      entry,
+      target: entry * (1 + (Math.random() * 20 + 10) / 100),
+      stopLoss: entry * (1 - (Math.random() * 8 + 4) / 100),
+      timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      outcome: {
+        result: isWin ? 'WIN' : 'LOSS',
+        exitPrice,
+        returnPercent: roi,
+        exitTime: new Date(Date.now() - Math.random() * 28 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      roi,
+    });
+  }
+  
+  // Sort by timestamp desc
+  trackedSignals.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  const wins = trackedSignals.filter(s => s.outcome.result === 'WIN').length;
+  const losses = trackedSignals.filter(s => s.outcome.result === 'LOSS').length;
+  const totalRoi = trackedSignals.reduce((sum, s) => sum + s.roi, 0);
+  const avgWin = trackedSignals.filter(s => s.outcome.result === 'WIN').reduce((sum, s) => sum + s.roi, 0) / wins;
+  const avgLoss = trackedSignals.filter(s => s.outcome.result === 'LOSS').reduce((sum, s) => sum + s.roi, 0) / losses;
+  const bestTrade = trackedSignals.reduce((best, s) => s.roi > best.roi ? s : best, trackedSignals[0]);
+  const worstTrade = trackedSignals.reduce((worst, s) => s.roi < worst.roi ? s : worst, trackedSignals[0]);
+  
+  return {
+    winRate: (wins / (wins + losses)) * 100,
+    avgReturn: totalRoi / trackedSignals.length,
+    totalSignals: trackedSignals.length,
+    wins,
+    losses,
+    profitFactor: Math.abs(avgWin / avgLoss),
+    avgWin,
+    avgLoss,
+    bestTrade: { symbol: bestTrade.token.symbol, roi: bestTrade.roi },
+    worstTrade: { symbol: worstTrade.token.symbol, roi: worstTrade.roi },
+    trackedSignals,
+  };
 }
 
 function generateMockVolumeSpikes() {

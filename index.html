@@ -26,6 +26,7 @@
       </a>
       <nav class="nav" id="main-nav">
         <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
+        <a href="#history" class="nav-link" data-section="history">📜 History</a>
         <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
         <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
         <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
@@ -39,6 +40,7 @@
   <!-- Mobile Navigation -->
   <div class="mobile-nav" id="mobile-nav">
     <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
+    <a href="#history" class="nav-link" data-section="history">📜 History</a>
     <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
     <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
     <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
@@ -87,29 +89,70 @@
         </div>
       </div>
 
-      <!-- Signal History -->
-      <div class="card card-cream">
+    </section>
+
+    <!-- ==================== HISTORY SECTION ==================== -->
+    <section id="history-section" class="page-section">
+      <!-- Performance Summary -->
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-value" id="history-win-rate">--</div>
+          <div class="stat-label">Overall Win Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="history-avg-roi">--</div>
+          <div class="stat-label">Average ROI</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="history-total-signals">--</div>
+          <div class="stat-label">Total Calls</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="history-profit-factor">--</div>
+          <div class="stat-label">Profit Factor</div>
+        </div>
+      </div>
+
+      <!-- Past Trading Calls -->
+      <div class="card">
         <div class="card-header">
-          <h2 class="card-title"><span class="icon">📜</span> Signal History</h2>
-          <span class="table-count" id="signals-history-count">Loading...</span>
+          <h2 class="card-title"><span class="icon">📜</span> Past Trading Calls</h2>
+          <div class="toggle-group toggle-sm">
+            <button class="toggle-btn active" data-filter="all">All</button>
+            <button class="toggle-btn" data-filter="wins">Wins</button>
+            <button class="toggle-btn" data-filter="losses">Losses</button>
+          </div>
         </div>
         <div class="table-wrapper">
           <table class="data-table">
             <thead>
               <tr>
+                <th>Time</th>
                 <th>Token</th>
                 <th>Type</th>
                 <th>Entry</th>
+                <th>Exit</th>
                 <th>Target</th>
                 <th>Stop</th>
                 <th>Result</th>
-                <th>Date</th>
+                <th>ROI</th>
+                <th>Link</th>
               </tr>
             </thead>
-            <tbody id="signals-history-body">
+            <tbody id="history-table-body">
               <!-- Dynamic content -->
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Win/Loss Analysis -->
+      <div class="card card-purple">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">📊</span> Performance Analysis</h2>
+        </div>
+        <div class="opportunities-grid" id="history-analysis-grid">
+          <!-- Dynamic analysis cards -->
         </div>
       </div>
     </section>
