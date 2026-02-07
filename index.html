@@ -7,6 +7,7 @@
   <meta name="description" content="Free your mind — AI-powered trading signals, RSI scanner, volume alerts, and more for Solana.">
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="rsi-enhancements.css">
 </head>
 <body>
   <!-- Header -->
@@ -213,11 +214,20 @@
 
     <!-- ==================== RSI SECTION ==================== -->
     <section id="rsi-section" class="page-section">
+      <!-- Stats Summary -->
+      <div class="rsi-stats-container" id="rsi-stats">
+        <!-- Dynamic stats -->
+      </div>
+      
       <!-- Toggle -->
       <div class="toggle-container">
         <div class="toggle-group">
           <button class="toggle-btn oversold active" data-mode="oversold">📈 Oversold</button>
           <button class="toggle-btn overbought" data-mode="overbought">📉 Overbought</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+          <button class="btn btn-secondary btn-sm" id="rsi-auto-refresh-btn" onclick="toggleRSIAutoRefresh()">⏸️ Auto</button>
+          <span class="text-muted" id="rsi-last-scan" style="font-size: 12px;">Last scan: --:--</span>
         </div>
       </div>
 

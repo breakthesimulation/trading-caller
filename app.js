@@ -590,12 +590,75 @@ function refreshVolume() {
 // RSI Section
 // ============================================
 
+let rsiAutoRefresh = null;
+
 async function loadRSI() {
-  const endpoint = state.rsiMode === 'oversold' ? ENDPOINTS.rsiOversold : ENDPOINTS.rsiOverbought;
-  const tokens = await fetchAPI(endpoint, generateMockRSI(state.rsiMode));
+  const endpoint = state.rsiMode === 'oversold' 
+    ? `${ENDPOINTS.rsiOversold}?threshold=${state.rsiThreshold}`
+    : `${ENDPOINTS.rsiOverbought}?threshold=${100 - state.rsiThreshold}`;
   
-  renderRSIOpportunities(tokens);
-  renderRSITable(tokens);
+  try {
+    const data = await fetchAPI(endpoint, generateMockRSI(state.rsiMode));
+    const tokens = Array.isArray(data) ? data : (data.tokens || []);
+    
+    // Update last scan time
+    const scanTimeEl = document.getElementById('rsi-last-scan');
+    if (scanTimeEl) {
+      scanTimeEl.textContent = `Last scan: ${new Date().toLocaleTimeString()}`;
+    }
+    
+    renderRSIOpportunities(tokens);
+    renderRSITable(tokens);
+    renderRSIStats(tokens);
+  } catch (error) {
+    console.error('Failed to load RSI data:', error);
+    showToast('Failed to load RSI data', 'error');
+  }
+}
+
+function renderRSIStats(tokens) {
+  const statsEl = document.getElementById('rsi-stats');
+  if (!statsEl) return;
+  
+  const tokensArray = Array.isArray(tokens) ? tokens : (tokens.tokens || []);
+  const avgRSI = tokensArray.length > 0
+    ? tokensArray.reduce((sum, t) => sum + (t.rsi || t.rsiValue || 0), 0) / tokensArray.length
+    : 0;
+  
+  const extreme = state.rsiMode === 'oversold'
+    ? tokensArray.filter(t => (t.rsi || t.rsiValue) <= 20).length
+    : tokensArray.filter(t => (t.rsi || t.rsiValue) >= 80).length;
+  
+  statsEl.innerHTML = `
+    <div class="rsi-stat-card">
+      <div class="stat-value">${tokensArray.length}</div>
+      <div class="stat-label">Tokens ${state.rsiMode === 'oversold' ? 'Oversold' : 'Overbought'}</div>
+    </div>
+    <div class="rsi-stat-card">
+      <div class="stat-value">${extreme}</div>
+      <div class="stat-label">Extreme ${state.rsiMode === 'oversold' ? '(<20)' : '(>80)'}</div>
+    </div>
+    <div class="rsi-stat-card">
+      <div class="stat-value">${avgRSI.toFixed(1)}</div>
+      <div class="stat-label">Avg RSI</div>
+    </div>
+  `;
+}
+
+function toggleRSIAutoRefresh() {
+  const btn = document.getElementById('rsi-auto-refresh-btn');
+  if (rsiAutoRefresh) {
+    clearInterval(rsiAutoRefresh);
+    rsiAutoRefresh = null;
+    btn.textContent = '⏸️ Auto';
+    btn.classList.remove('active');
+  } else {
+    loadRSI(); // Immediate refresh
+    rsiAutoRefresh = setInterval(loadRSI, 60000); // Every 60 seconds
+    btn.textContent = '▶️ Auto';
+    btn.classList.add('active');
+    showToast('Auto-refresh enabled (60s)', 'success');
+  }
 }
 
 function renderRSIOpportunities(tokens) {
@@ -607,48 +670,123 @@ function renderRSIOpportunities(tokens) {
   
   const tokensArray = Array.isArray(tokens) ? tokens : (tokens.tokens || []);
   const extreme = state.rsiMode === 'oversold' 
-    ? tokensArray.filter(t => (t.rsi || t.rsiValue) <= 20).slice(0, 4)
-    : tokensArray.filter(t => (t.rsi || t.rsiValue) >= 80).slice(0, 4);
+    ? tokensArray.filter(t => (t.rsi || t.rsiValue) <= 20).slice(0, 6)
+    : tokensArray.filter(t => (t.rsi || t.rsiValue) >= 80).slice(0, 6);
   
-  const display = extreme.length > 0 ? extreme : tokensArray.slice(0, 4);
+  const display = extreme.length > 0 ? extreme : tokensArray.slice(0, 6);
+  
+  if (display.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: var(--spacing-xl); color: var(--color-text-tertiary);">
+        <div style="font-size: 48px; margin-bottom: var(--spacing-md);">📊</div>
+        <div style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--spacing-sm);">
+          No ${state.rsiMode === 'oversold' ? 'Oversold' : 'Overbought'} Opportunities
+        </div>
+        <div>Current market conditions show balanced RSI levels</div>
+      </div>
+    `;
+    return;
+  }
   
   grid.innerHTML = display.map(token => {
     const symbol = typeof token.symbol === 'string' ? token.symbol : (token.symbol?.symbol || token.token || 'TOKEN');
     const name = typeof token.name === 'string' ? token.name : (token.symbol?.name || '');
+    const rsiValue = token.rsi || token.rsiValue || 25;
+    const priceChange = token.change24h || token.priceChange || token.priceChange24h || 0;
+    
+    // RSI strength indicator
+    let rsiStrength = '';
+    let rsiColor = '';
+    if (state.rsiMode === 'oversold') {
+      if (rsiValue <= 20) {
+        rsiStrength = 'EXTREME';
+        rsiColor = '#10B981';
+      } else if (rsiValue <= 25) {
+        rsiStrength = 'STRONG';
+        rsiColor = '#22C55E';
+      } else {
+        rsiStrength = 'MODERATE';
+        rsiColor = '#84CC16';
+      }
+    } else {
+      if (rsiValue >= 80) {
+        rsiStrength = 'EXTREME';
+        rsiColor = '#EF4444';
+      } else if (rsiValue >= 75) {
+        rsiStrength = 'STRONG';
+        rsiColor = '#F87171';
+      } else {
+        rsiStrength = 'MODERATE';
+        rsiColor = '#FCA5A5';
+      }
+    }
+    
+    // DexScreener link
+    const dexLink = token.address 
+      ? `https://dexscreener.com/solana/${token.address}`
+      : `https://dexscreener.com/search?q=${symbol}`;
+    
     return `
-    <div class="opportunity-card">
+    <div class="opportunity-card rsi-opportunity-card">
+      <div class="opportunity-badge" style="background: ${rsiColor}22; color: ${rsiColor};">
+        ${rsiStrength}
+      </div>
       <div class="opportunity-header">
         <div class="opportunity-token">
-          <div class="token-logo">${symbol[0] || 'T'}</div>
+          <div class="token-logo" style="background: linear-gradient(135deg, #7B61FF 0%, #AB9FF2 100%);">
+            ${symbol[0] || 'T'}
+          </div>
           <div>
             <div class="token-symbol">${symbol}</div>
-            <div class="token-name" style="font-size: 12px;">${name}</div>
+            <div class="token-name" style="font-size: 11px; color: var(--color-text-tertiary);">${name}</div>
           </div>
         </div>
-        <div class="opportunity-rsi" style="color: ${state.rsiMode === 'oversold' ? 'var(--color-success)' : 'var(--color-danger)'}">
-          ${(token.rsi || token.rsiValue || 25).toFixed(1)}
+        <div class="opportunity-rsi-large" style="color: ${rsiColor}">
+          <div style="font-size: 32px; font-weight: 800; line-height: 1;">${rsiValue.toFixed(1)}</div>
+          <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">RSI</div>
         </div>
       </div>
+      
+      <div class="rsi-bar-container" style="margin: var(--spacing-sm) 0;">
+        <div class="rsi-bar-track">
+          <div class="rsi-bar-fill" style="width: ${rsiValue}%; background: ${rsiColor};"></div>
+          <div class="rsi-bar-marker" style="left: ${state.rsiMode === 'oversold' ? '30%' : '70%'};"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--color-text-tertiary); margin-top: 2px;">
+          <span>0</span>
+          <span>${state.rsiMode === 'oversold' ? '30' : '70'}</span>
+          <span>100</span>
+        </div>
+      </div>
+      
       <div class="opportunity-stats">
         <div class="stat">
           <span class="stat-label">Price</span>
           <span class="stat-value">${formatPrice(token.price)}</span>
         </div>
         <div class="stat">
-          <span class="stat-label">24h</span>
-          <span class="stat-value ${getChangeClass(token.change24h || token.priceChange)}">${formatPercent(token.change24h || token.priceChange)}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Market Cap</span>
-          <span class="stat-value">${formatMarketCap(token.marketCap || token.mcap)}</span>
-        </div>
-        <div class="stat">
-          <span class="stat-label">Signal</span>
-          <span class="stat-value" style="color: ${state.rsiMode === 'oversold' ? 'var(--color-success)' : 'var(--color-danger)'}">
-            ${state.rsiMode === 'oversold' ? '🟢 Buy Zone' : '🔴 Sell Zone'}
+          <span class="stat-label">24h Change</span>
+          <span class="stat-value ${getChangeClass(priceChange)}">
+            ${formatPercent(priceChange)}
           </span>
         </div>
       </div>
+      
+      <a href="${dexLink}" target="_blank" class="opportunity-action-btn" style="
+        display: block;
+        text-align: center;
+        padding: var(--spacing-sm);
+        background: var(--color-surface-hover);
+        border-radius: var(--radius-md);
+        margin-top: var(--spacing-sm);
+        font-size: var(--font-size-xs);
+        font-weight: 600;
+        color: var(--color-text-primary);
+        transition: all 0.2s;
+      " onmouseover="this.style.background='var(--color-primary)'; this.style.color='white';" 
+         onmouseout="this.style.background='var(--color-surface-hover)'; this.style.color='var(--color-text-primary)';">
+        📊 View on DexScreener
+      </a>
     </div>
   `;}).join('');
 }
