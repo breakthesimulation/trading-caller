@@ -15,6 +15,11 @@ const ENDPOINTS = {
   signalsHistory: `${API_BASE}/signals/history`,
   signalsPerformance: `${API_BASE}/signals/performance`,
   
+  // Positions
+  positionsOpen: `${API_BASE}/positions/open`,
+  positionsClosed: `${API_BASE}/positions/closed`,
+  positionsStats: `${API_BASE}/positions/stats`,
+  
   // Volume
   volumeStatus: `${API_BASE}/volume/status`,
   volumeTop: `${API_BASE}/volume/top`,
