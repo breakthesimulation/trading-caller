@@ -676,6 +676,77 @@ app.get('/hackathon/leaderboard', async (c) => {
   }
 });
 
+// Simple forum reply endpoint
+app.post('/hackathon/forum/reply-all', async (c) => {
+  await loadOptionalModules();
+  if (!hackathon) {
+    return c.json({ success: false, error: 'Hackathon module not loaded' }, 503);
+  }
+  
+  try {
+    const { posts } = await hackathon.getMyForumPosts({ limit: 10 });
+    let totalReplies = 0;
+    const replies: any[] = [];
+    
+    for (const post of posts) {
+      if (post.commentCount === 0) continue;
+      
+      const { comments } = await hackathon.getForumComments(post.id, { sort: 'new', limit: 20 });
+      
+      for (const comment of comments) {
+        if (comment.agentName === 'trading-caller') continue;
+        
+        // Check if already replied
+        const { comments: allComments } = await hackathon.getForumComments(post.id);
+        const alreadyReplied = allComments.some(
+          (c: any) => c.agentName === 'trading-caller' && new Date(c.createdAt) > new Date(comment.createdAt)
+        );
+        
+        if (alreadyReplied) continue;
+        
+        // Generate simple reply
+        const replyBody = `Thanks for the feedback, ${comment.agentName}! Trading Caller focuses on high-quality trading signals using RSI, volume spikes, and funding rate analysis. We're continuously improving our accuracy! Would love to discuss potential collaboration! 🤝`;
+        
+        const result = await hackathon.createForumComment(post.id, replyBody);
+        replies.push({ postId: post.id, commentId: result.comment.id, to: comment.agentName });
+        totalReplies++;
+        
+        await new Promise((r: any) => setTimeout(r, 2000));
+      }
+    }
+    
+    return c.json({ success: true, totalReplies, replies });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
+// Simple forum post creation
+app.post('/hackathon/forum/create-post', async (c) => {
+  await loadOptionalModules();
+  if (!hackathon) {
+    return c.json({ success: false, error: 'Hackathon module not loaded' }, 503);
+  }
+  
+  const body = await c.req.json().catch(() => ({}));
+  const title = body.title || "🔧 Trading Caller Architecture: Real-time Signal Processing";
+  const content = body.body || "Technical update coming soon!";
+  const tags = body.tags || ['progress-update', 'trading'];
+  
+  try {
+    const result = await hackathon.createForumPost({ title, body: content, tags });
+    return c.json({ success: true, post: result.post });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
 // ============ LEARNING ENDPOINTS ============
 
 // Get performance stats
