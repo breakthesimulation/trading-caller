@@ -795,6 +795,39 @@ app.post('/forum/reply-direct', async (c) => {
   }
 });
 
+// Direct forum post creation
+app.post('/forum/post-direct', async (c) => {
+  try {
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    const body = await c.req.json().catch(() => ({}));
+    const title = body.title || '';
+    const content = body.body || '';
+    
+    const args = title && content 
+      ? `"${title.replace(/"/g, '\\"')}" "${content.replace(/"/g, '\\"')}"`
+      : '';
+    
+    const { stdout, stderr } = await execAsync(`node scripts/forum-post-direct.js ${args}`, {
+      cwd: process.cwd(),
+      env: process.env,
+      maxBuffer: 1024 * 1024 * 10, // 10MB buffer for large posts
+    });
+    
+    console.log(stdout);
+    if (stderr) console.error(stderr);
+    
+    return c.json({ success: true, output: stdout });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
 // ============ START SERVER ============
 
 import { serve } from '@hono/node-server';
