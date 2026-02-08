@@ -771,6 +771,30 @@ app.post('/forum/reply-to-comments', async (c) => {
   }
 });
 
+// Direct forum reply (simpler, doesn't rely on brain/AI)
+app.post('/forum/reply-direct', async (c) => {
+  try {
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    const { stdout, stderr } = await execAsync('node scripts/forum-reply-direct.js', {
+      cwd: process.cwd(),
+      env: process.env,
+    });
+    
+    console.log(stdout);
+    if (stderr) console.error(stderr);
+    
+    return c.json({ success: true, output: stdout });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
 // ============ START SERVER ============
 
 import { serve } from '@hono/node-server';
