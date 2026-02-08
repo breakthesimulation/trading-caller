@@ -828,6 +828,36 @@ app.post('/forum/post-direct', async (c) => {
   }
 });
 
+// Colosseum API proxy - simple passthrough
+app.all('/colosseum-api/*', async (c) => {
+  const apiKey = process.env.HACKATHON_API_KEY;
+  if (!apiKey) {
+    return c.json({ error: 'API key not configured' }, 500);
+  }
+  
+  const path = c.req.path.replace('/colosseum-api', '');
+  const method = c.req.method;
+  const body = method !== 'GET' ? await c.req.json().catch(() => null) : null;
+  
+  try {
+    const response = await fetch(`https://agents.colosseum.com/api${path}`, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    
+    const data = await response.json();
+    return c.json(data, response.status);
+  } catch (error) {
+    return c.json({ 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
 // ============ START SERVER ============
 
 import { serve } from '@hono/node-server';
