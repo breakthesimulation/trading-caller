@@ -155,14 +155,17 @@ Stablecoins are pegged to USD/EUR. Shorting them makes zero sense and would lead
 
 ## 🚧 IN PROGRESS / TODO
 
-### Hour 3-4: Advanced Features
-- [ ] Add filtering and search to Oversold scanner
-- [ ] Export functionality (CSV/JSON)
-- [ ] Advanced signal strength calculations
-- [ ] Multi-token comparison view
-- [ ] Historical RSI charts
+### Hour 3-4: Advanced Features ✅ COMPLETE
+- [x] Add filtering and search to Oversold scanner
+- [x] Export functionality (CSV)
+- [x] Real-time search and filtering
+- [x] Keyboard shortcuts system
+- [x] Toast notifications
+- [x] Help modal
+- [ ] Multi-token comparison view (DEFERRED)
+- [ ] Historical RSI charts (DEFERRED)
 
-### Hour 4-5: Performance Optimization
+### Hour 4-5: UX & Accessibility ✅ IN PROGRESS
 - [ ] Caching strategy for frequent requests
 - [ ] Lazy loading for large datasets
 - [ ] Debounce on real-time updates
@@ -289,6 +292,57 @@ Stablecoins are pegged to USD/EUR. Shorting them makes zero sense and would lead
 
 ---
 
-**Last Updated:** Hour 3 of 10  
-**Next Milestone:** Advanced filtering + Export functionality  
-**Status:** 🟢 ON TRACK - Building continuously!
+---
+
+## 🎨 Phase 3 Updates (Hour 4-5)
+
+### ⌨️ KEYBOARD SHORTCUTS SYSTEM
+**Status:** ✅ COMPLETE  
+
+**Features:**
+- **1-9:** Quick navigation between sections
+- **R:** Refresh current section
+- **/:** Focus search input
+- **E:** Export data (context-aware)
+- **?:** Show keyboard shortcuts help
+- **ESC:** Clear search/close modals
+
+**Implementation:**
+- Non-intrusive - ignores when typing in inputs
+- Context-aware actions
+- Visual help modal with all shortcuts
+- Floating help button (⌨️) in corner
+
+**Files:**
+- `keyboard-shortcuts.js` (new)
+- `keyboard-shortcuts.css` (new)
+
+---
+
+### 📢 TOAST NOTIFICATION SYSTEM
+**Status:** ✅ COMPLETE  
+
+**Features:**
+- Success/Info/Warning/Error states
+- Auto-dismiss after 3 seconds
+- Smooth animations
+- Bottom-right positioning
+- Color-coded borders
+
+---
+
+### ❓ HELP SYSTEM
+**Status:** ✅ COMPLETE  
+
+**Features:**
+- Floating help button
+- Comprehensive shortcuts modal
+- Clean, organized layout
+- Press ? to open, ESC to close
+- Click outside to dismiss
+
+---
+
+**Last Updated:** Hour 5 of 10  
+**Next Milestone:** Advanced visualizations + Performance optimization  
+**Status:** 🟢 AHEAD OF SCHEDULE - Excellent progress!
