@@ -93,6 +93,10 @@ app.route('/', backtestRoutes);
 // Mount positions dashboard routes
 app.route('/', positionsRoutes);
 
+// Mount forum actions
+import forumActionsRoutes from './forum-actions.js';
+app.route('/forum-actions', forumActionsRoutes);
+
 // ============ STATIC FILES ============
 // Serve frontend files from project root
 app.get('/app.js', serveStatic({ path: './app.js' }));
