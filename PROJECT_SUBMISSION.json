@@ -1,0 +1,10 @@
+{
+  "name": "Trading Caller",
+  "description": "An autonomous AI agent that generates real-time trading signals for Solana markets with full transparency and performance tracking. Trading Caller analyzes RSI, volume spikes, and funding rate squeezes across 11 Solana tokens, delivering actionable BUY/SELL signals 24/7. Every signal is tracked and measured for continuous improvement.",
+  "repoLink": "https://github.com/breakthesimulation/trading-caller",
+  "solanaIntegration": "Uses Jupiter Aggregator API for real-time Solana token pricing, DexScreener for DEX data, and Birdeye for volume analytics. Tracks SOL, JUP, BONK, WIF, PYTH, JTO, RAY, ORCA, BOME, POPCAT, and MEW. Future integration: on-chain signal verification via Program Derived Addresses (PDAs) and automated trade execution through Solana programs using Anchor framework.",
+  "technicalDemoLink": "https://web-production-5e86c.up.railway.app",
+  "presentationLink": "",
+  "tags": ["trading", "ai", "defi", "signals", "analytics"],
+  "additionalNotes": "Trading Caller differentiates itself through:\n1. Full transparency - every signal shows its reasoning\n2. Performance tracking - historical win rate calculation\n3. Multi-indicator analysis - RSI + volume + funding rates\n4. RESTful API - easy integration for any trader\n5. Continuous learning - improves from past performance\n\nKey Features:\n- /signals/latest - Recent trading signals\n- /rsi/oversold - Oversold opportunities\n- /volume/spikes - Unusual volume detection\n- /funding/alerts/squeeze - Funding rate squeezes\n- /signals/performance - Historical accuracy tracking\n\nBuilt with: TypeScript, Bun, Hono, SQLite\nHosted on: Railway (24/7 uptime)\nAPI: https://web-production-5e86c.up.railway.app/api"
+}

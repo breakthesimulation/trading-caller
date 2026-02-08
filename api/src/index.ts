@@ -110,7 +110,7 @@ app.get('/api', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
-    version: '1.3.0',
+    version: '1.3.1',
     status: 'operational',
     endpoints: {
       // Signal generation
