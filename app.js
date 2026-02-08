@@ -1425,6 +1425,8 @@ async function loadOversoldSection() {
     const overboughtData = await overboughtRes.json();
 
     if (oversoldData.success) {
+      // Store original data for filtering
+      originalOversoldTokens = oversoldData.tokens;
       updateOversoldStats(oversoldData.tokens);
       renderOversoldTokens(oversoldData.tokens);
     } else {
@@ -1432,6 +1434,8 @@ async function loadOversoldSection() {
     }
 
     if (overboughtData.success) {
+      // Store original data
+      originalOverboughtTokens = overboughtData.tokens;
       renderOverboughtTokens(overboughtData.tokens);
     } else {
       overboughtGrid.innerHTML = '<div class="oversold-loading">❌ Failed to load overbought data</div>';
@@ -1569,8 +1573,9 @@ function refreshOversold() {
   loadOversoldSection();
 }
 
-// Setup timeframe selector
+// Setup timeframe selector and filters
 document.addEventListener('DOMContentLoaded', () => {
+  // Timeframe selector
   document.querySelectorAll('.timeframe-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
@@ -1579,7 +1584,79 @@ document.addEventListener('DOMContentLoaded', () => {
       loadOversoldSection();
     });
   });
+  
+  // Search filter
+  const searchInput = document.getElementById('oversold-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', filterOversoldTokens);
+  }
+  
+  // Severity filter
+  const filterSelect = document.getElementById('oversold-filter');
+  if (filterSelect) {
+    filterSelect.addEventListener('change', filterOversoldTokens);
+  }
 });
+
+// Store original token data for filtering
+let originalOversoldTokens = [];
+let originalOverboughtTokens = [];
+
+function filterOversoldTokens() {
+  const searchTerm = document.getElementById('oversold-search')?.value.toLowerCase() || '';
+  const filterValue = document.getElementById('oversold-filter')?.value || 'all';
+  
+  let filtered = [...originalOversoldTokens];
+  
+  // Apply search
+  if (searchTerm) {
+    filtered = filtered.filter(token => 
+      token.symbol.toLowerCase().includes(searchTerm) ||
+      (token.name && token.name.toLowerCase().includes(searchTerm))
+    );
+  }
+  
+  // Apply severity filter
+  if (filterValue === 'extreme') {
+    filtered = filtered.filter(token => token.rsi <= 20);
+  } else if (filterValue === 'strong') {
+    filtered = filtered.filter(token => token.rsi <= 30);
+  } else if (filterValue === 'moderate') {
+    filtered = filtered.filter(token => token.rsi > 30 && token.rsi <= 40);
+  }
+  
+  renderOversoldTokens(filtered);
+}
+
+// Export oversold data to CSV
+function exportOversoldData() {
+  const tokens = originalOversoldTokens;
+  
+  if (!tokens || tokens.length === 0) {
+    alert('No data to export');
+    return;
+  }
+  
+  // CSV header
+  let csv = 'Symbol,Name,RSI,Price,24h Change %,Volume 24h,Market Cap,Signal Strength\n';
+  
+  // CSV rows
+  tokens.forEach(token => {
+    const severity = token.rsi <= 20 ? 'EXTREME' : token.rsi <= 30 ? 'STRONG' : 'MODERATE';
+    csv += `${token.symbol},${token.name || token.symbol},${token.rsi.toFixed(2)},${token.price},${token.priceChange24h},${token.volume24h || 0},${token.marketCap || 0},${severity}\n`;
+  });
+  
+  // Create download link
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `oversold-tokens-${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+}
 
 // ============================================
 // Positions Dashboard
@@ -1816,6 +1893,7 @@ function renderOpenPositions() {
   
   grid.innerHTML = positionsData.open.map(position => {
     const isProfitable = position.pnl >= 0;
+    const targetPrice = position.targets?.tp1 || position.targets?.[0] || 0;
     
     return `
       <div class="position-card ${isProfitable ? 'profit' : 'loss'}">
@@ -1835,11 +1913,11 @@ function renderOpenPositions() {
           </div>
           <div class="position-detail">
             <span class="position-detail-label">Current</span>
-            <span class="position-detail-value">${formatPrice(position.currentPrice)}</span>
+            <span class="position-detail-value">${formatPrice(position.current)}</span>
           </div>
           <div class="position-detail">
             <span class="position-detail-label">Target</span>
-            <span class="position-detail-value">${formatPrice(position.targets[0])}</span>
+            <span class="position-detail-value">${formatPrice(targetPrice)}</span>
           </div>
           <div class="position-detail">
             <span class="position-detail-label">Stop Loss</span>
@@ -1866,15 +1944,20 @@ function renderClosedPositions() {
   
   table.innerHTML = positionsData.closed.map(position => {
     const isProfitable = position.pnl >= 0;
+    const exitPrice = position.current || position.entry;
+    
+    // Calculate P&L in dollars (assuming $100 position size for demo)
+    const positionSize = 100;
+    const pnlDollars = (position.pnl / 100) * positionSize;
     
     return `
       <tr>
         <td><strong>${position.token.symbol}</strong></td>
         <td><span class="badge badge-${position.action === 'LONG' ? 'success' : 'danger'}">${position.action}</span></td>
         <td>${formatPrice(position.entry)}</td>
-        <td>${formatPrice(position.exitPrice)}</td>
+        <td>${formatPrice(exitPrice)}</td>
         <td>${position.timeInPosition}</td>
-        <td class="${isProfitable ? 'text-success' : 'text-danger'}"><strong>${isProfitable ? '+' : ''}${position.pnl.toFixed(2)}%</strong></td>
+        <td class="${isProfitable ? 'text-success' : 'text-danger'}"><strong>$${isProfitable ? '+' : ''}${pnlDollars.toFixed(2)}</strong></td>
         <td class="${isProfitable ? 'text-success' : 'text-danger'}"><strong>${isProfitable ? '+' : ''}${position.pnl.toFixed(2)}%</strong></td>
       </tr>
     `;
@@ -1980,4 +2063,5 @@ window.refreshVolume = refreshVolume;
 window.refreshFunding = refreshFunding;
 window.refreshUnlocks = refreshUnlocks;
 window.refreshOversold = refreshOversold;
+window.exportOversoldData = exportOversoldData;
 window.showSection = showSection;

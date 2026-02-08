@@ -299,11 +299,26 @@
         <p class="text-muted">Real-time RSI analysis across multiple timeframes - inspired by oversold.lol</p>
       </div>
 
-      <!-- Timeframe Selector -->
-      <div class="timeframe-selector">
-        <button class="timeframe-btn active" data-timeframe="1H">1H</button>
-        <button class="timeframe-btn" data-timeframe="4H">4H</button>
-        <button class="timeframe-btn" data-timeframe="1D">1D</button>
+      <!-- Controls -->
+      <div class="oversold-controls">
+        <!-- Timeframe Selector -->
+        <div class="timeframe-selector">
+          <button class="timeframe-btn active" data-timeframe="1H">1H</button>
+          <button class="timeframe-btn" data-timeframe="4H">4H</button>
+          <button class="timeframe-btn" data-timeframe="1D">1D</button>
+        </div>
+        
+        <!-- Search & Filter -->
+        <div class="oversold-search-filter">
+          <input type="text" id="oversold-search" class="search-input" placeholder="Search tokens..." />
+          <select id="oversold-filter" class="filter-select">
+            <option value="all">All Tokens</option>
+            <option value="extreme">Extreme Only (RSI < 20)</option>
+            <option value="strong">Strong Only (RSI < 30)</option>
+            <option value="moderate">Moderate (RSI 30-40)</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" onclick="exportOversoldData()">📥 Export</button>
+        </div>
       </div>
 
       <!-- Summary Stats -->
