@@ -162,6 +162,8 @@ function showSection(sectionId) {
     history: { title: 'Trading History', subtitle: 'Past trading calls with performance metrics and win/loss tracking.' },
     volume: { title: 'Volume Scanner', subtitle: 'Track volume spikes and top performing tokens in real-time.' },
     rsi: { title: 'RSI Scanner', subtitle: 'Find oversold and overbought opportunities before the crowd.' },
+    oversold: { title: 'Oversold Market Scanner', subtitle: 'Real-time RSI analysis across multiple timeframes - inspired by oversold.lol' },
+    positions: { title: 'Positions Dashboard', subtitle: 'Track your trading performance and manage active positions.' },
     funding: { title: 'Funding Rates', subtitle: 'Monitor funding rates and squeeze alerts for potential reversals.' },
     unlocks: { title: 'Token Unlocks', subtitle: 'Upcoming token unlocks and their potential market impact.' },
     leaderboard: { title: 'Leaderboard', subtitle: 'Top performing tokens and signal performance rankings.' },
@@ -198,6 +200,12 @@ async function loadSectionData(sectionId) {
       break;
     case 'rsi':
       await loadRSI();
+      break;
+    case 'oversold':
+      await loadOversoldSection();
+      break;
+    case 'positions':
+      await loadPositionsSection();
       break;
     case 'funding':
       await loadFunding();
@@ -1390,6 +1398,422 @@ function setupEventListeners() {
 }
 
 // ============================================
+// Oversold.lol-Style Section
+// ============================================
+
+let oversoldTimeframe = '4H';
+let oversoldAutoRefresh = null;
+
+async function loadOversoldSection() {
+  try {
+    const timeframe = oversoldTimeframe;
+    
+    // Fetch oversold and overbought data
+    const [oversoldRes, overboughtRes] = await Promise.all([
+      fetch(`${ENDPOINTS.rsiOversold}?timeframe=${timeframe}&threshold=40`),
+      fetch(`${ENDPOINTS.rsiOverbought}?timeframe=${timeframe}&threshold=60`)
+    ]);
+
+    const oversoldData = await oversoldRes.json();
+    const overboughtData = await overboughtRes.json();
+
+    if (oversoldData.success) {
+      updateOversoldStats(oversoldData.tokens);
+      renderOversoldTokens(oversoldData.tokens);
+    }
+
+    if (overboughtData.success) {
+      renderOverboughtTokens(overboughtData.tokens);
+    }
+
+    updateOversoldTimestamp();
+  } catch (error) {
+    console.error('Error loading oversold section:', error);
+  }
+}
+
+function updateOversoldStats(tokens) {
+  const extreme = tokens.filter(t => t.rsi <= 20).length;
+  const strong = tokens.filter(t => t.rsi <= 30).length;
+  const moderate = tokens.filter(t => t.rsi > 30 && t.rsi <= 40).length;
+  const neutral = tokens.filter(t => t.rsi > 40 && t.rsi <= 60).length;
+
+  document.getElementById('oversold-extreme-count').textContent = extreme;
+  document.getElementById('oversold-strong-count').textContent = strong;
+  document.getElementById('oversold-moderate-count').textContent = moderate;
+  document.getElementById('oversold-neutral-count').textContent = neutral;
+}
+
+function renderOversoldTokens(tokens) {
+  const grid = document.getElementById('oversold-tokens-grid');
+  
+  if (!tokens || tokens.length === 0) {
+    grid.innerHTML = '<div class="oversold-loading">No oversold tokens found</div>';
+    return;
+  }
+
+  grid.innerHTML = tokens.map(token => {
+    const severity = token.rsi <= 20 ? 'extreme' : token.rsi <= 30 ? 'strong' : 'moderate';
+    const signalStrength = token.signal?.strength || 'MEDIUM';
+    
+    return `
+      <div class="oversold-token-card ${severity}">
+        <div class="oversold-token-header">
+          <div>
+            <div class="oversold-token-symbol">${token.symbol}</div>
+            <div class="oversold-token-name">${token.name || token.symbol}</div>
+          </div>
+          <div class="oversold-rsi-badge ${severity}">
+            RSI ${Math.round(token.rsi)}
+          </div>
+        </div>
+        
+        <div class="oversold-token-metrics">
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">Price</span>
+            <span class="oversold-metric-value">${formatPrice(token.price)}</span>
+          </div>
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">24h Change</span>
+            <span class="oversold-metric-value ${token.priceChange24h >= 0 ? 'positive' : 'negative'}">
+              ${formatPercent(token.priceChange24h)}
+            </span>
+          </div>
+        </div>
+        
+        <div class="oversold-signal-strength ${signalStrength.toLowerCase()}">
+          ${signalStrength} LONG Signal
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderOverboughtTokens(tokens) {
+  const grid = document.getElementById('overbought-tokens-grid');
+  
+  if (!tokens || tokens.length === 0) {
+    grid.innerHTML = '<div class="oversold-loading">No overbought tokens found</div>';
+    return;
+  }
+
+  grid.innerHTML = tokens.map(token => {
+    const severity = token.rsi >= 80 ? 'extreme' : token.rsi >= 70 ? 'strong' : 'moderate';
+    
+    return `
+      <div class="oversold-token-card ${severity}">
+        <div class="oversold-token-header">
+          <div>
+            <div class="oversold-token-symbol">${token.symbol}</div>
+            <div class="oversold-token-name">${token.name || token.symbol}</div>
+          </div>
+          <div class="oversold-rsi-badge ${severity}">
+            RSI ${Math.round(token.rsi)}
+          </div>
+        </div>
+        
+        <div class="oversold-token-metrics">
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">Price</span>
+            <span class="oversold-metric-value">${formatPrice(token.price)}</span>
+          </div>
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">24h Change</span>
+            <span class="oversold-metric-value ${token.priceChange24h >= 0 ? 'positive' : 'negative'}">
+              ${formatPercent(token.priceChange24h)}
+            </span>
+          </div>
+        </div>
+        
+        <div class="oversold-signal-strength ${severity}">
+          Potential Reversal
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateOversoldTimestamp() {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('oversold-last-update').textContent = `Last update: ${timeStr}`;
+}
+
+function refreshOversold() {
+  loadOversoldSection();
+}
+
+// Setup timeframe selector
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.timeframe-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      oversoldTimeframe = e.target.dataset.timeframe;
+      loadOversoldSection();
+    });
+  });
+});
+
+// ============================================
+// Positions Dashboard
+// ============================================
+
+let positionsData = {
+  open: [],
+  closed: [],
+  pending: []
+};
+
+async function loadPositionsSection() {
+  try {
+    // Fetch signals with tracking data
+    const response = await fetch(`${ENDPOINTS.signalsHistory}?limit=100`);
+    const data = await response.json();
+    
+    if (data.success) {
+      processPositionsData(data.signals);
+      updatePositionsStats();
+      renderPositions();
+    }
+  } catch (error) {
+    console.error('Error loading positions:', error);
+  }
+}
+
+function processPositionsData(signals) {
+  const now = Date.now();
+  
+  positionsData.open = [];
+  positionsData.closed = [];
+  positionsData.pending = [];
+  
+  signals.forEach(signal => {
+    const signalTime = new Date(signal.timestamp).getTime();
+    const hoursSince = (now - signalTime) / (1000 * 60 * 60);
+    
+    // Simulate position states (in production, this would come from actual trade tracking)
+    if (hoursSince < 24 && !signal.closed) {
+      // Active position
+      const currentPrice = signal.token.price || signal.entry;
+      const pnl = signal.action === 'LONG' 
+        ? ((currentPrice - signal.entry) / signal.entry) * 100
+        : ((signal.entry - currentPrice) / signal.entry) * 100;
+      
+      positionsData.open.push({
+        ...signal,
+        currentPrice,
+        pnl,
+        timeInPosition: formatTimeInPosition(signalTime, now)
+      });
+    } else if (signal.closed || hoursSince > 48) {
+      // Closed position
+      const exitPrice = signal.exitPrice || signal.targets[0];
+      const pnl = signal.action === 'LONG'
+        ? ((exitPrice - signal.entry) / signal.entry) * 100
+        : ((signal.entry - exitPrice) / signal.entry) * 100;
+      
+      positionsData.closed.push({
+        ...signal,
+        exitPrice,
+        pnl,
+        timeInPosition: signal.duration || formatTimeInPosition(signalTime, now)
+      });
+    } else {
+      // Pending entry
+      positionsData.pending.push(signal);
+    }
+  });
+}
+
+function updatePositionsStats() {
+  const allPositions = [...positionsData.open, ...positionsData.closed];
+  const totalPnl = allPositions.reduce((sum, p) => sum + (p.pnl || 0), 0);
+  const avgPnl = allPositions.length > 0 ? totalPnl / allPositions.length : 0;
+  
+  const winners = allPositions.filter(p => (p.pnl || 0) > 0).length;
+  const losers = allPositions.filter(p => (p.pnl || 0) < 0).length;
+  const winRate = allPositions.length > 0 ? (winners / allPositions.length) * 100 : 0;
+  
+  const bestTrade = Math.max(...allPositions.map(p => p.pnl || 0), 0);
+  const worstTrade = Math.min(...allPositions.map(p => p.pnl || 0), 0);
+  
+  document.getElementById('positions-total-pnl').textContent = formatPnL(totalPnl);
+  document.getElementById('positions-total-pnl').className = totalPnl >= 0 ? 'stat-value profit' : 'stat-value loss';
+  document.getElementById('positions-roi').textContent = `${formatPercent(avgPnl, false)} ROI`;
+  
+  document.getElementById('positions-win-rate').textContent = `${Math.round(winRate)}%`;
+  document.getElementById('positions-win-loss').textContent = `${winners}W / ${losers}L`;
+  
+  document.getElementById('positions-open-count').textContent = positionsData.open.length;
+  document.getElementById('positions-total-count').textContent = `${allPositions.length} Total`;
+  
+  document.getElementById('positions-best-trade').textContent = `+${Math.round(bestTrade)}%`;
+  document.getElementById('positions-worst-trade').textContent = `${Math.round(worstTrade)}% Worst`;
+}
+
+function renderPositions() {
+  renderOpenPositions();
+  renderClosedPositions();
+  renderPendingPositions();
+}
+
+function renderOpenPositions() {
+  const grid = document.getElementById('open-positions-grid');
+  const count = document.getElementById('open-positions-count');
+  
+  count.textContent = `${positionsData.open.length} Open`;
+  
+  if (positionsData.open.length === 0) {
+    grid.innerHTML = '<div class="positions-empty-state"><div class="empty-icon">📭</div><h3>No Open Positions</h3><p>Start trading to see your active positions here</p></div>';
+    return;
+  }
+  
+  grid.innerHTML = positionsData.open.map(position => {
+    const isProfitable = position.pnl >= 0;
+    
+    return `
+      <div class="position-card ${isProfitable ? 'profit' : 'loss'}">
+        <div class="position-card-header">
+          <span class="position-token">${position.token.symbol}</span>
+          <span class="position-action ${position.action.toLowerCase()}">${position.action}</span>
+        </div>
+        
+        <div class="position-pnl ${isProfitable ? 'profit' : 'loss'}">
+          ${isProfitable ? '+' : ''}${position.pnl.toFixed(2)}%
+        </div>
+        
+        <div class="position-details">
+          <div class="position-detail">
+            <span class="position-detail-label">Entry</span>
+            <span class="position-detail-value">${formatPrice(position.entry)}</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Current</span>
+            <span class="position-detail-value">${formatPrice(position.currentPrice)}</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Target</span>
+            <span class="position-detail-value">${formatPrice(position.targets[0])}</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Stop Loss</span>
+            <span class="position-detail-value">${formatPrice(position.stopLoss)}</span>
+          </div>
+        </div>
+        
+        <div class="position-time">⏱️ ${position.timeInPosition}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderClosedPositions() {
+  const table = document.getElementById('closed-positions-table');
+  const count = document.getElementById('closed-positions-count');
+  
+  count.textContent = `${positionsData.closed.length} Closed`;
+  
+  if (positionsData.closed.length === 0) {
+    table.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No closed positions yet</td></tr>';
+    return;
+  }
+  
+  table.innerHTML = positionsData.closed.map(position => {
+    const isProfitable = position.pnl >= 0;
+    
+    return `
+      <tr>
+        <td><strong>${position.token.symbol}</strong></td>
+        <td><span class="badge badge-${position.action === 'LONG' ? 'success' : 'danger'}">${position.action}</span></td>
+        <td>${formatPrice(position.entry)}</td>
+        <td>${formatPrice(position.exitPrice)}</td>
+        <td>${position.timeInPosition}</td>
+        <td class="${isProfitable ? 'text-success' : 'text-danger'}"><strong>${isProfitable ? '+' : ''}${position.pnl.toFixed(2)}%</strong></td>
+        <td class="${isProfitable ? 'text-success' : 'text-danger'}"><strong>${isProfitable ? '+' : ''}${position.pnl.toFixed(2)}%</strong></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderPendingPositions() {
+  const grid = document.getElementById('pending-positions-grid');
+  const count = document.getElementById('pending-positions-count');
+  
+  count.textContent = `${positionsData.pending.length} Pending`;
+  
+  if (positionsData.pending.length === 0) {
+    grid.innerHTML = '<div class="positions-empty-state"><div class="empty-icon">✅</div><h3>No Pending Entries</h3><p>All signals have been entered or expired</p></div>';
+    return;
+  }
+  
+  grid.innerHTML = positionsData.pending.map(position => {
+    return `
+      <div class="position-card pending">
+        <div class="position-card-header">
+          <span class="position-token">${position.token.symbol}</span>
+          <span class="position-action ${position.action.toLowerCase()}">${position.action}</span>
+        </div>
+        
+        <div class="position-details">
+          <div class="position-detail">
+            <span class="position-detail-label">Entry Target</span>
+            <span class="position-detail-value">${formatPrice(position.entry)}</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Current Price</span>
+            <span class="position-detail-value">${formatPrice(position.token.price)}</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Confidence</span>
+            <span class="position-detail-value">${position.confidence}%</span>
+          </div>
+          <div class="position-detail">
+            <span class="position-detail-label">Risk</span>
+            <span class="position-detail-value">${position.riskLevel}</span>
+          </div>
+        </div>
+        
+        <div class="position-time">⏳ Waiting for entry</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function formatTimeInPosition(startTime, endTime) {
+  const hours = Math.floor((endTime - startTime) / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h`;
+  return '< 1h';
+}
+
+function formatPnL(pnl) {
+  if (pnl >= 0) return `+$${Math.abs(pnl).toFixed(2)}`;
+  return `-$${Math.abs(pnl).toFixed(2)}`;
+}
+
+// Setup position tabs
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.positions-tab-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const tab = e.target.dataset.tab;
+      
+      // Update buttons
+      document.querySelectorAll('.positions-tab-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      
+      // Update content
+      document.querySelectorAll('.positions-tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`positions-tab-${tab}`).classList.add('active');
+    });
+  });
+});
+
+// ============================================
 // Initialize
 // ============================================
 
@@ -1410,4 +1834,5 @@ window.refreshSignals = refreshSignals;
 window.refreshVolume = refreshVolume;
 window.refreshFunding = refreshFunding;
 window.refreshUnlocks = refreshUnlocks;
+window.refreshOversold = refreshOversold;
 window.showSection = showSection;

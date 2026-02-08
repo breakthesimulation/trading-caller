@@ -27,11 +27,32 @@ interface SignalInput {
   sentimentContext?: string;
 }
 
+// List of stablecoins that should NEVER be shorted
+const STABLECOINS = new Set([
+  'USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'FRAX', 'USDD', 
+  'USDP', 'GUSD', 'PYUSD', 'FDUSD', 'UST', 'USDN'
+]);
+
+/**
+ * Check if a token is a stablecoin
+ */
+function isStablecoin(symbol: string): boolean {
+  return STABLECOINS.has(symbol.toUpperCase());
+}
+
 /**
  * Generate a trading signal based on technical analysis
  */
 export function generateSignal(input: SignalInput): TradingSignal | null {
   const { token, ohlcv } = input;
+
+  // 🚨 STABLECOIN SAFETY CHECK
+  // NEVER generate SHORT signals for stablecoins - they're pegged!
+  if (isStablecoin(token.symbol)) {
+    console.warn(`[SignalGenerator] ⚠️  REJECTED: Stablecoin ${token.symbol} detected - skipping signal generation`);
+    console.warn('[SignalGenerator] Stablecoins are USD-pegged assets and should not be traded');
+    return null;
+  }
 
   // Run technical analysis on different timeframes
   const analysis4H = runTechnicalAnalysis(ohlcv['4H']);
@@ -55,6 +76,13 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
   
   // If no clear action, don't generate signal
   if (action === 'HOLD') {
+    return null;
+  }
+
+  // 🚨 ADDITIONAL STABLECOIN SAFETY CHECK
+  // Double-check: if somehow a SHORT signal was generated for a stablecoin, reject it
+  if (action === 'SHORT' && isStablecoin(token.symbol)) {
+    console.error(`[SignalGenerator] 🚨 CRITICAL: SHORT signal attempted for stablecoin ${token.symbol} - BLOCKED!`);
     return null;
   }
 

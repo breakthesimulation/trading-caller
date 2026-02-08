@@ -8,6 +8,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="rsi-enhancements.css">
+  <link rel="stylesheet" href="oversold-positions.css">
 </head>
 <body>
   <!-- Header -->
@@ -30,6 +31,8 @@
         <a href="#history" class="nav-link" data-section="history">📜 History</a>
         <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
         <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
+        <a href="#oversold" class="nav-link" data-section="oversold">🔥 Oversold</a>
+        <a href="#positions" class="nav-link" data-section="positions">💼 Positions</a>
         <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
         <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
         <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
@@ -44,6 +47,8 @@
     <a href="#history" class="nav-link" data-section="history">📜 History</a>
     <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
     <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
+    <a href="#oversold" class="nav-link" data-section="oversold">🔥 Oversold</a>
+    <a href="#positions" class="nav-link" data-section="positions">💼 Positions</a>
     <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
     <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
     <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
@@ -282,6 +287,185 @@
               <!-- Dynamic content -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== OVERSOLD.LOL SECTION ==================== -->
+    <section id="oversold-section" class="page-section">
+      <!-- Header -->
+      <div class="oversold-header">
+        <h2>🔥 Oversold Market Scanner</h2>
+        <p class="text-muted">Real-time RSI analysis across multiple timeframes - inspired by oversold.lol</p>
+      </div>
+
+      <!-- Timeframe Selector -->
+      <div class="timeframe-selector">
+        <button class="timeframe-btn active" data-timeframe="1H">1H</button>
+        <button class="timeframe-btn" data-timeframe="4H">4H</button>
+        <button class="timeframe-btn" data-timeframe="1D">1D</button>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="oversold-stats-grid">
+        <div class="oversold-stat-card extreme">
+          <div class="stat-icon">🚨</div>
+          <div class="stat-content">
+            <div class="stat-value" id="oversold-extreme-count">0</div>
+            <div class="stat-label">Extreme Oversold (RSI < 20)</div>
+          </div>
+        </div>
+        <div class="oversold-stat-card strong">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-value" id="oversold-strong-count">0</div>
+            <div class="stat-label">Strong Oversold (RSI < 30)</div>
+          </div>
+        </div>
+        <div class="oversold-stat-card moderate">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value" id="oversold-moderate-count">0</div>
+            <div class="stat-label">Moderate (RSI 30-40)</div>
+          </div>
+        </div>
+        <div class="oversold-stat-card neutral">
+          <div class="stat-icon">➖</div>
+          <div class="stat-content">
+            <div class="stat-value" id="oversold-neutral-count">0</div>
+            <div class="stat-label">Neutral (RSI 40-60)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Oversold Tokens Grid -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🔥</span> Oversold Opportunities</h2>
+          <div class="header-actions">
+            <span class="text-muted" style="font-size: 12px;" id="oversold-last-update">Last update: --</span>
+            <button class="btn btn-secondary btn-sm" onclick="refreshOversold()">↻ Refresh</button>
+          </div>
+        </div>
+        <div class="oversold-tokens-grid" id="oversold-tokens-grid">
+          <!-- Dynamic token cards -->
+        </div>
+      </div>
+
+      <!-- Overbought Section -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title"><span class="icon">🔴</span> Overbought Tokens</h2>
+          <span class="badge badge-danger">Potential Reversal Zones</span>
+        </div>
+        <div class="oversold-tokens-grid" id="overbought-tokens-grid">
+          <!-- Dynamic token cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== POSITIONS DASHBOARD ==================== -->
+    <section id="positions-section" class="page-section">
+      <!-- Dashboard Header -->
+      <div class="positions-header">
+        <h2>💼 Positions Dashboard</h2>
+        <p class="text-muted">Track your trading performance and manage positions</p>
+      </div>
+
+      <!-- Performance Overview -->
+      <div class="positions-stats-grid">
+        <div class="position-stat-card profit">
+          <div class="stat-icon">💰</div>
+          <div class="stat-content">
+            <div class="stat-value" id="positions-total-pnl">$0.00</div>
+            <div class="stat-label">Total P&L</div>
+            <div class="stat-detail" id="positions-roi">0.00% ROI</div>
+          </div>
+        </div>
+        <div class="position-stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-content">
+            <div class="stat-value" id="positions-win-rate">0%</div>
+            <div class="stat-label">Win Rate</div>
+            <div class="stat-detail" id="positions-win-loss">0W / 0L</div>
+          </div>
+        </div>
+        <div class="position-stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value" id="positions-open-count">0</div>
+            <div class="stat-label">Open Positions</div>
+            <div class="stat-detail" id="positions-total-count">0 Total</div>
+          </div>
+        </div>
+        <div class="position-stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value" id="positions-best-trade">+0%</div>
+            <div class="stat-label">Best Trade</div>
+            <div class="stat-detail" id="positions-worst-trade">0% Worst</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Position Tabs -->
+      <div class="positions-tabs">
+        <button class="positions-tab-btn active" data-tab="open">Open Positions</button>
+        <button class="positions-tab-btn" data-tab="closed">Closed Positions</button>
+        <button class="positions-tab-btn" data-tab="pending">Pending Entry</button>
+      </div>
+
+      <!-- Open Positions -->
+      <div class="positions-tab-content active" id="positions-tab-open">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="icon">📈</span> Active Positions</h2>
+            <span class="badge badge-success" id="open-positions-count">0 Open</span>
+          </div>
+          <div class="positions-grid" id="open-positions-grid">
+            <!-- Dynamic position cards -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Closed Positions -->
+      <div class="positions-tab-content" id="positions-tab-closed">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="icon">📊</span> Closed Positions</h2>
+            <span class="badge" id="closed-positions-count">0 Closed</span>
+          </div>
+          <div class="positions-table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Action</th>
+                  <th>Entry</th>
+                  <th>Exit</th>
+                  <th>Time in Position</th>
+                  <th>P&L</th>
+                  <th>ROI</th>
+                </tr>
+              </thead>
+              <tbody id="closed-positions-table">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending Entry -->
+      <div class="positions-tab-content" id="positions-tab-pending">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title"><span class="icon">⏳</span> Waiting for Entry</h2>
+            <span class="badge badge-warning" id="pending-positions-count">0 Pending</span>
+          </div>
+          <div class="positions-grid" id="pending-positions-grid">
+            <!-- Dynamic position cards -->
+          </div>
         </div>
       </div>
     </section>
