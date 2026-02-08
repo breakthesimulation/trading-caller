@@ -1417,17 +1417,22 @@ async function loadOversoldSection() {
   oversoldGrid.innerHTML = '<div class="oversold-loading">⏳ Scanning market...</div>';
   overboughtGrid.innerHTML = '<div class="oversold-loading">⏳ Scanning market...</div>';
   
+  const startTime = performance.now();
+  
   try {
     const timeframe = oversoldTimeframe;
     
-    // Fetch oversold and overbought data
-    const [oversoldRes, overboughtRes] = await Promise.all([
-      fetch(`${ENDPOINTS.rsiOversold}?timeframe=${timeframe}&threshold=40`),
-      fetch(`${ENDPOINTS.rsiOverbought}?timeframe=${timeframe}&threshold=60`)
+    // Fetch with caching
+    const [oversoldData, overboughtData] = await Promise.all([
+      cachedFetch(
+        `${ENDPOINTS.rsiOversold}?timeframe=${timeframe}&threshold=40`,
+        `oversold-${timeframe}`
+      ),
+      cachedFetch(
+        `${ENDPOINTS.rsiOverbought}?timeframe=${timeframe}&threshold=60`,
+        `overbought-${timeframe}`
+      )
     ]);
-
-    const oversoldData = await oversoldRes.json();
-    const overboughtData = await overboughtRes.json();
 
     if (oversoldData.success) {
       // Store original data for filtering
@@ -1447,6 +1452,11 @@ async function loadOversoldSection() {
     }
 
     updateOversoldTimestamp();
+    
+    // Track performance
+    const loadTime = performance.now() - startTime;
+    perfMonitor.trackLoadTime(loadTime);
+    console.log(`[Performance] Oversold section loaded in ${loadTime.toFixed(0)}ms`);
   } catch (error) {
     console.error('Error loading oversold section:', error);
     oversoldGrid.innerHTML = '<div class="oversold-loading">❌ Network error. Please try again.</div>';
@@ -1590,10 +1600,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
-  // Search filter
+  // Search filter with debouncing (300ms delay)
   const searchInput = document.getElementById('oversold-search');
   if (searchInput) {
-    searchInput.addEventListener('input', filterOversoldTokens);
+    searchInput.addEventListener('input', debounce(filterOversoldTokens, 300));
   }
   
   // Severity filter
