@@ -754,6 +754,20 @@ app.post('/scheduler/trigger/:task', async (c) => {
   }
 });
 
+// Reply to forum comments on our posts
+app.post('/forum/reply-to-comments', async (c) => {
+  try {
+    const replyModule = await import('../../scripts/reply-comments-endpoint.js');
+    const result = await replyModule.replyToAllComments();
+    return c.json({ success: true, ...result });
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }, 500);
+  }
+});
+
 // ============ START SERVER ============
 
 import { serve } from '@hono/node-server';
