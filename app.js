@@ -1405,6 +1405,13 @@ let oversoldTimeframe = '4H';
 let oversoldAutoRefresh = null;
 
 async function loadOversoldSection() {
+  // Show loading states
+  const oversoldGrid = document.getElementById('oversold-tokens-grid');
+  const overboughtGrid = document.getElementById('overbought-tokens-grid');
+  
+  oversoldGrid.innerHTML = '<div class="oversold-loading">⏳ Scanning market...</div>';
+  overboughtGrid.innerHTML = '<div class="oversold-loading">⏳ Scanning market...</div>';
+  
   try {
     const timeframe = oversoldTimeframe;
     
@@ -1420,15 +1427,21 @@ async function loadOversoldSection() {
     if (oversoldData.success) {
       updateOversoldStats(oversoldData.tokens);
       renderOversoldTokens(oversoldData.tokens);
+    } else {
+      oversoldGrid.innerHTML = '<div class="oversold-loading">❌ Failed to load oversold data</div>';
     }
 
     if (overboughtData.success) {
       renderOverboughtTokens(overboughtData.tokens);
+    } else {
+      overboughtGrid.innerHTML = '<div class="oversold-loading">❌ Failed to load overbought data</div>';
     }
 
     updateOversoldTimestamp();
   } catch (error) {
     console.error('Error loading oversold section:', error);
+    oversoldGrid.innerHTML = '<div class="oversold-loading">❌ Network error. Please try again.</div>';
+    overboughtGrid.innerHTML = '<div class="oversold-loading">❌ Network error. Please try again.</div>';
   }
 }
 
@@ -1455,12 +1468,13 @@ function renderOversoldTokens(tokens) {
   grid.innerHTML = tokens.map(token => {
     const severity = token.rsi <= 20 ? 'extreme' : token.rsi <= 30 ? 'strong' : 'moderate';
     const signalStrength = token.signal?.strength || 'MEDIUM';
+    const dexUrl = token.address ? `https://dexscreener.com/solana/${token.address}` : '#';
     
     return `
-      <div class="oversold-token-card ${severity}">
+      <div class="oversold-token-card ${severity}" onclick="window.open('${dexUrl}', '_blank')">
         <div class="oversold-token-header">
           <div>
-            <div class="oversold-token-symbol">${token.symbol}</div>
+            <div class="oversold-token-symbol">${token.symbol} 📊</div>
             <div class="oversold-token-name">${token.name || token.symbol}</div>
           </div>
           <div class="oversold-rsi-badge ${severity}">
@@ -1479,10 +1493,22 @@ function renderOversoldTokens(tokens) {
               ${formatPercent(token.priceChange24h)}
             </span>
           </div>
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">Volume 24h</span>
+            <span class="oversold-metric-value">${formatVolume(token.volume24h)}</span>
+          </div>
+          <div class="oversold-metric">
+            <span class="oversold-metric-label">Market Cap</span>
+            <span class="oversold-metric-value">${formatMarketCap(token.marketCap)}</span>
+          </div>
         </div>
         
         <div class="oversold-signal-strength ${signalStrength.toLowerCase()}">
-          ${signalStrength} LONG Signal
+          🎯 ${signalStrength} LONG Signal
+        </div>
+        
+        <div class="oversold-token-footer">
+          <small style="color: var(--text-muted);">Click to view on DEXScreener</small>
         </div>
       </div>
     `;
@@ -1567,20 +1593,120 @@ let positionsData = {
 
 async function loadPositionsSection() {
   try {
-    // Fetch signals with tracking data
-    const response = await fetch(`${ENDPOINTS.signalsHistory}?limit=100`);
-    const data = await response.json();
+    // Fetch positions data from NEW positions API
+    const [openResponse, closedResponse, statsResponse] = await Promise.all([
+      fetch(`${API_BASE}/positions/open`),
+      fetch(`${API_BASE}/positions/closed?limit=50`),
+      fetch(`${API_BASE}/positions/stats`)
+    ]);
     
-    if (data.success) {
-      processPositionsData(data.signals);
-      updatePositionsStats();
+    const openData = await openResponse.json();
+    const closedData = await closedResponse.json();
+    const statsData = await statsResponse.json();
+    
+    if (openData.success && closedData.success && statsData.success) {
+      positionsData.open = openData.positions || [];
+      positionsData.closed = closedData.positions || [];
+      positionsData.pending = []; // No pending positions tracked yet
+      
+      updatePositionsStatsFromAPI(statsData.stats);
       renderPositions();
+    } else {
+      throw new Error('API returned error');
     }
   } catch (error) {
     console.error('Error loading positions:', error);
+    // Show empty state
+    positionsData.open = [];
+    positionsData.closed = [];
+    positionsData.pending = [];
+    updatePositionsStats();
+    renderPositions();
   }
 }
 
+// Process REAL tracked signals data
+function processRealPositionsData(signals) {
+  positionsData.open = [];
+  positionsData.closed = [];
+  positionsData.pending = [];
+  
+  signals.forEach(signal => {
+    const createdAt = new Date(signal.createdAt).getTime();
+    const now = Date.now();
+    
+    // Map status to position state
+    if (signal.status === 'ACTIVE') {
+      // Active position - calculate current P&L
+      positionsData.open.push({
+        ...signal,
+        token: { symbol: signal.tokenSymbol },
+        entry: signal.entryPrice,
+        targets: [signal.tp1, signal.tp2, signal.tp3],
+        currentPrice: signal.exitPrice || signal.entryPrice,
+        pnl: signal.pnlPercent || 0,
+        timeInPosition: formatTimeInPosition(createdAt, now)
+      });
+    } else if (['TP1_HIT', 'TP2_HIT', 'TP3_HIT', 'STOPPED_OUT', 'EXPIRED'].includes(signal.status)) {
+      // Closed position
+      const resolvedAt = signal.resolvedAt ? new Date(signal.resolvedAt).getTime() : now;
+      positionsData.closed.push({
+        ...signal,
+        token: { symbol: signal.tokenSymbol },
+        entry: signal.entryPrice,
+        exitPrice: signal.exitPrice || signal.tp1,
+        pnl: signal.pnlPercent || 0,
+        timeInPosition: formatTimeInPosition(createdAt, resolvedAt),
+        outcome: signal.status
+      });
+    } else if (signal.status === 'INVALIDATED') {
+      // Pending/invalidated
+      positionsData.pending.push({
+        ...signal,
+        token: { symbol: signal.tokenSymbol, price: signal.entryPrice },
+        entry: signal.entryPrice
+      });
+    }
+  });
+}
+
+// Update stats with REAL performance data
+function updateRealPositionsStats(performance) {
+  if (!performance) return;
+  
+  const summary = performance.summary;
+  const rates = performance.rates;
+  const pnl = performance.pnl;
+  const byDirection = performance.byDirection;
+  
+  // Total P&L (simulated from average)
+  const totalPnl = parseFloat(pnl.total.replace(/[+%]/g, ''));
+  
+  document.getElementById('positions-total-pnl').textContent = pnl.total;
+  document.getElementById('positions-total-pnl').className = totalPnl >= 0 ? 'stat-value profit' : 'stat-value loss';
+  document.getElementById('positions-roi').textContent = `${pnl.average} Avg`;
+  
+  const winRate = parseFloat(rates.winRate);
+  const totalResolved = summary.resolved;
+  const wins = Math.round((winRate / 100) * totalResolved);
+  const losses = totalResolved - wins;
+  
+  document.getElementById('positions-win-rate').textContent = rates.winRate;
+  document.getElementById('positions-win-loss').textContent = `${wins}W / ${losses}L`;
+  
+  document.getElementById('positions-open-count').textContent = summary.active;
+  document.getElementById('positions-total-count').textContent = `${summary.total} Total`;
+  
+  // Best/worst from closed positions
+  const closedPnls = positionsData.closed.map(p => p.pnl || 0);
+  const bestTrade = closedPnls.length > 0 ? Math.max(...closedPnls) : 0;
+  const worstTrade = closedPnls.length > 0 ? Math.min(...closedPnls) : 0;
+  
+  document.getElementById('positions-best-trade').textContent = `+${Math.round(bestTrade)}%`;
+  document.getElementById('positions-worst-trade').textContent = `${Math.round(worstTrade)}% Worst`;
+}
+
+// Fallback: process simulated data if real data unavailable
 function processPositionsData(signals) {
   const now = Date.now();
   
@@ -1650,6 +1776,25 @@ function updatePositionsStats() {
   
   document.getElementById('positions-best-trade').textContent = `+${Math.round(bestTrade)}%`;
   document.getElementById('positions-worst-trade').textContent = `${Math.round(worstTrade)}% Worst`;
+}
+
+function updatePositionsStatsFromAPI(stats) {
+  // Update stats from API response
+  const totalPnl = stats.totalPnl || 0;
+  document.getElementById('positions-total-pnl').textContent = `$${totalPnl.toFixed(2)}`;
+  document.getElementById('positions-total-pnl').className = totalPnl >= 0 ? 'stat-value profit' : 'stat-value loss';
+  document.getElementById('positions-roi').textContent = `${stats.avgPnl?.toFixed(2) || '0.00'}% ROI`;
+  
+  document.getElementById('positions-win-rate').textContent = `${stats.winRate?.toFixed(0) || '0'}%`;
+  document.getElementById('positions-win-loss').textContent = `${stats.wins || 0}W / ${stats.losses || 0}L`;
+  
+  document.getElementById('positions-open-count').textContent = stats.openPositions || 0;
+  document.getElementById('positions-total-count').textContent = `${stats.totalPositions || 0} Total`;
+  
+  const bestPnl = stats.bestTrade?.pnl || 0;
+  const worstPnl = stats.worstTrade?.pnl || 0;
+  document.getElementById('positions-best-trade').textContent = `+${bestPnl.toFixed(1)}%`;
+  document.getElementById('positions-worst-trade').textContent = `${worstPnl.toFixed(1)}% Worst`;
 }
 
 function renderPositions() {

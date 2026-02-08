@@ -238,6 +238,18 @@
   color: var(--text-muted);
 }
 
+.oversold-token-footer {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.oversold-token-card {
+  cursor: pointer;
+  user-select: none;
+}
+
 /* ==========================================
    POSITIONS DASHBOARD
    ========================================== */

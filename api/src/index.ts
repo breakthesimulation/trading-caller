@@ -23,6 +23,9 @@ import { rsiRoutes } from '../../oversold/src/index.js';
 // Backtesting module
 import { backtestRoutes } from '../../backtesting/src/index.js';
 
+// Positions dashboard
+import positionsRoutes from './positions-routes.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -87,6 +90,9 @@ app.route('/', rsiRoutes);
 // Mount backtesting routes
 app.route('/', backtestRoutes);
 
+// Mount positions dashboard routes
+app.route('/', positionsRoutes);
+
 // ============ STATIC FILES ============
 // Serve frontend files from project root
 app.get('/app.js', serveStatic({ path: './app.js' }));
@@ -115,6 +121,13 @@ app.get('/api', (c) => {
       trackedSignals: '/signals/tracked',
       tokenLeaderboard: '/leaderboard/tokens',
       tokenPerformance: '/leaderboard/tokens/:symbol',
+      
+      // Positions Dashboard (NEW)
+      positionsOpen: '/positions/open',
+      positionsClosed: '/positions/closed',
+      positionsStats: '/positions/stats',
+      positionById: '/positions/:id',
+      positionsByToken: '/positions/token/:symbol',
       
       // Volume Scanner (NEW)
       volumeStatus: '/volume/status',
