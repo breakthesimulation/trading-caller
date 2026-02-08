@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal Confidence Breakdown - Trading Caller</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="modern-ui.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .signal-header {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-xl);
+      margin-bottom: var(--spacing-xl);
+    }
+    
+    .signal-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-md);
+    }
+    
+    .signal-token {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+    
+    .token-symbol {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    
+    .action-badge {
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .action-long {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--status-profitable);
+      border: 2px solid var(--status-profitable);
+    }
+    
+    .action-short {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--status-loss);
+      border: 2px solid var(--status-loss);
+    }
+    
+    .confidence-section {
+      margin-top: var(--spacing-lg);
+      padding-top: var(--spacing-lg);
+      border-top: 1px solid var(--border-color);
+    }
+    
+    .confidence-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+    }
+    
+    .confidence-score {
+      font-size: 4rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .confidence-info {
+      flex: 1;
+    }
+    
+    .confidence-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .confidence-description {
+      font-size: 1rem;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    
+    .factors-grid {
+      display: grid;
+      gap: var(--spacing-md);
+    }
+    
+    .factor-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      transition: all var(--transition-base);
+    }
+    
+    .factor-card:hover {
+      background: var(--bg-hover);
+      transform: translateX(4px);
+    }
+    
+    .factor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .factor-name {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .factor-contribution {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      font-variant-numeric: tabular-nums;
+    }
+    
+    .factor-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .factor-category {
+      display: inline-flex;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .category-technical {
+      background: rgba(59, 130, 246, 0.1);
+      color: #3B82F6;
+    }
+    
+    .category-fundamental {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8B5CF6;
+    }
+    
+    .category-sentiment {
+      background: rgba(245, 158, 11, 0.1);
+      color: #F59E0B;
+    }
+    
+    .category-historical {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--accent-primary);
+    }
+    
+    .factor-weight {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+    
+    .factor-progress {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-primary);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--spacing-sm);
+    }
+    
+    .factor-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-primary), #14F195);
+      transition: width var(--transition-slow);
+    }
+    
+    .factor-description {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    .historical-stats {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-md);
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="signal-header">
+      <div class="signal-title">
+        <div class="signal-token">
+          <span class="token-symbol" id="token-symbol">SOL</span>
+          <span class="action-badge action-long" id="action-badge">LONG</span>
+        </div>
+      </div>
+      
+      <div class="confidence-section">
+        <div class="confidence-header">
+          <div class="confidence-score" id="confidence-score">78%</div>
+          <div class="confidence-info">
+            <div class="confidence-label">Confidence Score</div>
+            <div class="confidence-description" id="confidence-reasoning">
+              Based on 9 factors analyzed across technical, fundamental, and sentiment indicators
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary);">
+      Confidence Factor Breakdown
+    </h2>
+    
+    <div class="factors-grid" id="factors-grid">
+      <!-- Dynamically loaded factors -->
+    </div>
+    
+    <div class="historical-stats">
+      <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">
+        Historical Performance
+      </h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="historical-win-rate">68%</div>
+          <div class="stat-label">Win Rate</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="similar-setups">47</div>
+          <div class="stat-label">Similar Setups</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">1.85</div>
+          <div class="stat-label">Avg Risk/Reward</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Sample data - in production, this would be fetched from API
+    const sampleSignal = {
+      token: 'SOL',
+      action: 'LONG',
+      confidence: 78,
+      reasoning: 'Based on 9 factors analyzed across technical, fundamental, and sentiment indicators',
+      factors: [
+        {
+          name: 'Extreme Oversold RSI',
+          category: 'TECHNICAL',
+          weight: 20,
+          value: 100,
+          contribution: 20,
+          description: 'RSI(4H) = 24.3 - Extreme oversold bounce zone'
+        },
+        {
+          name: 'RSI Alignment',
+          category: 'TECHNICAL',
+          weight: 15,
+          value: 100,
+          contribution: 15,
+          description: 'Both 4H and 1D RSI showing oversold'
+        },
+        {
+          name: 'Volume Confirmation',
+          category: 'TECHNICAL',
+          weight: 15,
+          value: 85,
+          contribution: 12.75,
+          description: 'Strong bullish confirmation - volume spike 2.8x average'
+        },
+        {
+          name: 'Trend Alignment',
+          category: 'TECHNICAL',
+          weight: 15,
+          value: 85,
+          contribution: 12.75,
+          description: 'Strong up trend on both timeframes'
+        },
+        {
+          name: 'Historical Win Rate',
+          category: 'HISTORICAL',
+          weight: 12,
+          value: 68,
+          contribution: 8.16,
+          description: 'Similar setups: 68% win rate (47 trades)'
+        },
+        {
+          name: 'MACD Crossover',
+          category: 'TECHNICAL',
+          weight: 10,
+          value: 80,
+          contribution: 8,
+          description: 'BULLISH_CROSS on 4H chart'
+        },
+        {
+          name: 'Strong Trend',
+          category: 'TECHNICAL',
+          weight: 8,
+          value: 72,
+          contribution: 5.76,
+          description: 'Trend strength: 72%'
+        },
+        {
+          name: 'Market Sentiment',
+          category: 'SENTIMENT',
+          weight: 10,
+          value: 45,
+          contribution: 4.5,
+          description: 'Bullish sentiment (22)'
+        },
+        {
+          name: 'Fundamental Analysis',
+          category: 'FUNDAMENTAL',
+          weight: 15,
+          value: 0,
+          contribution: 0,
+          description: 'No major unlocks in next 30 days ✅'
+        }
+      ],
+      historicalWinRate: 68,
+      similarSetups: 47
+    };
+    
+    // Display signal data
+    document.getElementById('token-symbol').textContent = sampleSignal.token;
+    document.getElementById('action-badge').textContent = sampleSignal.action;
+    document.getElementById('action-badge').className = `action-badge action-${sampleSignal.action.toLowerCase()}`;
+    document.getElementById('confidence-score').textContent = `${sampleSignal.confidence}%`;
+    document.getElementById('confidence-reasoning').textContent = sampleSignal.reasoning;
+    document.getElementById('historical-win-rate').textContent = `${sampleSignal.historicalWinRate}%`;
+    document.getElementById('similar-setups').textContent = sampleSignal.similarSetups;
+    
+    // Display factors
+    const factorsGrid = document.getElementById('factors-grid');
+    factorsGrid.innerHTML = sampleSignal.factors
+      .sort((a, b) => b.contribution - a.contribution)
+      .map(factor => {
+        const percentValue = (factor.value / 100) * factor.weight;
+        return `
+          <div class="factor-card fade-in">
+            <div class="factor-header">
+              <span class="factor-name">${factor.name}</span>
+              <span class="factor-contribution">+${factor.contribution.toFixed(1)}</span>
+            </div>
+            <div class="factor-meta">
+              <span class="factor-category category-${factor.category.toLowerCase()}">
+                ${factor.category}
+              </span>
+              <span class="factor-weight">Weight: ${factor.weight}% × ${factor.value}%</span>
+            </div>
+            <div class="factor-progress">
+              <div class="factor-progress-fill" style="width: ${percentValue}%"></div>
+            </div>
+            <div class="factor-description">${factor.description}</div>
+          </div>
+        `;
+      })
+      .join('');
+  </script>
+</body>
+</html>
