@@ -99,6 +99,9 @@ app.get('/app.js', serveStatic({ path: './app.js' }));
 app.get('/styles.css', serveStatic({ path: './styles.css' }));
 app.get('/assets/*', serveStatic({ root: './' }));
 
+// Serve special pages
+app.get('/live', serveStatic({ path: './live-dashboard.html' }));
+
 // Serve index.html for root and unknown routes (SPA fallback)
 app.get('/', serveStatic({ path: './index.html' }));
 
