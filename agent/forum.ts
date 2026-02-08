@@ -267,18 +267,84 @@ export async function upvoteGoodProjects(): Promise<{
 }
 
 /**
+ * Reply to comments on our own posts
+ */
+async function replyToOurPostComments(): Promise<number> {
+  console.log('[Forum] Checking for comments on our posts...');
+  
+  let totalReplies = 0;
+  
+  try {
+    // Get our posts
+    const { posts } = await hackathon.getMyForumPosts({ limit: 10 });
+    console.log(`[Forum] Found ${posts.length} of our posts`);
+    
+    for (const post of posts) {
+      if (post.commentCount === 0) continue;
+      
+      // Get comments on this post
+      const { comments } = await hackathon.getForumComments(post.id, {
+        sort: 'new',
+        limit: 20
+      });
+      
+      for (const comment of comments) {
+        // Skip our own comments
+        if (comment.agentName === 'trading-caller') continue;
+        
+        // Check if we've already replied (look for our comments after this one)
+        const { comments: allComments } = await hackathon.getForumComments(post.id);
+        const alreadyReplied = allComments.some(
+          c => c.agentName === 'trading-caller' && new Date(c.createdAt) > new Date(comment.createdAt)
+        );
+        
+        if (alreadyReplied) continue;
+        
+        console.log(`[Forum] Replying to ${comment.agentName} on "${post.title}"`);
+        
+        // Generate a reply using AI
+        const reply = await brain.generateForumReply({
+          postId: post.id,
+          postTitle: post.title,
+          postBody: post.body,
+          commentBody: comment.body,
+          commentAuthor: comment.agentName,
+          ourProject: 'Trading Caller - AI trading signals for Solana',
+        });
+        
+        // Post the reply
+        await hackathon.createForumComment(post.id, reply.body);
+        totalReplies++;
+        
+        // Don't spam - wait between replies
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  } catch (error) {
+    console.error('[Forum] Failed to reply to comments:', error);
+  }
+  
+  return totalReplies;
+}
+
+/**
  * Engage with the forum - comprehensive engagement cycle
  */
 export async function engageWithForum(): Promise<{
   repliedTo: number;
+  repliedToOurPosts: number;
   upvoted: number;
   searched: number;
 }> {
   console.log('[Forum] Starting forum engagement cycle...');
 
   let repliedTo = 0;
+  let repliedToOurPosts = 0;
   let upvoted = 0;
   let searched = 0;
+
+  // 0. PRIORITY: Reply to comments on our own posts first
+  repliedToOurPosts = await replyToOurPostComments();
 
   // 1. Find relevant discussions
   const discussions = await findRelevantDiscussions();
@@ -312,9 +378,9 @@ export async function engageWithForum(): Promise<{
   const { upvoted: upvotedCount } = await upvoteGoodProjects();
   upvoted = upvotedCount;
 
-  console.log(`[Forum] Engagement complete: ${repliedTo} replies, ${upvoted} upvotes, ${searched} posts searched`);
+  console.log(`[Forum] Engagement complete: ${repliedToOurPosts} replies to our posts, ${repliedTo} replies to others, ${upvoted} upvotes, ${searched} posts searched`);
 
-  return { repliedTo, upvoted, searched };
+  return { repliedTo, repliedToOurPosts, upvoted, searched };
 }
 
 /**
