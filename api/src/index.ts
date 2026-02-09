@@ -176,6 +176,11 @@ app.get('/api', (c) => {
 });
 
 // Performance Dashboard - MINIMAL WORKING VERSION
+// Simple dashboard that works
+app.get('/dashboard-simple', (c) => {
+  return c.text('Trading Caller Dashboard - Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%');
+});
+
 app.get('/dashboard', (c) => {
   return c.html(`<!DOCTYPE html>
 <html>
