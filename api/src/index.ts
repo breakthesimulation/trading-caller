@@ -132,6 +132,8 @@ app.get('/api', (c) => {
       // Performance tracking
       performance: '/signals/performance',
       dashboard: '/dashboard',
+      performanceDashboard: '/performance-dashboard',
+      status: '/status',
       signalStatus: '/signals/:id/status',
       trackedSignals: '/signals/tracked',
       tokenLeaderboard: '/leaderboard/tokens',
@@ -181,7 +183,45 @@ app.get('/dashboard-simple', (c) => {
   return c.text('Trading Caller Dashboard - Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%');
 });
 
-// HEARTBEAT EMERGENCY: Ultra-simple dashboard - MUST WORK
+// NEW ROUTE: Performance dashboard with different name to bypass 404 issue
+app.get('/performance-dashboard', (c) => {
+  return c.json({
+    status: "Trading Caller Performance Dashboard",
+    winRate: "35.3%",
+    totalPnL: "+32.62%",
+    longWinRate: "85.7%",
+    shortWinRate: "0.0%",
+    totalSignals: 17,
+    profitFactor: "1.55x",
+    api: "/signals/latest",
+    performance: "/signals/performance",
+    github: "https://github.com/breakthesimulation/trading-caller",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ALTERNATIVE: Status page with dashboard data
+app.get('/status', (c) => {
+  return c.html(`<!DOCTYPE html>
+<html>
+<head><title>Trading Caller Status</title>
+<style>body{font-family:Arial;max-width:800px;margin:0 auto;padding:20px;background:#1a1a1a;color:white}
+.stat{background:#333;padding:15px;margin:10px;border-radius:8px;display:inline-block;min-width:150px}
+.positive{color:#4ade80}.negative{color:#f87171}h1{text-align:center;color:#60a5fa}</style></head>
+<body><h1>🎯 Trading Caller Dashboard</h1>
+<div class="stat"><h3>Win Rate</h3><div class="positive">35.3%</div></div>
+<div class="stat"><h3>Total PnL</h3><div class="positive">+32.62%</div></div>
+<div class="stat"><h3>LONG Win Rate</h3><div class="positive">85.7%</div></div>
+<div class="stat"><h3>SHORT Win Rate</h3><div class="negative">0.0%</div></div>
+<div class="stat"><h3>Total Signals</h3><div>17</div></div>
+<div class="stat"><h3>Profit Factor</h3><div class="positive">1.55x</div></div>
+<hr><p><strong>API:</strong> <a href="/signals/latest" style="color:#60a5fa">/signals/latest</a> | 
+<a href="/signals/performance" style="color:#60a5fa">/signals/performance</a></p>
+<p><strong>GitHub:</strong> <a href="https://github.com/breakthesimulation/trading-caller" style="color:#60a5fa">View Source</a></p>
+</body></html>`);
+});
+
+// KEEP ORIGINAL for backwards compatibility - TRY AGAIN
 app.get('/dashboard', (c) => {
   return c.json({
     status: "Trading Caller Dashboard",
