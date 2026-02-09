@@ -21,7 +21,7 @@
     "@hono/node-server": "^1.19.9",
     "@solana/web3.js": "^1.95.0",
     "axios": "^1.7.0",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^11.3.0",
     "date-fns": "^3.3.0",
     "dotenv": "^16.4.0",
     "hono": "^4.0.0",
