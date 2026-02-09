@@ -121,7 +121,7 @@ app.get('/api', (c) => {
   return c.json({
     name: 'Trading Caller',
     tagline: 'Free your mind — AI trading calls for Solana',
-    version: '1.3.1',
+    version: '1.3.2-rebuild',
     status: 'operational',
     endpoints: {
       // Signal generation
@@ -134,6 +134,7 @@ app.get('/api', (c) => {
       dashboard: '/dashboard',
       performanceDashboard: '/performance-dashboard',
       status: '/status',
+      testDeploy: '/test-deploy',
       signalStatus: '/signals/:id/status',
       trackedSignals: '/signals/tracked',
       tokenLeaderboard: '/leaderboard/tokens',
@@ -181,6 +182,11 @@ app.get('/api', (c) => {
 // Simple dashboard that works
 app.get('/dashboard-simple', (c) => {
   return c.text('Trading Caller Dashboard - Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%');
+});
+
+// TEST ROUTE: Check if deployment is working
+app.get('/test-deploy', (c) => {
+  return c.text('Deployment working! Dashboard should be at /performance-dashboard or /status');
 });
 
 // NEW ROUTE: Performance dashboard with different name to bypass 404 issue
