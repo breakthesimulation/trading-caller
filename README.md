@@ -17,6 +17,17 @@ Trading Caller is your autonomous trading signal operator that:
 - 🧠 **Learns & improves** — Adjusts based on outcomes over time
 - 🤖 **Self-manages** — Hackathon integration, forum engagement, heartbeat sync
 
+## 🎯 Live Performance Dashboard
+
+**[📊 View Live Dashboard](https://web-production-5e86c.up.railway.app/dashboard)**
+
+**Current Performance Highlights:**
+- **Win Rate:** 35.3% (17 signals tracked)
+- **Total PnL:** +32.62% cumulative returns
+- **Profit Factor:** 1.55x risk-adjusted
+- **Strong LONG bias:** 85.7% win rate on long positions 🎯
+- **Real-time tracking** with interactive charts and insights
+
 ## Hackathon Agent Features
 
 Trading Caller is a fully autonomous hackathon participant:
