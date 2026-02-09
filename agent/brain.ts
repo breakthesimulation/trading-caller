@@ -108,7 +108,7 @@ Return ONLY a JSON object like:
 {"title": "...", "body": "..."}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4.5-20241022',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
@@ -159,7 +159,7 @@ Return ONLY a JSON object like:
 {"body": "..."}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4.5-20241022',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 300,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
@@ -231,7 +231,7 @@ confidenceAdjustment should be -10 to +10:
 - Zero if this was expected variance`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4.5-20241022',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
@@ -293,7 +293,7 @@ Return ONLY a JSON object like:
 }`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4.5-20241022',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
@@ -359,7 +359,7 @@ Return ONLY a JSON object like:
 {"title": "...", "body": "..."}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4.5-20241022',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: [{ role: 'user', content: prompt }],
