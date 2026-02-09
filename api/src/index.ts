@@ -181,13 +181,21 @@ app.get('/dashboard-simple', (c) => {
   return c.text('Trading Caller Dashboard - Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%');
 });
 
-// EMERGENCY: Minimal working dashboard - HEARTBEAT CRITICAL FIX
+// HEARTBEAT EMERGENCY: Ultra-simple dashboard - MUST WORK
 app.get('/dashboard', (c) => {
-  return c.text(`Trading Caller Dashboard
-Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%
-Total Signals: 17 | Profit Factor: 1.55x
-API: /signals/latest | Performance: /signals/performance
-Status: Operational | GitHub: https://github.com/breakthesimulation/trading-caller`);
+  return c.json({
+    status: "Trading Caller Dashboard",
+    winRate: "35.3%",
+    totalPnL: "+32.62%",
+    longWinRate: "85.7%",
+    shortWinRate: "0.0%",
+    totalSignals: 17,
+    profitFactor: "1.55x",
+    api: "/signals/latest",
+    performance: "/signals/performance",
+    github: "https://github.com/breakthesimulation/trading-caller",
+    timestamp: new Date().toISOString()
+  });
 });
 
 // HTML Dashboard (backup)
