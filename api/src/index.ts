@@ -12,7 +12,9 @@ import type { TradingSignal, AnalystCall, AnalystStats } from '../../research-en
 
 // Performance tracking module
 import performanceRoutes from './performance-routes.js';
-import { performanceScheduler, performanceTracker } from '../../performance/index.js';
+
+// Performance tracking - lazy loaded to avoid startup failures
+let performanceTracker = null;
 
 // Volume scanner module
 import volumeRoutes, { getScanner } from '../../volume-scanner/src/routes.js';
@@ -37,18 +39,20 @@ let modulesLoaded = false;
 async function loadOptionalModules() {
   if (modulesLoaded) return;
   try {
-    const [hackathonMod, schedulerMod, dbMod, trackerMod, learnerMod] = await Promise.all([
+    const [hackathonMod, schedulerMod, dbMod, trackerMod, learnerMod, perfMod] = await Promise.all([
       import('../../agent/hackathon.js').catch(() => null),
       import('../../agent/scheduler.js').catch(() => null),
       import('../../db/index.js').catch(() => null),
       import('../../learning/tracker.js').catch(() => null),
       import('../../learning/learner.js').catch(() => null),
+      import('../../performance/index.js').catch(() => null),
     ]);
     hackathon = hackathonMod?.default || null;
     scheduler = schedulerMod?.default || null;
     db = dbMod?.db || null;
     tracker = trackerMod?.default || null;
     learner = learnerMod?.default || null;
+    performanceTracker = perfMod?.performanceTracker || null;
     modulesLoaded = true;
     console.log('[TradingCaller] Optional modules loaded');
   } catch (err) {
@@ -173,6 +177,9 @@ app.get('/api', (c) => {
 
 // Performance Dashboard (KILLER FEATURE)
 app.get('/dashboard', async (c) => {
+  // Ensure optional modules are loaded
+  await loadOptionalModules();
+  
   let perf;
   try {
     perf = performanceTracker?.getStats ? performanceTracker.getStats() : null;
