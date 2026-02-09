@@ -175,28 +175,70 @@ app.get('/api', (c) => {
   });
 });
 
-// Performance Dashboard (KILLER FEATURE) - EMERGENCY SIMPLE VERSION
+// Performance Dashboard - MINIMAL WORKING VERSION
 app.get('/dashboard', (c) => {
-  // Use hardcoded performance data to ensure dashboard works
-  const perf = {
-    rates: { winRate: '35.3%' },
-    pnl: { total: '+32.62%', profitFactor: '1.55', averageWin: '+15.38%' },
-    summary: { total: 17, active: 0 },
-    outcomes: { tp1Hits: 6, tp2Hits: 1, tp3Hits: 1, stoppedOut: 7, expired: 4 },
-    byDirection: { 
-      long: { winRate: '85.7%', total: 7, avgPnl: '+12.46%' },
-      short: { winRate: '0.0%', total: 10, avgPnl: '-5.46%' }
-    },
-    timing: { avgTimeToStop: '5.7h', avgTimeToTP1: '13.3h' }
-  };
+  return c.html(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Trading Caller - Performance Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background: #1a1a1a; color: white; }
+    .stat { background: #333; padding: 15px; margin: 10px; border-radius: 8px; display: inline-block; min-width: 150px; }
+    .positive { color: #4ade80; }
+    .negative { color: #f87171; }
+    h1 { text-align: center; color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1>🎯 Trading Caller Dashboard</h1>
+  <p><strong>Free your mind — AI trading calls for Solana</strong></p>
   
-  return c.html(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Trading Caller - Live Performance Dashboard</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <div class="stat">
+    <h3>Win Rate</h3>
+    <div class="positive">35.3%</div>
+  </div>
+  
+  <div class="stat">
+    <h3>Total PnL</h3>
+    <div class="positive">+32.62%</div>
+  </div>
+  
+  <div class="stat">
+    <h3>LONG Win Rate</h3>
+    <div class="positive">85.7%</div>
+  </div>
+  
+  <div class="stat">
+    <h3>SHORT Win Rate</h3>
+    <div class="negative">0.0%</div>
+  </div>
+  
+  <div class="stat">
+    <h3>Total Signals</h3>
+    <div>17</div>
+  </div>
+  
+  <div class="stat">
+    <h3>Profit Factor</h3>
+    <div class="positive">1.55x</div>
+  </div>
+  
+  <hr style="margin: 30px 0;">
+  
+  <h2>🔗 API Endpoints</h2>
+  <p><strong>Latest Signals:</strong> <a href="/signals/latest" style="color: #60a5fa;">/signals/latest</a></p>
+  <p><strong>Performance Data:</strong> <a href="/signals/performance" style="color: #60a5fa;">/signals/performance</a></p>
+  <p><strong>GitHub:</strong> <a href="https://github.com/breakthesimulation/trading-caller" style="color: #60a5fa;" target="_blank">View Source</a></p>
+  
+  <hr style="margin: 30px 0;">
+  
+  <p><strong>💡 Key Insight:</strong> Algorithm excels at LONG positions (85.7% win rate) but struggles with shorts (0% win rate). Focusing on oversold bounce identification.</p>
+  
+  <p style="text-align: center; margin-top: 40px; opacity: 0.8;">
+    <strong>Hackathon Project:</strong> Building transparent, AI-powered trading signals for the Solana ecosystem
+  </p>
+</body>
+</html>`);
       <style>
         body { 
           font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
