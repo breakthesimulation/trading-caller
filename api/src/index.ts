@@ -94,11 +94,14 @@ app.route('/', performanceRoutes);
 app.route('/', volumeRoutes);
 
 // Mount RSI scanner routes
+// Mount multi-timeframe RSI routes FIRST (before /rsi/:symbol catches "multi")
+import { rsiMultiRoutes } from './rsi-multi.js';
+app.route('/', rsiMultiRoutes);
+
 app.route('/', rsiRoutes);
 
 // Mount multi-timeframe RSI scanner routes
-import { rsiMultiRoutes } from './rsi-multi.js';
-app.route('/', rsiMultiRoutes);
+// rsiMultiRoutes moved before rsiRoutes to avoid /rsi/:symbol catching /rsi/multi
 
 // Mount backtesting routes (disabled - sqlite3 breaks Railway)
 // app.route('/', backtestRoutes);
