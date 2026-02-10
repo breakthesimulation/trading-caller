@@ -4,7 +4,7 @@
  */
 
 import * as manager from './manager.js';
-import { fetchTokenPrice } from '../research-engine/src/data/birdeye.js';
+import { getPrice } from '../research-engine/src/data/jupiter.js';
 
 let monitorInterval: NodeJS.Timeout | null = null;
 let isRunning = false;
@@ -24,7 +24,7 @@ async function monitorPositions(): Promise<void> {
   for (const position of activePositions) {
     try {
       // Fetch current price
-      const currentPrice = await fetchTokenPrice(position.tokenAddress);
+      const currentPrice = await getPrice(position.tokenAddress);
       
       if (!currentPrice) {
         console.warn(`[PositionMonitor] No price for ${position.tokenSymbol}`);

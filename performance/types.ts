@@ -37,6 +37,9 @@ export interface TrackedSignal {
   createdAt: string;
   expiresAt: string;     // When signal expires if no target/stop hit
   
+  // Live price tracking
+  currentPrice?: number;
+  
   // Outcome data (filled when resolved)
   resolvedAt?: string;
   exitPrice?: number;

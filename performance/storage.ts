@@ -447,6 +447,36 @@ export function getTokenLeaderboard(): {
 
 // ============ Exports ============
 
+/**
+ * Update current price for an active signal and compute PnL
+ */
+export function updateCurrentPrice(id: string, currentPrice: number): TrackedSignal | null {
+  const signal = signals.find(s => s.id === id);
+  if (!signal || signal.status !== 'ACTIVE') return null;
+  
+  signal.currentPrice = currentPrice;
+  
+  // Calculate P&L
+  const entry = signal.entryPrice;
+  if (entry && entry > 0) {
+    if (signal.action === 'LONG') {
+      signal.pnlPercent = ((currentPrice - entry) / entry) * 100;
+    } else {
+      signal.pnlPercent = ((entry - currentPrice) / entry) * 100;
+    }
+    
+    // Track high/low
+    if (!signal.highestPnl || signal.pnlPercent > signal.highestPnl) {
+      signal.highestPnl = signal.pnlPercent;
+    }
+    if (!signal.lowestPnl || signal.pnlPercent < signal.lowestPnl) {
+      signal.lowestPnl = signal.pnlPercent;
+    }
+  }
+  
+  return signal;
+}
+
 export const storage = {
   createSignal,
   getSignal,
@@ -454,6 +484,7 @@ export const storage = {
   getAllSignals,
   updateSignal,
   resolveSignal,
+  updateCurrentPrice,
   getPerformanceStats,
   getTokenPerformanceStats,
   getTokenLeaderboard,

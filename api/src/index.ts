@@ -29,6 +29,10 @@ import { rsiRoutes } from '../../oversold/src/index.js';
 // Positions dashboard
 import positionsRoutes from './positions-routes.js';
 
+// Price update for live position tracking
+import { getPrice } from '../../research-engine/src/data/jupiter.js';
+import { storage as perfStorage } from '../../performance/storage.js';
+
 // Optional modules - loaded lazily to avoid startup failures
 let hackathon: any = null;
 let scheduler: any = null;
@@ -1105,6 +1109,39 @@ setTimeout(async () => {
     // Start performance scheduler (every 10 minutes price checks)
     console.log('[API] Starting performance scheduler...');
     if (performanceTracker?.start) performanceTracker.start();
+    
+    // Start live price updates for active positions (via DexScreener, no API key needed)
+    console.log('[API] Starting position price updater...');
+    async function updatePositionPrices() {
+      const active = perfStorage.getActiveSignals();
+      if (active.length === 0) return;
+      
+      console.log(`[PriceUpdater] Updating prices for ${active.length} active positions...`);
+      let updated = 0;
+      
+      for (const signal of active) {
+        try {
+          const price = await getPrice(signal.tokenAddress);
+          if (price && price > 0) {
+            perfStorage.updateCurrentPrice(signal.id, price);
+            updated++;
+          }
+          // Small delay to avoid rate limits
+          await new Promise(r => setTimeout(r, 300));
+        } catch (e) {
+          // Skip silently
+        }
+      }
+      
+      if (updated > 0) {
+        perfStorage.forceSave();
+        console.log(`[PriceUpdater] Updated ${updated}/${active.length} position prices`);
+      }
+    }
+    
+    // Run immediately, then every 2 minutes
+    updatePositionPrices();
+    setInterval(updatePositionPrices, 120000);
     
     // Initialize and start volume scanner
     console.log('[API] Initializing volume scanner...');

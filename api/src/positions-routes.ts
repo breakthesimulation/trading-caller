@@ -48,7 +48,7 @@ function formatPosition(signal: TrackedSignal) {
     
     // Prices
     entry: signal.entryPrice,
-    current: signal.exitPrice || signal.entryPrice,
+    current: signal.currentPrice || signal.exitPrice || signal.entryPrice,
     targets: {
       tp1: signal.tp1,
       tp2: signal.tp2,
