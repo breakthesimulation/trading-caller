@@ -3,1018 +3,1602 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trading Caller - AI-Powered Trading Signals for Solana</title>
-    <meta name="description" content="Free your mind — AI-powered trading signals for Solana. Get real-time signals, RSI analysis, and performance tracking.">
+    <title>Trading Caller - Multi-Timeframe RSI Scanner & AI Trading Signals</title>
+    <meta name="description" content="Comprehensive multi-timeframe RSI analysis and AI-powered trading signals for Solana. Real-time market data, performance tracking, and technical analysis.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        :root {
+            --primary-purple: #7C3AED;
+            --primary-purple-dark: #5B21B6;
+            --primary-purple-light: #A855F7;
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F9FAFB;
+            --bg-tertiary: #F3F4F6;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --text-muted: #9CA3AF;
+            --border-light: #E5E7EB;
+            --border-medium: #D1D5DB;
+            --green-extreme: #059669;
+            --green-strong: #22C55E;
+            --green-moderate: #86EFAC;
+            --red-extreme: #DC2626;
+            --red-strong: #EF4444;
+            --red-moderate: #FCA5A5;
+            --yellow-neutral: #E5E7EB;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #FAFAFA;
-            color: #111827;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .header {
+
+        /* Navigation */
+        .navbar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+            border-bottom: 1px solid var(--border-light);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
+            padding: 0 2rem;
         }
-        
-        .nav {
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 0;
+            padding: 1rem 0;
         }
-        
+
         .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #111827;
-            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--primary-purple);
+            text-decoration: none;
         }
-        
+
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #7C3AED, #8B5CF6);
-            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-light));
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-weight: 600;
-            font-size: 18px;
+            font-weight: 700;
         }
-        
+
         .nav-links {
             display: flex;
-            gap: 32px;
-            list-style: none;
+            gap: 2rem;
+            align-items: center;
         }
-        
+
         .nav-link {
-            color: #6B7280;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
+            padding: 0.5rem 0;
             transition: color 0.2s ease;
-        }
-        
-        .nav-link:hover {
-            color: #7C3AED;
-        }
-        
-        .cta-button {
-            background: #7C3AED;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            border: none;
             cursor: pointer;
         }
-        
-        .cta-button:hover {
-            background: #6D28D9;
-            transform: translateY(-1px);
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-purple);
         }
-        
-        .hero {
+
+        /* Main Content */
+        .main {
             margin-top: 80px;
-            padding: 80px 0;
+            padding: 2rem;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .hero-header {
             text-align: center;
+            margin-bottom: 2rem;
         }
-        
-        .hero h1 {
-            font-size: 3.5rem;
+
+        .hero-title {
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 24px;
-            background: linear-gradient(135deg, #111827, #7C3AED);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
         }
-        
-        .hero .tagline {
-            font-size: 1.5rem;
-            color: #6B7280;
-            margin-bottom: 48px;
-            font-weight: 500;
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
         }
-        
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 24px;
-            margin: 48px 0;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
-        
+
         .stat-card {
-            background: white;
-            padding: 32px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.1);
-            border: 1px solid rgba(124, 58, 237, 0.05);
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #7C3AED;
-            margin-bottom: 8px;
-        }
-        
-        .stat-label {
-            color: #6B7280;
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: 0.875rem;
-            letter-spacing: 0.5px;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 32px;
-            margin: 80px 0;
-        }
-        
-        .feature-card {
-            border-radius: 24px;
-            padding: 40px;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            color: white;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        
-        .feature-card.purple {
-            background: linear-gradient(135deg, #7C3AED, #8B5CF6);
-        }
-        
-        .feature-card.dark {
-            background: linear-gradient(135deg, #1A1A2E, #16213E);
-        }
-        
-        .feature-card.warm {
-            background: #F5F5F4;
-            color: #111827;
-        }
-        
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 24px;
-        }
-        
-        .feature-card.warm .feature-icon {
-            background: rgba(124, 58, 237, 0.1);
-            color: #7C3AED;
-        }
-        
-        .feature-title {
-            font-size: 1.875rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        
-        .feature-description {
-            opacity: 0.9;
-            margin-bottom: 24px;
-            flex-grow: 1;
-        }
-        
-        .feature-data {
-            margin-top: auto;
-        }
-        
-        .signal-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .signal-item:last-child {
-            border-bottom: none;
-        }
-        
-        .signal-token {
-            font-weight: 600;
-        }
-        
-        .signal-action {
-            padding: 4px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
             border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        .neutral { color: var(--text-primary); }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .last-update {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Section Headers */
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* RSI Scanner */
+        .rsi-scanner {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            border: 1px solid var(--border-light);
+            overflow: hidden;
+        }
+
+        .scanner-header {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .scanner-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-medium);
+            border-radius: 6px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-button.active,
+        .tab-button:hover {
+            background: var(--primary-purple);
+            color: white;
+            border-color: var(--primary-purple);
+        }
+
+        .scanner-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .refresh-btn {
+            background: var(--primary-purple);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: var(--primary-purple-dark);
+        }
+
+        .refresh-btn:disabled {
+            background: var(--border-medium);
+            cursor: not-allowed;
+        }
+
+        .rsi-table-container {
+            overflow-x: auto;
+        }
+
+        .rsi-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .rsi-table th {
+            background: var(--bg-secondary);
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background 0.2s ease;
+        }
+
+        .rsi-table th:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .rsi-table th.sortable::after {
+            content: "↕";
+            position: absolute;
+            right: 8px;
+            color: var(--text-muted);
+        }
+
+        .rsi-table th.sort-asc::after {
+            content: "↑";
+            color: var(--primary-purple);
+        }
+
+        .rsi-table th.sort-desc::after {
+            content: "↓";
+            color: var(--primary-purple);
+        }
+
+        .rsi-table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .rsi-table tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .token-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .token-symbol {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .token-name {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .price-info {
+            text-align: right;
+        }
+
+        .price {
+            font-weight: 600;
+        }
+
+        .price-change {
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        .rsi-cell {
+            text-align: center;
+            font-weight: 600;
+            padding: 0.5rem;
+            border-radius: 4px;
+            min-width: 50px;
+        }
+
+        /* RSI Color Coding */
+        .rsi-extreme-oversold { background: var(--green-extreme); color: white; }
+        .rsi-strong-oversold { background: var(--green-strong); color: white; }
+        .rsi-moderate-oversold { background: var(--green-moderate); color: var(--text-primary); }
+        .rsi-neutral { background: var(--yellow-neutral); color: var(--text-primary); }
+        .rsi-moderate-overbought { background: var(--red-moderate); color: var(--text-primary); }
+        .rsi-strong-overbought { background: var(--red-strong); color: white; }
+        .rsi-extreme-overbought { background: var(--red-extreme); color: white; }
+
+        .signal-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
         }
-        
-        .signal-action.long {
-            background: rgba(34, 197, 94, 0.2);
-            color: #22C55E;
-        }
-        
-        .signal-action.short {
-            background: rgba(239, 68, 68, 0.2);
-            color: #EF4444;
-        }
-        
-        .rsi-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(17, 24, 39, 0.1);
-        }
-        
-        .rsi-item:last-child {
-            border-bottom: none;
-        }
-        
-        .rsi-bar {
-            width: 60px;
-            height: 8px;
+
+        .signal-oversold { background: var(--green-strong); color: white; }
+        .signal-overbought { background: var(--red-strong); color: white; }
+        .signal-neutral { background: var(--border-medium); color: var(--text-primary); }
+
+        .position-badge {
+            padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            background: #E5E7EB;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .rsi-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-        
-        .rsi-fill.oversold {
-            background: #22C55E;
-        }
-        
-        .rsi-fill.overbought {
-            background: #EF4444;
-        }
-        
-        .analysis-section {
-            background: white;
-            border-radius: 24px;
-            padding: 48px;
-            margin: 80px 0;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
-        }
-        
-        .analysis-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 32px;
-            text-align: center;
-        }
-        
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 32px;
-            margin-top: 32px;
-        }
-        
-        .analysis-card {
-            background: #FAFAFA;
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(124, 58, 237, 0.1);
-        }
-        
-        .performance-section {
-            margin: 80px 0;
-        }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 48px;
-        }
-        
-        .performance-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-        }
-        
-        .performance-card {
-            background: white;
-            border-radius: 20px;
-            padding: 32px;
-            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
-            text-align: center;
-        }
-        
-        .performance-metric {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        
-        .performance-metric.positive {
-            color: #22C55E;
-        }
-        
-        .performance-metric.negative {
-            color: #EF4444;
-        }
-        
-        .performance-metric.neutral {
-            color: #7C3AED;
-        }
-        
-        .api-section {
-            background: #111827;
-            color: white;
-            border-radius: 24px;
-            padding: 48px;
-            margin: 80px 0;
-        }
-        
-        .api-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-        
-        .api-description {
-            text-align: center;
-            opacity: 0.8;
-            margin-bottom: 48px;
-            font-size: 1.125rem;
-        }
-        
-        .endpoints-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-        }
-        
-        .endpoint-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .endpoint-method {
-            background: #7C3AED;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: 600;
-            display: inline-block;
-            margin-bottom: 12px;
         }
-        
-        .endpoint-path {
-            font-family: 'Monaco', 'Menlo', monospace;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 12px;
-            border-radius: 8px;
-            margin: 12px 0;
+
+        .position-long { background: var(--success); color: white; }
+        .position-short { background: var(--danger); color: white; }
+        .position-none { background: var(--border-medium); color: var(--text-secondary); }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
-        
-        .footer {
-            background: #111827;
-            color: white;
-            padding: 48px 0;
+
+        .card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Signal Cards */
+        .signal-card {
+            border-left: 4px solid var(--primary-purple);
+            margin-bottom: 1rem;
+        }
+
+        .signal-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signal-action {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .action-long { background: var(--success); color: white; }
+        .action-short { background: var(--danger); color: white; }
+
+        .signal-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+
+        .signal-detail {
             text-align: center;
         }
-        
-        .footer-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 24px;
+
+        .signal-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
         }
-        
+
+        .signal-value {
+            font-weight: 600;
+        }
+
+        /* Performance Stats */
+        .performance-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .performance-stat {
+            text-align: center;
+        }
+
+        .performance-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .performance-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* API Documentation */
+        .api-endpoint {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-method {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 0.5rem;
+        }
+
+        .api-path {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--primary-purple);
+            margin-bottom: 0.5rem;
+        }
+
+        .api-description {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-light);
+            padding: 2rem;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
         .footer-links {
             display: flex;
-            gap: 32px;
-            flex-wrap: wrap;
             justify-content: center;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
-        
+
         .footer-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--primary-purple);
             text-decoration: none;
-            transition: color 0.2s ease;
-        }
-        
-        .footer-link:hover {
-            color: #8B5CF6;
-        }
-        
-        .disclaimer {
-            max-width: 600px;
-            opacity: 0.6;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
-        
-        .loading {
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
-        
-        .error {
-            color: #EF4444;
-            font-style: italic;
-        }
-        
-        .tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(124, 58, 237, 0.1);
-            color: #7C3AED;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
             font-weight: 500;
-            margin: 4px;
         }
-        
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-light);
+            border-top: 3px solid var(--primary-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Error States */
+        .error {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            color: #991B1B;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
+            .main {
+                padding: 1rem;
+                margin-top: 70px;
+            }
+
             .nav-links {
                 display: none;
             }
-            
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .hero .tagline {
-                font-size: 1.25rem;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
-            .performance-grid {
-                grid-template-columns: 1fr;
+
+            .scanner-tabs {
+                flex-wrap: wrap;
             }
-            
-            .analysis-section {
-                padding: 32px 24px;
+
+            .rsi-table {
+                font-size: 0.75rem;
             }
-            
-            .api-section {
-                padding: 32px 24px;
-            }
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+            .rsi-table th,
+            .rsi-table td {
+                padding: 0.5rem 0.25rem;
             }
         }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out;
+
+        /* Hidden by default */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Section navigation indicators */
+        .nav-link[data-section] {
+            position: relative;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <nav class="nav">
-                <a href="#" class="logo">
-                    <div class="logo-icon">TC</div>
-                    Trading Caller
-                </a>
-                
-                <ul class="nav-links">
-                    <li><a href="#signals" class="nav-link">Signals</a></li>
-                    <li><a href="#positions" class="nav-link">Positions</a></li>
-                    <li><a href="#rsi" class="nav-link">RSI Scanner</a></li>
-                    <li><a href="#performance" class="nav-link">Performance</a></li>
-                    <li><a href="#api" class="nav-link">API Docs</a></li>
-                </ul>
-                
-                <a href="https://github.com/sebastianst/trading-caller" class="cta-button" target="_blank">
-                    View on GitHub
-                </a>
-            </nav>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <div class="logo-icon">TC</div>
+                Trading Caller
+            </a>
+            
+            <div class="nav-links">
+                <a href="#" class="nav-link active" data-section="dashboard">Dashboard</a>
+                <a href="#" class="nav-link" data-section="scanner">RSI Scanner</a>
+                <a href="#" class="nav-link" data-section="signals">Signals</a>
+                <a href="#" class="nav-link" data-section="positions">Positions</a>
+                <a href="#" class="nav-link" data-section="performance">Performance</a>
+                <a href="#" class="nav-link" data-section="api">API</a>
+            </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>Trading Caller</h1>
-            <p class="tagline">Free your mind — AI-powered trading signals for Solana</p>
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="hero-header">
+                <h1 class="hero-title">Multi-Timeframe RSI Analysis & AI Trading Signals</h1>
+                <p class="hero-subtitle">Comprehensive market analysis for Solana — Free your mind, make the call</p>
+            </div>
             
             <div class="stats-grid" id="heroStats">
                 <div class="stat-card">
-                    <div class="stat-value" id="winRate">--</div>
+                    <div class="stat-value neutral" id="totalPnl">Loading...</div>
+                    <div class="stat-label">Total PnL</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value neutral" id="winRate">Loading...</div>
                     <div class="stat-label">Win Rate</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="totalPnL">--</div>
-                    <div class="stat-label">Total P&L</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value" id="activePositions">--</div>
+                    <div class="stat-value neutral" id="activePositions">Loading...</div>
                     <div class="stat-label">Active Positions</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="totalSignals">--</div>
+                    <div class="stat-value neutral" id="totalSignals">Loading...</div>
                     <div class="stat-label">Total Signals</div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Feature Cards -->
-    <section class="container">
-        <div class="features-grid">
-            <!-- Live Signals Card -->
-            <div class="feature-card purple" id="signals">
-                <div class="feature-icon">📡</div>
-                <h3 class="feature-title">Live Signals</h3>
-                <p class="feature-description">Real-time AI trading calls with confidence scores and entry prices</p>
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Scanner Active</span>
+            </div>
+            <div class="last-update" id="lastUpdate">Last updated: Loading...</div>
+            <div id="nextRefresh">Next refresh: Loading...</div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="section-header">
+                <h2 class="section-title">📊 Market Overview</h2>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🔥 Top Signals Today</h3>
+                        <span class="card-subtitle" id="signalsCount">0 signals</span>
+                    </div>
+                    <div id="topSignalsList">Loading...</div>
+                </div>
                 
-                <div class="feature-data" id="liveSignalsData">
-                    <div class="loading">Loading signals...</div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">⚡ RSI Extremes</h3>
+                        <span class="card-subtitle">Most oversold/overbought</span>
+                    </div>
+                    <div id="rsiExtremesList">Loading...</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">💼 Active Positions</h3>
+                        <span class="card-subtitle" id="positionsCount">0 positions</span>
+                    </div>
+                    <div id="activePositionsList">Loading...</div>
                 </div>
             </div>
+        </section>
 
-            <!-- RSI Scanner Card -->
-            <div class="feature-card warm" id="rsi">
-                <div class="feature-icon">📈</div>
-                <h3 class="feature-title">RSI Scanner</h3>
-                <p class="feature-description">Find overbought & oversold tokens with extreme RSI values</p>
+        <!-- RSI Scanner Section -->
+        <section id="scanner" class="section">
+            <div class="section-header">
+                <h2 class="section-title">🎯 Multi-Timeframe RSI Scanner</h2>
+            </div>
+            
+            <div class="rsi-scanner">
+                <div class="scanner-header">
+                    <h3>Real-Time RSI Analysis Across 4 Timeframes</h3>
+                    <p class="card-subtitle">Comprehensive RSI monitoring for all tracked Solana tokens</p>
+                    
+                    <div class="scanner-tabs">
+                        <button class="tab-button active" data-timeframe="all">All Timeframes</button>
+                        <button class="tab-button" data-timeframe="1h">1H</button>
+                        <button class="tab-button" data-timeframe="4h">4H</button>
+                        <button class="tab-button" data-timeframe="1d">1D</button>
+                        <button class="tab-button" data-timeframe="1w">1W</button>
+                    </div>
+                    
+                    <div class="scanner-controls">
+                        <button class="refresh-btn" id="refreshRSI">🔄 Refresh Data</button>
+                        <span class="last-update" id="rsiLastUpdate">Cache status: Loading...</span>
+                    </div>
+                </div>
                 
-                <div class="feature-data" id="rsiScannerData">
-                    <div class="loading">Loading RSI data...</div>
+                <div class="rsi-table-container">
+                    <table class="rsi-table" id="rsiTable">
+                        <thead>
+                            <tr>
+                                <th class="sortable" data-sort="symbol">Token</th>
+                                <th class="sortable" data-sort="price">Price</th>
+                                <th class="sortable" data-sort="change24h">24h Change</th>
+                                <th class="sortable rsi-column" data-sort="rsi1h" data-timeframe="1h">RSI 1H</th>
+                                <th class="sortable rsi-column" data-sort="rsi4h" data-timeframe="4h">RSI 4H</th>
+                                <th class="sortable rsi-column" data-sort="rsi1d" data-timeframe="1d">RSI 1D</th>
+                                <th class="sortable rsi-column" data-sort="rsi1w" data-timeframe="1w">RSI 1W</th>
+                                <th class="sortable" data-sort="signal">Signal</th>
+                                <th data-sort="position">Position</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rsiTableBody">
+                            <tr>
+                                <td colspan="9" class="loading">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
+        </section>
 
-            <!-- Position Tracker Card -->
-            <div class="feature-card dark" id="positions">
-                <div class="feature-icon">💼</div>
-                <h3 class="feature-title">Position Tracker</h3>
-                <p class="feature-description">Track every call we make with live P&L updates</p>
-                
-                <div class="feature-data" id="positionTrackerData">
-                    <div class="loading">Loading positions...</div>
+        <!-- Signals Section -->
+        <section id="signals" class="section">
+            <div class="section-header">
+                <h2 class="section-title">📈 Latest Trading Signals</h2>
+            </div>
+            
+            <div class="cards-grid" id="signalsList">
+                <div class="card loading">
+                    <div class="spinner"></div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Analysis Section -->
-    <section class="container">
-        <div class="analysis-section">
-            <h2 class="analysis-title">Why We Make Each Call</h2>
-            <p style="text-align: center; color: #6B7280; margin-bottom: 32px;">Our AI analyzes multiple technical indicators to generate high-confidence trading signals</p>
-            
-            <div class="analysis-grid" id="analysisData">
-                <div class="loading">Loading analysis...</div>
+        <!-- Positions Section -->
+        <section id="positions" class="section">
+            <div class="section-header">
+                <h2 class="section-title">💼 Active Positions</h2>
             </div>
-        </div>
-    </section>
+            
+            <div class="cards-grid" id="positionsList">
+                <div class="card loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </section>
 
-    <!-- Performance Dashboard -->
-    <section class="container" id="performance">
-        <div class="performance-section">
-            <h2 class="section-title">Performance Dashboard</h2>
-            
-            <div class="performance-grid" id="performanceData">
-                <div class="loading">Loading performance data...</div>
+        <!-- Performance Section -->
+        <section id="performance" class="section">
+            <div class="section-header">
+                <h2 class="section-title">📊 Performance Analytics</h2>
             </div>
-        </div>
-    </section>
+            
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 class="card-title">Overall Performance</h3>
+                    <div class="performance-stats" id="overallPerformance">
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="perfWinRate">-</div>
+                            <div class="performance-label">Win Rate</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="perfTotalPnl">-</div>
+                            <div class="performance-label">Total PnL</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="perfAvgWin">-</div>
+                            <div class="performance-label">Avg Win</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="perfAvgLoss">-</div>
+                            <div class="performance-label">Avg Loss</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="perfProfitFactor">-</div>
+                            <div class="performance-label">Profit Factor</div>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- API Section -->
-    <section class="container" id="api">
-        <div class="api-section">
-            <h2 class="api-title">Developer API</h2>
-            <p class="api-description">Integrate our trading signals into your applications</p>
-            
-            <div class="endpoints-grid" id="apiEndpoints">
-                <div class="loading">Loading API endpoints...</div>
+                <div class="card">
+                    <h3 class="card-title">LONG vs SHORT Breakdown</h3>
+                    <div class="performance-stats" id="directionPerformance">
+                        <div class="performance-stat">
+                            <div class="performance-value positive" id="longWinRate">-</div>
+                            <div class="performance-label">LONG Win Rate</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value negative" id="shortWinRate">-</div>
+                            <div class="performance-label">SHORT Win Rate</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="longTotalPnl">-</div>
+                            <div class="performance-label">LONG PnL</div>
+                        </div>
+                        <div class="performance-stat">
+                            <div class="performance-value neutral" id="shortTotalPnl">-</div>
+                            <div class="performance-label">SHORT PnL</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- API Documentation Section -->
+        <section id="api" class="section">
+            <div class="section-header">
+                <h2 class="section-title">🔌 API Documentation</h2>
+            </div>
+            
+            <div class="cards-grid">
+                <div class="card">
+                    <h3 class="card-title">RSI Scanner Endpoints</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/rsi/multi</div>
+                        <div class="api-description">Get multi-timeframe RSI data for all tracked tokens</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/rsi/multi/token/{symbol}</div>
+                        <div class="api-description">Get RSI data for a specific token (e.g., SOL, JUP)</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">POST</div>
+                        <div class="api-path">/rsi/multi/scan</div>
+                        <div class="api-description">Force a fresh RSI scan (bypasses cache)</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/rsi/multi/status</div>
+                        <div class="api-description">Get scanner status and cache information</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Trading Signals</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/signals/latest</div>
+                        <div class="api-description">Get latest trading signals with confidence scores</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/signals/performance</div>
+                        <div class="api-description">Get signal performance analytics and statistics</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/tokens/{symbol}/analysis</div>
+                        <div class="api-description">Get detailed technical analysis for a specific token</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">Positions & Performance</h3>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/positions/open</div>
+                        <div class="api-description">Get all currently active trading positions</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/positions/stats</div>
+                        <div class="api-description">Get position statistics and summary data</div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        <div class="api-method">GET</div>
+                        <div class="api-path">/api</div>
+                        <div class="api-description">Get complete API documentation and system status</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-links">
-                    <a href="https://github.com/sebastianst/trading-caller" class="footer-link" target="_blank">GitHub</a>
-                    <a href="#api" class="footer-link">API Documentation</a>
-                    <a href="#performance" class="footer-link">Performance</a>
-                    <a href="https://solana.com" class="footer-link" target="_blank">Solana</a>
-                </div>
-                
-                <p class="disclaimer">
-                    <strong>Hackathon Project</strong> - Trading Caller is an experimental AI trading signals platform built for educational purposes. 
-                    This is not financial advice. Always do your own research and trade responsibly. 
-                    Cryptocurrency trading involves substantial risk of loss.
-                </p>
-                
-                <div style="opacity: 0.6;">
-                    © 2024 Trading Caller • Built with 💜 for the Solana community
-                </div>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://github.com/breakthesimulation/trading-caller" class="footer-link" target="_blank">GitHub</a>
+                <a href="/api" class="footer-link">API Docs</a>
+                <a href="#" class="footer-link" data-section="performance">Performance</a>
+                <a href="https://agents.colosseum.com" class="footer-link" target="_blank">Colosseum Hackathon</a>
+            </div>
+            
+            <p><strong>Trading Caller</strong> — Multi-timeframe RSI analysis and AI-powered trading signals for Solana</p>
+            
+            <div class="disclaimer">
+                <strong>Disclaimer:</strong> This is a hackathon project for educational and research purposes. 
+                Not financial advice. Trading cryptocurrencies involves significant risk. 
+                Always do your own research and never trade with money you cannot afford to lose.
             </div>
         </div>
     </footer>
 
     <script>
-        // Global state
-        let dataCache = {};
-        const REFRESH_INTERVAL = 60000; // 60 seconds
-        
-        // Utility functions
-        function formatNumber(num, decimals = 2) {
-            if (num === null || num === undefined) return '--';
-            return Number(num).toFixed(decimals);
+        // Application state
+        let currentSection = 'dashboard';
+        let currentTimeframe = 'all';
+        let rsiData = [];
+        let sortColumn = null;
+        let sortDirection = 'asc';
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            loadInitialData();
+            setupAutoRefresh();
+            setupScannerControls();
+        });
+
+        // Navigation
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link[data-section]');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const sectionId = e.target.dataset.section;
+                    switchSection(sectionId);
+                });
+            });
         }
-        
-        function formatPercent(num) {
-            if (num === null || num === undefined) return '--';
-            return `${(num * 100).toFixed(1)}%`;
+
+        function switchSection(sectionId) {
+            // Update nav
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            currentSection = sectionId;
+
+            // Load section-specific data
+            switch(sectionId) {
+                case 'scanner':
+                    loadRSIData();
+                    break;
+                case 'signals':
+                    loadSignals();
+                    break;
+                case 'positions':
+                    loadPositions();
+                    break;
+                case 'performance':
+                    loadPerformance();
+                    break;
+            }
         }
-        
-        function formatCurrency(num) {
-            if (num === null || num === undefined) return '--';
-            const formatted = new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2
-            }).format(num);
-            return formatted;
+
+        // Data loading
+        async function loadInitialData() {
+            try {
+                await Promise.all([
+                    loadHeroStats(),
+                    loadRSIData(),
+                    loadDashboardData()
+                ]);
+            } catch (error) {
+                console.error('Failed to load initial data:', error);
+            }
         }
-        
-        function getColorClass(value) {
-            if (value > 0) return 'positive';
-            if (value < 0) return 'negative';
+
+        async function loadHeroStats() {
+            try {
+                const [performance, positions] = await Promise.all([
+                    fetchAPI('/signals/performance'),
+                    fetchAPI('/positions/stats')
+                ]);
+
+                if (performance?.success) {
+                    updateElement('totalPnl', formatPnL(performance.totalPnL || 0), getNumberClass(performance.totalPnL || 0));
+                    updateElement('winRate', `${(performance.winRate || 0).toFixed(1)}%`, getNumberClass(performance.winRate - 50));
+                }
+
+                if (positions?.success) {
+                    updateElement('activePositions', positions.activeCount || 0, 'neutral');
+                    updateElement('totalSignals', positions.totalSignals || 0, 'neutral');
+                }
+            } catch (error) {
+                console.error('Failed to load hero stats:', error);
+                updateHeroStatsError();
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const signals = await fetchAPI('/signals/latest?limit=5');
+                const rsiResponse = await fetchAPI('/rsi/multi');
+
+                // Top signals
+                if (signals?.success && signals.signals?.length > 0) {
+                    updateTopSignals(signals.signals);
+                } else {
+                    document.getElementById('topSignalsList').innerHTML = '<p class="card-subtitle">No recent signals</p>';
+                }
+
+                // RSI extremes
+                if (rsiResponse?.success && rsiResponse.tokens?.length > 0) {
+                    updateRSIExtremes(rsiResponse.tokens);
+                } else {
+                    document.getElementById('rsiExtremesList').innerHTML = '<p class="card-subtitle">No data available</p>';
+                }
+
+                // Update counts
+                updateElement('signalsCount', `${signals?.signals?.length || 0} signals`, 'neutral');
+            } catch (error) {
+                console.error('Failed to load dashboard data:', error);
+            }
+        }
+
+        async function loadRSIData() {
+            try {
+                showLoading('rsiTableBody');
+                const response = await fetchAPI('/rsi/multi');
+                
+                if (response?.success) {
+                    rsiData = response.tokens || [];
+                    updateRSITable();
+                    updateRSIStatus(response);
+                } else {
+                    showError('rsiTableBody', response?.error || 'Failed to load RSI data');
+                }
+            } catch (error) {
+                console.error('Failed to load RSI data:', error);
+                showError('rsiTableBody', 'Network error loading RSI data');
+            }
+        }
+
+        async function loadSignals() {
+            try {
+                showLoading('signalsList');
+                const response = await fetchAPI('/signals/latest?limit=20');
+                
+                if (response?.success) {
+                    updateSignalsList(response.signals || []);
+                } else {
+                    showError('signalsList', 'Failed to load signals');
+                }
+            } catch (error) {
+                console.error('Failed to load signals:', error);
+                showError('signalsList', 'Network error loading signals');
+            }
+        }
+
+        async function loadPositions() {
+            try {
+                showLoading('positionsList');
+                const response = await fetchAPI('/positions/open');
+                
+                if (response?.success) {
+                    updatePositionsList(response.positions || []);
+                } else {
+                    showError('positionsList', 'Failed to load positions');
+                }
+            } catch (error) {
+                console.error('Failed to load positions:', error);
+                showError('positionsList', 'Network error loading positions');
+            }
+        }
+
+        async function loadPerformance() {
+            try {
+                const response = await fetchAPI('/signals/performance');
+                
+                if (response?.success) {
+                    updatePerformanceStats(response);
+                }
+            } catch (error) {
+                console.error('Failed to load performance:', error);
+            }
+        }
+
+        // API utilities
+        async function fetchAPI(endpoint) {
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return await response.json();
+        }
+
+        // RSI Table Management
+        function updateRSITable() {
+            const tbody = document.getElementById('rsiTableBody');
+            if (!rsiData.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No data available</td></tr>';
+                return;
+            }
+
+            let filteredData = [...rsiData];
+            
+            // Apply sorting
+            if (sortColumn) {
+                filteredData.sort((a, b) => {
+                    let aVal, bVal;
+                    
+                    switch(sortColumn) {
+                        case 'symbol': 
+                            aVal = a.symbol; bVal = b.symbol; break;
+                        case 'price': 
+                            aVal = a.price; bVal = b.price; break;
+                        case 'change24h': 
+                            aVal = a.priceChange24h; bVal = b.priceChange24h; break;
+                        case 'rsi1h': 
+                            aVal = a.rsi['1h']; bVal = b.rsi['1h']; break;
+                        case 'rsi4h': 
+                            aVal = a.rsi['4h']; bVal = b.rsi['4h']; break;
+                        case 'rsi1d': 
+                            aVal = a.rsi['1d']; bVal = b.rsi['1d']; break;
+                        case 'rsi1w': 
+                            aVal = a.rsi['1w']; bVal = b.rsi['1w']; break;
+                        case 'signal': 
+                            aVal = a.signal; bVal = b.signal; break;
+                        default: 
+                            return 0;
+                    }
+                    
+                    if (typeof aVal === 'string') {
+                        return sortDirection === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                    } else {
+                        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+                    }
+                });
+            }
+
+            tbody.innerHTML = filteredData.map(token => `
+                <tr>
+                    <td>
+                        <div class="token-info">
+                            <div>
+                                <div class="token-symbol">${token.symbol}</div>
+                                <div class="token-name">${token.name}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="price-info">
+                            <div class="price">$${formatPrice(token.price)}</div>
+                            <div class="price-change ${getNumberClass(token.priceChange24h)}">${formatChange(token.priceChange24h)}</div>
+                        </div>
+                    </td>
+                    <td class="${getNumberClass(token.priceChange24h)}">${formatChange(token.priceChange24h)}</td>
+                    <td class="rsi-column" data-timeframe="1h">
+                        <div class="rsi-cell ${getRSIColorClass(token.rsi['1h'])}">${token.rsi['1h']}</div>
+                    </td>
+                    <td class="rsi-column" data-timeframe="4h">
+                        <div class="rsi-cell ${getRSIColorClass(token.rsi['4h'])}">${token.rsi['4h']}</div>
+                    </td>
+                    <td class="rsi-column" data-timeframe="1d">
+                        <div class="rsi-cell ${getRSIColorClass(token.rsi['1d'])}">${token.rsi['1d']}</div>
+                    </td>
+                    <td class="rsi-column" data-timeframe="1w">
+                        <div class="rsi-cell ${getRSIColorClass(token.rsi['1w'])}">${token.rsi['1w']}</div>
+                    </td>
+                    <td>
+                        <span class="signal-badge signal-${token.signal.toLowerCase()}">${token.signal}</span>
+                    </td>
+                    <td>
+                        <span class="position-badge position-none">NONE</span>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Apply timeframe filter
+            updateTimeframeDisplay();
+        }
+
+        function updateTimeframeDisplay() {
+            const rsiColumns = document.querySelectorAll('.rsi-column');
+            rsiColumns.forEach(col => {
+                if (currentTimeframe === 'all') {
+                    col.style.display = 'table-cell';
+                } else {
+                    const timeframe = col.dataset.timeframe;
+                    col.style.display = timeframe === currentTimeframe ? 'table-cell' : 'none';
+                }
+            });
+        }
+
+        function updateRSIStatus(response) {
+            updateElement('rsiLastUpdate', `Last scan: ${formatTimestamp(response.lastUpdated)}`);
+            updateElement('lastUpdate', `Last updated: ${formatTimestamp(response.lastUpdated)}`);
+            
+            if (response.nextUpdate) {
+                updateElement('nextRefresh', `Next refresh: ${formatTimestamp(response.nextUpdate)}`);
+            }
+        }
+
+        // UI Update Functions
+        function updateTopSignals(signals) {
+            const container = document.getElementById('topSignalsList');
+            if (!signals.length) {
+                container.innerHTML = '<p class="card-subtitle">No recent signals</p>';
+                return;
+            }
+
+            container.innerHTML = signals.slice(0, 3).map(signal => `
+                <div class="signal-card" style="margin-bottom: 1rem; padding: 1rem; border-radius: 8px; background: var(--bg-secondary);">
+                    <div class="signal-header">
+                        <span class="token-symbol">${signal.token.symbol}</span>
+                        <span class="signal-action action-${signal.action.toLowerCase()}">${signal.action}</span>
+                    </div>
+                    <div style="font-size: 0.875rem; margin-top: 0.5rem;">
+                        Entry: $${formatPrice(signal.entry)} | Confidence: ${signal.confidence}%
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateRSIExtremes(tokens) {
+            const extremes = tokens
+                .filter(t => t.signal !== 'NEUTRAL' && t.strength === 'extreme')
+                .slice(0, 5);
+
+            const container = document.getElementById('rsiExtremesList');
+            if (!extremes.length) {
+                container.innerHTML = '<p class="card-subtitle">No extreme RSI levels detected</p>';
+                return;
+            }
+
+            container.innerHTML = extremes.map(token => {
+                const minRSI = Math.min(Object.values(token.rsi));
+                const maxRSI = Math.max(Object.values(token.rsi));
+                const displayRSI = token.signal === 'OVERSOLD' ? minRSI : maxRSI;
+                
+                return `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding: 0.5rem; border-radius: 6px; background: var(--bg-secondary);">
+                        <div>
+                            <span class="token-symbol">${token.symbol}</span>
+                            <span class="signal-badge signal-${token.signal.toLowerCase()}" style="margin-left: 0.5rem; font-size: 0.6rem;">${token.signal}</span>
+                        </div>
+                        <div class="rsi-cell ${getRSIColorClass(displayRSI)}" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">${displayRSI}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateSignalsList(signals) {
+            const container = document.getElementById('signalsList');
+            if (!signals.length) {
+                container.innerHTML = '<div class="card"><p class="card-subtitle">No recent signals</p></div>';
+                return;
+            }
+
+            container.innerHTML = signals.map(signal => `
+                <div class="card signal-card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">${signal.token.symbol}</h3>
+                            <span class="card-subtitle">${signal.token.name || ''}</span>
+                        </div>
+                        <span class="signal-action action-${signal.action.toLowerCase()}">${signal.action}</span>
+                    </div>
+                    
+                    <div class="signal-details">
+                        <div class="signal-detail">
+                            <div class="signal-label">Entry</div>
+                            <div class="signal-value">$${formatPrice(signal.entry)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">Target</div>
+                            <div class="signal-value">$${formatPrice(signal.targets?.[0] || 0)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">Stop Loss</div>
+                            <div class="signal-value">$${formatPrice(signal.stopLoss)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">Confidence</div>
+                            <div class="signal-value">${signal.confidence}%</div>
+                        </div>
+                    </div>
+                    
+                    ${signal.reasoning?.technical ? `
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light); font-size: 0.875rem; color: var(--text-secondary);">
+                            ${signal.reasoning.technical}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function updatePositionsList(positions) {
+            const container = document.getElementById('positionsList');
+            if (!positions.length) {
+                container.innerHTML = '<div class="card"><p class="card-subtitle">No active positions</p></div>';
+                return;
+            }
+
+            container.innerHTML = positions.map(position => `
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">${position.token}</h3>
+                            <span class="card-subtitle">Opened: ${formatTimestamp(position.openTime)}</span>
+                        </div>
+                        <span class="signal-action action-${position.side.toLowerCase()}">${position.side}</span>
+                    </div>
+                    
+                    <div class="signal-details">
+                        <div class="signal-detail">
+                            <div class="signal-label">Entry</div>
+                            <div class="signal-value">$${formatPrice(position.entry)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">Current</div>
+                            <div class="signal-value">$${formatPrice(position.currentPrice || position.entry)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">P&L</div>
+                            <div class="signal-value ${getNumberClass(position.pnl || 0)}">${formatPnL(position.pnl || 0)}</div>
+                        </div>
+                        <div class="signal-detail">
+                            <div class="signal-label">Duration</div>
+                            <div class="signal-value">${getTimeDuration(position.openTime)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updatePerformanceStats(performance) {
+            // Overall performance
+            updateElement('perfWinRate', `${(performance.winRate || 0).toFixed(1)}%`, getNumberClass(performance.winRate - 50));
+            updateElement('perfTotalPnl', formatPnL(performance.totalPnL || 0), getNumberClass(performance.totalPnL || 0));
+            updateElement('perfAvgWin', formatPnL(performance.avgWin || 0), 'positive');
+            updateElement('perfAvgLoss', formatPnL(performance.avgLoss || 0), 'negative');
+            updateElement('perfProfitFactor', `${(performance.profitFactor || 0).toFixed(2)}x`, getNumberClass((performance.profitFactor || 0) - 1));
+
+            // Direction breakdown
+            updateElement('longWinRate', `${(performance.longWinRate || 0).toFixed(1)}%`, getNumberClass(performance.longWinRate - 50));
+            updateElement('shortWinRate', `${(performance.shortWinRate || 0).toFixed(1)}%`, getNumberClass(performance.shortWinRate - 50));
+            updateElement('longTotalPnl', formatPnL(performance.longTotalPnl || 0), getNumberClass(performance.longTotalPnl || 0));
+            updateElement('shortTotalPnl', formatPnL(performance.shortTotalPnl || 0), getNumberClass(performance.shortTotalPnl || 0));
+        }
+
+        // Scanner Controls
+        function setupScannerControls() {
+            // Timeframe tabs
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentTimeframe = e.target.dataset.timeframe;
+                    updateTimeframeDisplay();
+                });
+            });
+
+            // Refresh button
+            document.getElementById('refreshRSI').addEventListener('click', async () => {
+                const btn = document.getElementById('refreshRSI');
+                btn.disabled = true;
+                btn.textContent = '🔄 Refreshing...';
+                
+                try {
+                    await fetchAPI('/rsi/multi/scan', { method: 'POST' });
+                    await loadRSIData();
+                } catch (error) {
+                    console.error('Refresh failed:', error);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = '🔄 Refresh Data';
+                }
+            });
+
+            // Table sorting
+            document.querySelectorAll('.rsi-table th.sortable').forEach(th => {
+                th.addEventListener('click', () => {
+                    const column = th.dataset.sort;
+                    if (sortColumn === column) {
+                        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        sortColumn = column;
+                        sortDirection = 'asc';
+                    }
+
+                    // Update sort indicators
+                    document.querySelectorAll('.rsi-table th').forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+
+                    updateRSITable();
+                });
+            });
+        }
+
+        // Utility Functions
+        function updateElement(id, content, className = null) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = content;
+                if (className) {
+                    element.className = element.className.replace(/positive|negative|neutral/g, '') + ' ' + className;
+                }
+            }
+        }
+
+        function showLoading(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            }
+        }
+
+        function showError(containerId, message) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = `<div class="error">${message}</div>`;
+            }
+        }
+
+        function updateHeroStatsError() {
+            updateElement('totalPnl', 'Error', 'neutral');
+            updateElement('winRate', 'Error', 'neutral');
+            updateElement('activePositions', 'Error', 'neutral');
+            updateElement('totalSignals', 'Error', 'neutral');
+        }
+
+        // Formatting Functions
+        function formatPrice(price) {
+            if (typeof price !== 'number' || isNaN(price)) return '0.000';
+            if (price >= 1) return price.toFixed(2);
+            if (price >= 0.01) return price.toFixed(3);
+            return price.toFixed(6);
+        }
+
+        function formatChange(change) {
+            if (typeof change !== 'number' || isNaN(change)) return '0.00%';
+            const sign = change >= 0 ? '+' : '';
+            return `${sign}${change.toFixed(2)}%`;
+        }
+
+        function formatPnL(pnl) {
+            if (typeof pnl !== 'number' || isNaN(pnl)) return '0.00%';
+            const sign = pnl >= 0 ? '+' : '';
+            return `${sign}${pnl.toFixed(2)}%`;
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'Unknown';
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString();
+            } catch {
+                return 'Invalid date';
+            }
+        }
+
+        function getTimeDuration(startTime) {
+            if (!startTime) return 'Unknown';
+            try {
+                const start = new Date(startTime);
+                const now = new Date();
+                const diff = now - start;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const days = Math.floor(hours / 24);
+                
+                if (days > 0) return `${days}d ${hours % 24}h`;
+                return `${hours}h`;
+            } catch {
+                return 'Unknown';
+            }
+        }
+
+        function getNumberClass(number) {
+            if (typeof number !== 'number' || isNaN(number)) return 'neutral';
+            if (number > 0) return 'positive';
+            if (number < 0) return 'negative';
             return 'neutral';
         }
-        
-        // API functions
-        async function fetchData(endpoint) {
-            try {
-                const response = await fetch(endpoint);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+
+        function getRSIColorClass(rsi) {
+            if (typeof rsi !== 'number' || isNaN(rsi)) return 'rsi-neutral';
+            
+            if (rsi < 20) return 'rsi-extreme-oversold';
+            if (rsi < 30) return 'rsi-strong-oversold';
+            if (rsi < 40) return 'rsi-moderate-oversold';
+            if (rsi > 80) return 'rsi-extreme-overbought';
+            if (rsi > 70) return 'rsi-strong-overbought';
+            if (rsi > 60) return 'rsi-moderate-overbought';
+            
+            return 'rsi-neutral';
+        }
+
+        // Auto-refresh
+        function setupAutoRefresh() {
+            setInterval(() => {
+                if (currentSection === 'scanner') {
+                    loadRSIData();
+                } else if (currentSection === 'dashboard') {
+                    loadDashboardData();
+                    loadHeroStats();
                 }
-                return await response.json();
-            } catch (error) {
-                console.error(`Error fetching ${endpoint}:`, error);
-                return null;
-            }
+            }, 60000); // Refresh every minute
         }
-        
-        // Update hero stats
-        async function updateHeroStats() {
-            const performance = await fetchData('/signals/performance');
-            const positions = await fetchData('/positions/stats');
-            
-            if (performance) {
-                document.getElementById('winRate').textContent = formatPercent(performance.winRate);
-                document.getElementById('totalPnL').textContent = formatCurrency(performance.totalPnL);
-                document.getElementById('totalSignals').textContent = performance.totalSignals || 0;
-            }
-            
-            if (positions) {
-                document.getElementById('activePositions').textContent = positions.activeCount || 0;
-            }
-        }
-        
-        // Update live signals
-        async function updateLiveSignals() {
-            const signals = await fetchData('/signals/latest');
-            const container = document.getElementById('liveSignalsData');
-            
-            if (!signals || !signals.length) {
-                container.innerHTML = '<div class="error">No signals available</div>';
-                return;
-            }
-            
-            const signalsHtml = signals.slice(0, 3).map(signal => `
-                <div class="signal-item">
-                    <div>
-                        <div class="signal-token">${signal.token || 'Unknown'}</div>
-                        <div style="font-size: 0.875rem; opacity: 0.8;">
-                            $${formatNumber(signal.price, 4)} • ${formatPercent(signal.confidence)}
-                        </div>
-                    </div>
-                    <span class="signal-action ${(signal.action || '').toLowerCase()}">
-                        ${signal.action || 'HOLD'}
-                    </span>
-                </div>
-            `).join('');
-            
-            container.innerHTML = signalsHtml;
-        }
-        
-        // Update RSI scanner
-        async function updateRSIScanner() {
-            const oversold = await fetchData('/rsi/oversold');
-            const overbought = await fetchData('/rsi/overbought');
-            const container = document.getElementById('rsiScannerData');
-            
-            const allData = [
-                ...(oversold || []).map(item => ({...item, type: 'oversold'})),
-                ...(overbought || []).map(item => ({...item, type: 'overbought'}))
-            ].slice(0, 4);
-            
-            if (!allData.length) {
-                container.innerHTML = '<div class="error">No RSI data available</div>';
-                return;
-            }
-            
-            const rsiHtml = allData.map(item => `
-                <div class="rsi-item">
-                    <div>
-                        <div style="font-weight: 600;">${item.token || 'Unknown'}</div>
-                        <div style="font-size: 0.875rem; opacity: 0.8;">
-                            RSI: ${formatNumber(item.rsi, 1)}
-                        </div>
-                    </div>
-                    <div class="rsi-bar">
-                        <div class="rsi-fill ${item.type}" style="width: ${item.rsi}%"></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            container.innerHTML = rsiHtml;
-        }
-        
-        // Update position tracker
-        async function updatePositionTracker() {
-            const positions = await fetchData('/positions/open');
-            const container = document.getElementById('positionTrackerData');
-            
-            if (!positions || !positions.length) {
-                container.innerHTML = '<div class="error">No open positions</div>';
-                return;
-            }
-            
-            const positionsHtml = positions.slice(0, 3).map(pos => `
-                <div class="signal-item">
-                    <div>
-                        <div class="signal-token">${pos.token || 'Unknown'}</div>
-                        <div style="font-size: 0.875rem; opacity: 0.8;">
-                            Entry: $${formatNumber(pos.entryPrice, 4)}
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div class="${getColorClass(pos.pnl)}" style="font-weight: 600;">
-                            ${formatCurrency(pos.pnl)}
-                        </div>
-                        <div style="font-size: 0.875rem; opacity: 0.8;">
-                            ${formatPercent(pos.pnlPercent)}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            container.innerHTML = positionsHtml;
-        }
-        
-        // Update analysis section
-        async function updateAnalysis() {
-            const signals = await fetchData('/signals/latest');
-            const container = document.getElementById('analysisData');
-            
-            if (!signals || !signals.length) {
-                container.innerHTML = '<div class="error">No analysis data available</div>';
-                return;
-            }
-            
-            const signal = signals[0];
-            const analysisHtml = `
-                <div class="analysis-card">
-                    <h4 style="margin-bottom: 16px; font-weight: 600;">Latest Signal: ${signal.token}</h4>
-                    <div style="margin-bottom: 12px;">
-                        <span class="tag">📈 RSI: ${formatNumber(signal.rsi, 1)}</span>
-                        <span class="tag">📊 MACD: ${signal.macd > 0 ? 'Bullish' : 'Bearish'}</span>
-                    </div>
-                    <p style="color: #6B7280; line-height: 1.5;">
-                        ${signal.reasoning || 'Technical analysis indicates strong momentum with favorable risk-reward ratio.'}
-                    </p>
-                </div>
-                <div class="analysis-card">
-                    <h4 style="margin-bottom: 16px; font-weight: 600;">Market Conditions</h4>
-                    <div style="margin-bottom: 12px;">
-                        <span class="tag">🎯 Confidence: ${formatPercent(signal.confidence)}</span>
-                        <span class="tag">💡 Trend: ${signal.trend || 'Neutral'}</span>
-                    </div>
-                    <p style="color: #6B7280; line-height: 1.5;">
-                        Current market conditions favor this directional bias based on multiple timeframe analysis.
-                    </p>
-                </div>
-                <div class="analysis-card">
-                    <h4 style="margin-bottom: 16px; font-weight: 600;">Risk Management</h4>
-                    <div style="margin-bottom: 12px;">
-                        <span class="tag">🛡️ Stop Loss: $${formatNumber(signal.stopLoss, 4)}</span>
-                        <span class="tag">🎯 Target: $${formatNumber(signal.target, 4)}</span>
-                    </div>
-                    <p style="color: #6B7280; line-height: 1.5;">
-                        Position sizing and risk parameters calculated based on volatility and market depth.
-                    </p>
-                </div>
-            `;
-            
-            container.innerHTML = analysisHtml;
-        }
-        
-        // Update performance dashboard
-        async function updatePerformance() {
-            const performance = await fetchData('/signals/performance');
-            const container = document.getElementById('performanceData');
-            
-            if (!performance) {
-                container.innerHTML = '<div class="error">No performance data available</div>';
-                return;
-            }
-            
-            const performanceHtml = `
-                <div class="performance-card">
-                    <div class="performance-metric ${getColorClass(performance.winRate - 0.5)}" >
-                        ${formatPercent(performance.winRate)}
-                    </div>
-                    <div class="stat-label">Overall Win Rate</div>
-                </div>
-                <div class="performance-card">
-                    <div class="performance-metric ${getColorClass(performance.longWinRate - 0.5)}">
-                        ${formatPercent(performance.longWinRate)}
-                    </div>
-                    <div class="stat-label">Long Win Rate</div>
-                </div>
-                <div class="performance-card">
-                    <div class="performance-metric ${getColorClass(performance.shortWinRate - 0.5)}">
-                        ${formatPercent(performance.shortWinRate)}
-                    </div>
-                    <div class="stat-label">Short Win Rate</div>
-                </div>
-                <div class="performance-card">
-                    <div class="performance-metric ${getColorClass(performance.profitFactor - 1)}">
-                        ${formatNumber(performance.profitFactor, 2)}
-                    </div>
-                    <div class="stat-label">Profit Factor</div>
-                </div>
-                <div class="performance-card">
-                    <div class="performance-metric ${getColorClass(performance.avgReturn)}">
-                        ${formatPercent(performance.avgReturn)}
-                    </div>
-                    <div class="stat-label">Avg Return</div>
-                </div>
-                <div class="performance-card">
-                    <div class="performance-metric neutral">
-                        ${performance.totalTrades || 0}
-                    </div>
-                    <div class="stat-label">Total Trades</div>
-                </div>
-            `;
-            
-            container.innerHTML = performanceHtml;
-        }
-        
-        // Update API endpoints
-        async function updateAPIEndpoints() {
-            const apiData = await fetchData('/api');
-            const container = document.getElementById('apiEndpoints');
-            
-            const defaultEndpoints = [
-                { method: 'GET', path: '/signals/latest', description: 'Get latest trading signals with confidence scores' },
-                { method: 'GET', path: '/signals/performance', description: 'Performance metrics and win rates' },
-                { method: 'GET', path: '/positions/open', description: 'Currently active positions with live P&L' },
-                { method: 'GET', path: '/positions/stats', description: 'Position statistics and summary' },
-                { method: 'GET', path: '/rsi/oversold', description: 'Tokens with RSI below 30 (oversold)' },
-                { method: 'GET', path: '/rsi/overbought', description: 'Tokens with RSI above 70 (overbought)' }
-            ];
-            
-            const endpoints = (apiData && apiData.endpoints) ? apiData.endpoints : defaultEndpoints;
-            
-            const endpointsHtml = endpoints.map(endpoint => `
-                <div class="endpoint-card">
-                    <span class="endpoint-method">${endpoint.method}</span>
-                    <div class="endpoint-path">${endpoint.path}</div>
-                    <p style="opacity: 0.8; font-size: 0.875rem;">
-                        ${endpoint.description}
-                    </p>
-                </div>
-            `).join('');
-            
-            container.innerHTML = endpointsHtml;
-        }
-        
-        // Main update function
-        async function updateAllData() {
-            console.log('Updating all data...');
-            
-            await Promise.all([
-                updateHeroStats(),
-                updateLiveSignals(),
-                updateRSIScanner(),
-                updatePositionTracker(),
-                updateAnalysis(),
-                updatePerformance(),
-                updateAPIEndpoints()
-            ]);
-            
-            console.log('Data update complete');
-        }
-        
-        // Smooth scrolling for navigation
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-        
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Trading Caller initialized');
-            
-            // Initial data load
-            updateAllData();
-            
-            // Set up auto-refresh
-            setInterval(updateAllData, REFRESH_INTERVAL);
-            
-            // Add fade-in animation to elements
-            const elements = document.querySelectorAll('.feature-card, .stat-card, .analysis-card');
-            elements.forEach((el, index) => {
-                setTimeout(() => {
-                    el.classList.add('animate-fade-in');
-                }, index * 100);
-            });
-        });
-        
-        // Handle visibility change to pause/resume updates when tab is not visible
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden) {
-                updateAllData();
-            }
-        });
     </script>
 </body>
 </html>

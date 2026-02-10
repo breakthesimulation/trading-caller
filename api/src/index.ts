@@ -96,6 +96,10 @@ app.route('/', volumeRoutes);
 // Mount RSI scanner routes
 app.route('/', rsiRoutes);
 
+// Mount multi-timeframe RSI scanner routes
+import { rsiMultiRoutes } from './rsi-multi.js';
+app.route('/', rsiMultiRoutes);
+
 // Mount backtesting routes (disabled - sqlite3 breaks Railway)
 // app.route('/', backtestRoutes);
 
