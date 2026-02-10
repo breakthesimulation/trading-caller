@@ -1,662 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trading Caller - AI Trading Calls for Solana</title>
-  <meta name="description" content="Free your mind — AI-powered trading signals, RSI scanner, volume alerts, and more for Solana.">
-  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="modern-ui.css">
-  <link rel="stylesheet" href="rsi-enhancements.css">
-  <link rel="stylesheet" href="oversold-positions.css">
-  <link rel="stylesheet" href="keyboard-shortcuts.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Caller - AI-Powered Trading Signals for Solana</title>
+    <meta name="description" content="Free your mind — AI-powered trading signals for Solana. Get real-time signals, RSI analysis, and performance tracking.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #FAFAFA;
+            color: #111827;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+        
+        .nav-link {
+            color: #6B7280;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-link:hover {
+            color: #7C3AED;
+        }
+        
+        .cta-button {
+            background: #7C3AED;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .cta-button:hover {
+            background: #6D28D9;
+            transform: translateY(-1px);
+        }
+        
+        .hero {
+            margin-top: 80px;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #111827, #7C3AED);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero .tagline {
+            font-size: 1.5rem;
+            color: #6B7280;
+            margin-bottom: 48px;
+            font-weight: 500;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin: 48px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.1);
+            border: 1px solid rgba(124, 58, 237, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #7C3AED;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            color: #6B7280;
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+            margin: 80px 0;
+        }
+        
+        .feature-card {
+            border-radius: 24px;
+            padding: 40px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card.purple {
+            background: linear-gradient(135deg, #7C3AED, #8B5CF6);
+        }
+        
+        .feature-card.dark {
+            background: linear-gradient(135deg, #1A1A2E, #16213E);
+        }
+        
+        .feature-card.warm {
+            background: #F5F5F4;
+            color: #111827;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .feature-card.warm .feature-icon {
+            background: rgba(124, 58, 237, 0.1);
+            color: #7C3AED;
+        }
+        
+        .feature-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .feature-description {
+            opacity: 0.9;
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+        
+        .feature-data {
+            margin-top: auto;
+        }
+        
+        .signal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .signal-item:last-child {
+            border-bottom: none;
+        }
+        
+        .signal-token {
+            font-weight: 600;
+        }
+        
+        .signal-action {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .signal-action.long {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22C55E;
+        }
+        
+        .signal-action.short {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+        }
+        
+        .rsi-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.1);
+        }
+        
+        .rsi-item:last-child {
+            border-bottom: none;
+        }
+        
+        .rsi-bar {
+            width: 60px;
+            height: 8px;
+            border-radius: 4px;
+            background: #E5E7EB;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rsi-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .rsi-fill.oversold {
+            background: #22C55E;
+        }
+        
+        .rsi-fill.overbought {
+            background: #EF4444;
+        }
+        
+        .analysis-section {
+            background: white;
+            border-radius: 24px;
+            padding: 48px;
+            margin: 80px 0;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+        }
+        
+        .analysis-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+            margin-top: 32px;
+        }
+        
+        .analysis-card {
+            background: #FAFAFA;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(124, 58, 237, 0.1);
+        }
+        
+        .performance-section {
+            margin: 80px 0;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .performance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+        
+        .performance-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+            text-align: center;
+        }
+        
+        .performance-metric {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .performance-metric.positive {
+            color: #22C55E;
+        }
+        
+        .performance-metric.negative {
+            color: #EF4444;
+        }
+        
+        .performance-metric.neutral {
+            color: #7C3AED;
+        }
+        
+        .api-section {
+            background: #111827;
+            color: white;
+            border-radius: 24px;
+            padding: 48px;
+            margin: 80px 0;
+        }
+        
+        .api-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .api-description {
+            text-align: center;
+            opacity: 0.8;
+            margin-bottom: 48px;
+            font-size: 1.125rem;
+        }
+        
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .endpoint-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .endpoint-method {
+            background: #7C3AED;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        
+        .endpoint-path {
+            font-family: 'Monaco', 'Menlo', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+        }
+        
+        .footer {
+            background: #111827;
+            color: white;
+            padding: 48px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .footer-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-link:hover {
+            color: #8B5CF6;
+        }
+        
+        .disclaimer {
+            max-width: 600px;
+            opacity: 0.6;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .loading {
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+        
+        .error {
+            color: #EF4444;
+            font-style: italic;
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(124, 58, 237, 0.1);
+            color: #7C3AED;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin: 4px;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero .tagline {
+                font-size: 1.25rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .performance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-section {
+                padding: 32px 24px;
+            }
+            
+            .api-section {
+                padding: 32px 24px;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="container header-content">
-      <a href="#" class="logo" onclick="showSection('signals'); return false;">
-        <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="14" fill="#E9E3FF"/>
-          <path d="M16 32 L24 16 L32 32" stroke="#7B61FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <path d="M12 26 L18 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
-          <path d="M30 26 L36 26" stroke="#AB9FF2" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="24" cy="14" r="3" fill="#22C55E"/>
-          <circle cx="12" cy="26" r="2" fill="#AB9FF2"/>
-          <circle cx="36" cy="26" r="2" fill="#AB9FF2"/>
-        </svg>
-        Trading Caller
-      </a>
-      <nav class="nav" id="main-nav">
-        <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
-        <a href="#history" class="nav-link" data-section="history">📜 History</a>
-        <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
-        <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
-        <a href="#oversold" class="nav-link" data-section="oversold">🔥 Oversold</a>
-        <a href="/positions-dashboard.html" class="nav-link">💼 Positions</a>
-        <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
-        <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
-        <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
-        <a href="/backtesting-results.html" class="nav-link">📊 Backtests</a>
-      </nav>
-      <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
-    </div>
-  </header>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="#" class="logo">
+                    <div class="logo-icon">TC</div>
+                    Trading Caller
+                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="#signals" class="nav-link">Signals</a></li>
+                    <li><a href="#positions" class="nav-link">Positions</a></li>
+                    <li><a href="#rsi" class="nav-link">RSI Scanner</a></li>
+                    <li><a href="#performance" class="nav-link">Performance</a></li>
+                    <li><a href="#api" class="nav-link">API Docs</a></li>
+                </ul>
+                
+                <a href="https://github.com/sebastianst/trading-caller" class="cta-button" target="_blank">
+                    View on GitHub
+                </a>
+            </nav>
+        </div>
+    </header>
 
-  <!-- Mobile Navigation -->
-  <div class="mobile-nav" id="mobile-nav">
-    <a href="#signals" class="nav-link active" data-section="signals">📡 Signals</a>
-    <a href="#history" class="nav-link" data-section="history">📜 History</a>
-    <a href="#volume" class="nav-link" data-section="volume">📊 Volume</a>
-    <a href="#rsi" class="nav-link" data-section="rsi">📈 RSI</a>
-    <a href="#oversold" class="nav-link" data-section="oversold">🔥 Oversold</a>
-    <a href="#positions" class="nav-link" data-section="positions">💼 Positions</a>
-    <a href="#funding" class="nav-link" data-section="funding">💰 Funding</a>
-    <a href="#unlocks" class="nav-link" data-section="unlocks">🔓 Unlocks</a>
-    <a href="#leaderboard" class="nav-link" data-section="leaderboard">🏆 Leaderboard</a>
-  </div>
-
-  <!-- Main Content -->
-  <main class="container">
-    <!-- Hero -->
+    <!-- Hero Section -->
     <section class="hero">
-      <h1 id="hero-title">AI Trading Signals</h1>
-      <p id="hero-subtitle">Free your mind — AI-powered trading calls for Solana. Signals, volume alerts, RSI analysis, and more.</p>
+        <div class="container">
+            <h1>Trading Caller</h1>
+            <p class="tagline">Free your mind — AI-powered trading signals for Solana</p>
+            
+            <div class="stats-grid" id="heroStats">
+                <div class="stat-card">
+                    <div class="stat-value" id="winRate">--</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalPnL">--</div>
+                    <div class="stat-label">Total P&L</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="activePositions">--</div>
+                    <div class="stat-label">Active Positions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSignals">--</div>
+                    <div class="stat-label">Total Signals</div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <!-- ==================== SIGNALS SECTION ==================== -->
-    <section id="signals-section" class="page-section active">
-      <!-- Performance Stats -->
-      <div class="stats-grid" id="signals-stats">
-        <div class="stat-card highlight">
-          <div class="stat-value" id="stat-win-rate">--</div>
-          <div class="stat-label">Win Rate</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-avg-return">--</div>
-          <div class="stat-label">Avg Return</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-total-signals">--</div>
-          <div class="stat-label">Total Signals</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="stat-active">--</div>
-          <div class="stat-label">Active Now</div>
-        </div>
-      </div>
+    <!-- Feature Cards -->
+    <section class="container">
+        <div class="features-grid">
+            <!-- Live Signals Card -->
+            <div class="feature-card purple" id="signals">
+                <div class="feature-icon">📡</div>
+                <h3 class="feature-title">Live Signals</h3>
+                <p class="feature-description">Real-time AI trading calls with confidence scores and entry prices</p>
+                
+                <div class="feature-data" id="liveSignalsData">
+                    <div class="loading">Loading signals...</div>
+                </div>
+            </div>
 
-      <!-- Latest Signals -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📡</span> Latest Signals</h2>
-          <button class="btn btn-ghost" onclick="refreshSignals()">↻ Refresh</button>
-        </div>
-        <div class="signals-grid" id="signals-grid">
-          <!-- Dynamic signal cards -->
-        </div>
-      </div>
+            <!-- RSI Scanner Card -->
+            <div class="feature-card warm" id="rsi">
+                <div class="feature-icon">📈</div>
+                <h3 class="feature-title">RSI Scanner</h3>
+                <p class="feature-description">Find overbought & oversold tokens with extreme RSI values</p>
+                
+                <div class="feature-data" id="rsiScannerData">
+                    <div class="loading">Loading RSI data...</div>
+                </div>
+            </div>
 
+            <!-- Position Tracker Card -->
+            <div class="feature-card dark" id="positions">
+                <div class="feature-icon">💼</div>
+                <h3 class="feature-title">Position Tracker</h3>
+                <p class="feature-description">Track every call we make with live P&L updates</p>
+                
+                <div class="feature-data" id="positionTrackerData">
+                    <div class="loading">Loading positions...</div>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <!-- ==================== HISTORY SECTION ==================== -->
-    <section id="history-section" class="page-section">
-      <!-- Performance Summary -->
-      <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-value" id="history-win-rate">--</div>
-          <div class="stat-label">Overall Win Rate</div>
+    <!-- Analysis Section -->
+    <section class="container">
+        <div class="analysis-section">
+            <h2 class="analysis-title">Why We Make Each Call</h2>
+            <p style="text-align: center; color: #6B7280; margin-bottom: 32px;">Our AI analyzes multiple technical indicators to generate high-confidence trading signals</p>
+            
+            <div class="analysis-grid" id="analysisData">
+                <div class="loading">Loading analysis...</div>
+            </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="history-avg-roi">--</div>
-          <div class="stat-label">Average ROI</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="history-total-signals">--</div>
-          <div class="stat-label">Total Calls</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="history-profit-factor">--</div>
-          <div class="stat-label">Profit Factor</div>
-        </div>
-      </div>
-
-      <!-- Past Trading Calls -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📜</span> Past Trading Calls</h2>
-          <div class="toggle-group toggle-sm">
-            <button class="toggle-btn active" data-filter="all">All</button>
-            <button class="toggle-btn" data-filter="wins">Wins</button>
-            <button class="toggle-btn" data-filter="losses">Losses</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Token</th>
-                <th>Type</th>
-                <th>Entry</th>
-                <th>Exit</th>
-                <th>Target</th>
-                <th>Stop</th>
-                <th>Result</th>
-                <th>ROI</th>
-                <th>Link</th>
-              </tr>
-            </thead>
-            <tbody id="history-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Win/Loss Analysis -->
-      <div class="card card-purple">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📊</span> Performance Analysis</h2>
-        </div>
-        <div class="opportunities-grid" id="history-analysis-grid">
-          <!-- Dynamic analysis cards -->
-        </div>
-      </div>
     </section>
 
-    <!-- ==================== VOLUME SECTION ==================== -->
-    <section id="volume-section" class="page-section">
-      <!-- Volume Stats -->
-      <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-value" id="volume-status">--</div>
-          <div class="stat-label">Scanner Status</div>
+    <!-- Performance Dashboard -->
+    <section class="container" id="performance">
+        <div class="performance-section">
+            <h2 class="section-title">Performance Dashboard</h2>
+            
+            <div class="performance-grid" id="performanceData">
+                <div class="loading">Loading performance data...</div>
+            </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value" id="volume-tokens">--</div>
-          <div class="stat-label">Tokens Tracked</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="volume-spikes-count">--</div>
-          <div class="stat-label">Active Spikes</div>
-        </div>
-      </div>
-
-      <!-- Volume Spikes Alert -->
-      <div class="card card-purple">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">⚡</span> Volume Spikes</h2>
-          <span class="badge badge-warning">Live</span>
-        </div>
-        <div class="opportunities-grid" id="volume-spikes-grid">
-          <!-- Dynamic spike cards -->
-        </div>
-      </div>
-
-      <!-- Top Volume Tokens -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📊</span> Top Volume Tokens</h2>
-          <button class="btn btn-ghost" onclick="refreshVolume()">↻ Refresh</button>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Token</th>
-                <th>24h Volume</th>
-                <th>Volume Change</th>
-                <th>Price</th>
-                <th>Price Change</th>
-              </tr>
-            </thead>
-            <tbody id="volume-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
     </section>
 
-    <!-- ==================== RSI SECTION ==================== -->
-    <section id="rsi-section" class="page-section">
-      <!-- Stats Summary -->
-      <div class="rsi-stats-container" id="rsi-stats">
-        <!-- Dynamic stats -->
-      </div>
-      
-      <!-- Toggle -->
-      <div class="toggle-container">
-        <div class="toggle-group">
-          <button class="toggle-btn oversold active" data-mode="oversold">📈 Oversold</button>
-          <button class="toggle-btn overbought" data-mode="overbought">📉 Overbought</button>
+    <!-- API Section -->
+    <section class="container" id="api">
+        <div class="api-section">
+            <h2 class="api-title">Developer API</h2>
+            <p class="api-description">Integrate our trading signals into your applications</p>
+            
+            <div class="endpoints-grid" id="apiEndpoints">
+                <div class="loading">Loading API endpoints...</div>
+            </div>
         </div>
-        <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-          <button class="btn btn-secondary btn-sm" id="rsi-auto-refresh-btn" onclick="toggleRSIAutoRefresh()">⏸️ Auto</button>
-          <span class="text-muted" id="rsi-last-scan" style="font-size: 12px;">Last scan: --:--</span>
-        </div>
-      </div>
-
-      <!-- Search Section -->
-      <div class="search-section">
-        <div class="search-row">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" class="search-input" id="rsi-search-input" placeholder="Search token (e.g., SOL, BONK, PEPE)">
-          </div>
-          <button class="scan-btn" id="rsi-scan-btn"><span>⚡</span> Scan</button>
-        </div>
-
-        <!-- RSI Slider -->
-        <div class="slider-section">
-          <span class="slider-label">RSI Threshold</span>
-          <div class="slider-wrapper">
-            <input type="range" class="rsi-slider" id="rsi-slider" min="10" max="50" value="30">
-          </div>
-          <span class="slider-value" id="rsi-value">30</span>
-        </div>
-      </div>
-
-      <!-- Extreme Opportunities -->
-      <div class="card card-purple">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">✨</span> Extreme Opportunities</h2>
-        </div>
-        <div class="opportunities-grid" id="rsi-opportunities-grid">
-          <!-- Dynamic content -->
-        </div>
-      </div>
-
-      <!-- RSI Table -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📈</span> <span id="rsi-table-title">Most Oversold</span></h2>
-          <span class="table-count" id="rsi-table-count">Loading...</span>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Token</th>
-                <th>Price</th>
-                <th>RSI</th>
-                <th>24h Change</th>
-                <th>Market Cap</th>
-              </tr>
-            </thead>
-            <tbody id="rsi-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
     </section>
 
-    <!-- ==================== OVERSOLD.LOL SECTION ==================== -->
-    <section id="oversold-section" class="page-section">
-      <!-- Header -->
-      <div class="oversold-header">
-        <h2>🔥 Oversold Market Scanner</h2>
-        <p class="text-muted">Real-time RSI analysis across multiple timeframes - inspired by oversold.lol</p>
-      </div>
-
-      <!-- Controls -->
-      <div class="oversold-controls">
-        <!-- Timeframe Selector -->
-        <div class="timeframe-selector">
-          <button class="timeframe-btn active" data-timeframe="1H">1H</button>
-          <button class="timeframe-btn" data-timeframe="4H">4H</button>
-          <button class="timeframe-btn" data-timeframe="1D">1D</button>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="https://github.com/sebastianst/trading-caller" class="footer-link" target="_blank">GitHub</a>
+                    <a href="#api" class="footer-link">API Documentation</a>
+                    <a href="#performance" class="footer-link">Performance</a>
+                    <a href="https://solana.com" class="footer-link" target="_blank">Solana</a>
+                </div>
+                
+                <p class="disclaimer">
+                    <strong>Hackathon Project</strong> - Trading Caller is an experimental AI trading signals platform built for educational purposes. 
+                    This is not financial advice. Always do your own research and trade responsibly. 
+                    Cryptocurrency trading involves substantial risk of loss.
+                </p>
+                
+                <div style="opacity: 0.6;">
+                    © 2024 Trading Caller • Built with 💜 for the Solana community
+                </div>
+            </div>
         </div>
+    </footer>
+
+    <script>
+        // Global state
+        let dataCache = {};
+        const REFRESH_INTERVAL = 60000; // 60 seconds
         
-        <!-- Search & Filter -->
-        <div class="oversold-search-filter">
-          <input type="text" id="oversold-search" class="search-input" placeholder="Search tokens..." />
-          <select id="oversold-filter" class="filter-select">
-            <option value="all">All Tokens</option>
-            <option value="extreme">Extreme Only (RSI < 20)</option>
-            <option value="strong">Strong Only (RSI < 30)</option>
-            <option value="moderate">Moderate (RSI 30-40)</option>
-          </select>
-          <button class="btn btn-secondary btn-sm" onclick="exportOversoldData()">📥 Export</button>
-        </div>
-      </div>
-
-      <!-- Summary Stats -->
-      <div class="oversold-stats-grid">
-        <div class="oversold-stat-card extreme">
-          <div class="stat-icon">🚨</div>
-          <div class="stat-content">
-            <div class="stat-value" id="oversold-extreme-count">0</div>
-            <div class="stat-label">Extreme Oversold (RSI < 20)</div>
-          </div>
-        </div>
-        <div class="oversold-stat-card strong">
-          <div class="stat-icon">⚠️</div>
-          <div class="stat-content">
-            <div class="stat-value" id="oversold-strong-count">0</div>
-            <div class="stat-label">Strong Oversold (RSI < 30)</div>
-          </div>
-        </div>
-        <div class="oversold-stat-card moderate">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-value" id="oversold-moderate-count">0</div>
-            <div class="stat-label">Moderate (RSI 30-40)</div>
-          </div>
-        </div>
-        <div class="oversold-stat-card neutral">
-          <div class="stat-icon">➖</div>
-          <div class="stat-content">
-            <div class="stat-value" id="oversold-neutral-count">0</div>
-            <div class="stat-label">Neutral (RSI 40-60)</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Oversold Tokens Grid -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🔥</span> Oversold Opportunities</h2>
-          <div class="header-actions">
-            <span class="text-muted" style="font-size: 12px;" id="oversold-last-update">Last update: --</span>
-            <button class="btn btn-secondary btn-sm" onclick="refreshOversold()">↻ Refresh</button>
-          </div>
-        </div>
-        <div class="oversold-tokens-grid" id="oversold-tokens-grid">
-          <!-- Dynamic token cards -->
-        </div>
-      </div>
-
-      <!-- Overbought Section -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🔴</span> Overbought Tokens</h2>
-          <span class="badge badge-danger">Potential Reversal Zones</span>
-        </div>
-        <div class="oversold-tokens-grid" id="overbought-tokens-grid">
-          <!-- Dynamic token cards -->
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== POSITIONS DASHBOARD ==================== -->
-    <section id="positions-section" class="page-section">
-      <!-- Dashboard Header -->
-      <div class="positions-header">
-        <h2>💼 Positions Dashboard</h2>
-        <p class="text-muted">Track your trading performance and manage positions</p>
-      </div>
-
-      <!-- Performance Overview -->
-      <div class="positions-stats-grid">
-        <div class="position-stat-card profit">
-          <div class="stat-icon">💰</div>
-          <div class="stat-content">
-            <div class="stat-value" id="positions-total-pnl">$0.00</div>
-            <div class="stat-label">Total P&L</div>
-            <div class="stat-detail" id="positions-roi">0.00% ROI</div>
-          </div>
-        </div>
-        <div class="position-stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-content">
-            <div class="stat-value" id="positions-win-rate">0%</div>
-            <div class="stat-label">Win Rate</div>
-            <div class="stat-detail" id="positions-win-loss">0W / 0L</div>
-          </div>
-        </div>
-        <div class="position-stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-content">
-            <div class="stat-value" id="positions-open-count">0</div>
-            <div class="stat-label">Open Positions</div>
-            <div class="stat-detail" id="positions-total-count">0 Total</div>
-          </div>
-        </div>
-        <div class="position-stat-card">
-          <div class="stat-icon">🎯</div>
-          <div class="stat-content">
-            <div class="stat-value" id="positions-best-trade">+0%</div>
-            <div class="stat-label">Best Trade</div>
-            <div class="stat-detail" id="positions-worst-trade">0% Worst</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Position Tabs -->
-      <div class="positions-tabs">
-        <button class="positions-tab-btn active" data-tab="open">Open Positions</button>
-        <button class="positions-tab-btn" data-tab="closed">Closed Positions</button>
-        <button class="positions-tab-btn" data-tab="pending">Pending Entry</button>
-      </div>
-
-      <!-- Open Positions -->
-      <div class="positions-tab-content active" id="positions-tab-open">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title"><span class="icon">📈</span> Active Positions</h2>
-            <span class="badge badge-success" id="open-positions-count">0 Open</span>
-          </div>
-          <div class="positions-grid" id="open-positions-grid">
-            <!-- Dynamic position cards -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Closed Positions -->
-      <div class="positions-tab-content" id="positions-tab-closed">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title"><span class="icon">📊</span> Closed Positions</h2>
-            <span class="badge" id="closed-positions-count">0 Closed</span>
-          </div>
-          <div class="positions-table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Token</th>
-                  <th>Action</th>
-                  <th>Entry</th>
-                  <th>Exit</th>
-                  <th>Time in Position</th>
-                  <th>P&L</th>
-                  <th>ROI</th>
-                </tr>
-              </thead>
-              <tbody id="closed-positions-table">
-                <!-- Dynamic rows -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pending Entry -->
-      <div class="positions-tab-content" id="positions-tab-pending">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title"><span class="icon">⏳</span> Waiting for Entry</h2>
-            <span class="badge badge-warning" id="pending-positions-count">0 Pending</span>
-          </div>
-          <div class="positions-grid" id="pending-positions-grid">
-            <!-- Dynamic position cards -->
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== FUNDING SECTION ==================== -->
-    <section id="funding-section" class="page-section">
-      <!-- Squeeze Alerts -->
-      <div class="card card-dark">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🔥</span> Squeeze Alerts</h2>
-          <span class="badge badge-danger">High Funding</span>
-        </div>
-        <div class="opportunities-grid" id="funding-squeeze-grid">
-          <!-- Dynamic squeeze alerts -->
-        </div>
-      </div>
-
-      <!-- Funding Rates Table -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">💰</span> Current Funding Rates</h2>
-          <button class="btn btn-ghost" onclick="refreshFunding()">↻ Refresh</button>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Token</th>
-                <th>Funding Rate</th>
-                <th>Predicted</th>
-                <th>Open Interest</th>
-                <th>Signal</th>
-              </tr>
-            </thead>
-            <tbody id="funding-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== UNLOCKS SECTION ==================== -->
-    <section id="unlocks-section" class="page-section">
-      <!-- Upcoming Unlocks -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🔓</span> Upcoming Token Unlocks</h2>
-          <button class="btn btn-ghost" onclick="refreshUnlocks()">↻ Refresh</button>
-        </div>
-        <div class="unlocks-list" id="unlocks-list">
-          <!-- Dynamic unlock cards -->
-        </div>
-      </div>
-
-      <!-- Unlocks Calendar View -->
-      <div class="card card-cream">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📅</span> Unlock Calendar</h2>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Token</th>
-                <th>Amount</th>
-                <th>% of Supply</th>
-                <th>Value (USD)</th>
-                <th>Impact</th>
-              </tr>
-            </thead>
-            <tbody id="unlocks-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== LEADERBOARD SECTION ==================== -->
-    <section id="leaderboard-section" class="page-section">
-      <!-- Top Performers -->
-      <div class="card card-purple">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🏆</span> Top Performing Tokens</h2>
-        </div>
-        <div class="leaderboard-podium" id="leaderboard-podium">
-          <!-- Top 3 tokens -->
-        </div>
-      </div>
-
-      <!-- Token Leaderboard -->
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">📊</span> Token Rankings</h2>
-          <div class="toggle-group toggle-sm">
-            <button class="toggle-btn active" data-period="24h">24h</button>
-            <button class="toggle-btn" data-period="7d">7d</button>
-            <button class="toggle-btn" data-period="30d">30d</button>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Token</th>
-                <th>Price</th>
-                <th>Change</th>
-                <th>Volume</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboard-table-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Signal Performance -->
-      <div class="card card-dark">
-        <div class="card-header">
-          <h2 class="card-title"><span class="icon">🎯</span> Signal Leaderboard</h2>
-        </div>
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Token</th>
-                <th>Signal Type</th>
-                <th>Signals</th>
-                <th>Win Rate</th>
-                <th>Avg Return</th>
-              </tr>
-            </thead>
-            <tbody id="signal-leaderboard-body">
-              <!-- Dynamic content -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Token Detail Modal -->
-  <div class="modal-overlay" id="token-modal" style="display: none;">
-    <div class="modal-content">
-      <!-- Dynamic content loaded by JS -->
-    </div>
-  </div>
-
-  <!-- Toast Container -->
-  <div class="toast-container" id="toast-container"></div>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <p>Trading Caller — Free your mind. Not financial advice. DYOR.</p>
-      <p style="margin-top: 8px; opacity: 0.6;">AI-powered signals for Solana</p>
-    </div>
-  </footer>
-
-  <script src="cache-manager.js"></script>
-  <script src="risk-calculator.js"></script>
-  <script src="app.js"></script>
-  <script src="keyboard-shortcuts.js"></script>
-  
-  <!-- Help Button -->
-  <button class="help-btn" onclick="showKeyboardShortcutsHelp()" title="Keyboard Shortcuts (?)">
-    ⌨️
-  </button>
+        // Utility functions
+        function formatNumber(num, decimals = 2) {
+            if (num === null || num === undefined) return '--';
+            return Number(num).toFixed(decimals);
+        }
+        
+        function formatPercent(num) {
+            if (num === null || num === undefined) return '--';
+            return `${(num * 100).toFixed(1)}%`;
+        }
+        
+        function formatCurrency(num) {
+            if (num === null || num === undefined) return '--';
+            const formatted = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 2
+            }).format(num);
+            return formatted;
+        }
+        
+        function getColorClass(value) {
+            if (value > 0) return 'positive';
+            if (value < 0) return 'negative';
+            return 'neutral';
+        }
+        
+        // API functions
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${endpoint}:`, error);
+                return null;
+            }
+        }
+        
+        // Update hero stats
+        async function updateHeroStats() {
+            const performance = await fetchData('/signals/performance');
+            const positions = await fetchData('/positions/stats');
+            
+            if (performance) {
+                document.getElementById('winRate').textContent = formatPercent(performance.winRate);
+                document.getElementById('totalPnL').textContent = formatCurrency(performance.totalPnL);
+                document.getElementById('totalSignals').textContent = performance.totalSignals || 0;
+            }
+            
+            if (positions) {
+                document.getElementById('activePositions').textContent = positions.activeCount || 0;
+            }
+        }
+        
+        // Update live signals
+        async function updateLiveSignals() {
+            const signals = await fetchData('/signals/latest');
+            const container = document.getElementById('liveSignalsData');
+            
+            if (!signals || !signals.length) {
+                container.innerHTML = '<div class="error">No signals available</div>';
+                return;
+            }
+            
+            const signalsHtml = signals.slice(0, 3).map(signal => `
+                <div class="signal-item">
+                    <div>
+                        <div class="signal-token">${signal.token || 'Unknown'}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">
+                            $${formatNumber(signal.price, 4)} • ${formatPercent(signal.confidence)}
+                        </div>
+                    </div>
+                    <span class="signal-action ${(signal.action || '').toLowerCase()}">
+                        ${signal.action || 'HOLD'}
+                    </span>
+                </div>
+            `).join('');
+            
+            container.innerHTML = signalsHtml;
+        }
+        
+        // Update RSI scanner
+        async function updateRSIScanner() {
+            const oversold = await fetchData('/rsi/oversold');
+            const overbought = await fetchData('/rsi/overbought');
+            const container = document.getElementById('rsiScannerData');
+            
+            const allData = [
+                ...(oversold || []).map(item => ({...item, type: 'oversold'})),
+                ...(overbought || []).map(item => ({...item, type: 'overbought'}))
+            ].slice(0, 4);
+            
+            if (!allData.length) {
+                container.innerHTML = '<div class="error">No RSI data available</div>';
+                return;
+            }
+            
+            const rsiHtml = allData.map(item => `
+                <div class="rsi-item">
+                    <div>
+                        <div style="font-weight: 600;">${item.token || 'Unknown'}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">
+                            RSI: ${formatNumber(item.rsi, 1)}
+                        </div>
+                    </div>
+                    <div class="rsi-bar">
+                        <div class="rsi-fill ${item.type}" style="width: ${item.rsi}%"></div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = rsiHtml;
+        }
+        
+        // Update position tracker
+        async function updatePositionTracker() {
+            const positions = await fetchData('/positions/open');
+            const container = document.getElementById('positionTrackerData');
+            
+            if (!positions || !positions.length) {
+                container.innerHTML = '<div class="error">No open positions</div>';
+                return;
+            }
+            
+            const positionsHtml = positions.slice(0, 3).map(pos => `
+                <div class="signal-item">
+                    <div>
+                        <div class="signal-token">${pos.token || 'Unknown'}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">
+                            Entry: $${formatNumber(pos.entryPrice, 4)}
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="${getColorClass(pos.pnl)}" style="font-weight: 600;">
+                            ${formatCurrency(pos.pnl)}
+                        </div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">
+                            ${formatPercent(pos.pnlPercent)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = positionsHtml;
+        }
+        
+        // Update analysis section
+        async function updateAnalysis() {
+            const signals = await fetchData('/signals/latest');
+            const container = document.getElementById('analysisData');
+            
+            if (!signals || !signals.length) {
+                container.innerHTML = '<div class="error">No analysis data available</div>';
+                return;
+            }
+            
+            const signal = signals[0];
+            const analysisHtml = `
+                <div class="analysis-card">
+                    <h4 style="margin-bottom: 16px; font-weight: 600;">Latest Signal: ${signal.token}</h4>
+                    <div style="margin-bottom: 12px;">
+                        <span class="tag">📈 RSI: ${formatNumber(signal.rsi, 1)}</span>
+                        <span class="tag">📊 MACD: ${signal.macd > 0 ? 'Bullish' : 'Bearish'}</span>
+                    </div>
+                    <p style="color: #6B7280; line-height: 1.5;">
+                        ${signal.reasoning || 'Technical analysis indicates strong momentum with favorable risk-reward ratio.'}
+                    </p>
+                </div>
+                <div class="analysis-card">
+                    <h4 style="margin-bottom: 16px; font-weight: 600;">Market Conditions</h4>
+                    <div style="margin-bottom: 12px;">
+                        <span class="tag">🎯 Confidence: ${formatPercent(signal.confidence)}</span>
+                        <span class="tag">💡 Trend: ${signal.trend || 'Neutral'}</span>
+                    </div>
+                    <p style="color: #6B7280; line-height: 1.5;">
+                        Current market conditions favor this directional bias based on multiple timeframe analysis.
+                    </p>
+                </div>
+                <div class="analysis-card">
+                    <h4 style="margin-bottom: 16px; font-weight: 600;">Risk Management</h4>
+                    <div style="margin-bottom: 12px;">
+                        <span class="tag">🛡️ Stop Loss: $${formatNumber(signal.stopLoss, 4)}</span>
+                        <span class="tag">🎯 Target: $${formatNumber(signal.target, 4)}</span>
+                    </div>
+                    <p style="color: #6B7280; line-height: 1.5;">
+                        Position sizing and risk parameters calculated based on volatility and market depth.
+                    </p>
+                </div>
+            `;
+            
+            container.innerHTML = analysisHtml;
+        }
+        
+        // Update performance dashboard
+        async function updatePerformance() {
+            const performance = await fetchData('/signals/performance');
+            const container = document.getElementById('performanceData');
+            
+            if (!performance) {
+                container.innerHTML = '<div class="error">No performance data available</div>';
+                return;
+            }
+            
+            const performanceHtml = `
+                <div class="performance-card">
+                    <div class="performance-metric ${getColorClass(performance.winRate - 0.5)}" >
+                        ${formatPercent(performance.winRate)}
+                    </div>
+                    <div class="stat-label">Overall Win Rate</div>
+                </div>
+                <div class="performance-card">
+                    <div class="performance-metric ${getColorClass(performance.longWinRate - 0.5)}">
+                        ${formatPercent(performance.longWinRate)}
+                    </div>
+                    <div class="stat-label">Long Win Rate</div>
+                </div>
+                <div class="performance-card">
+                    <div class="performance-metric ${getColorClass(performance.shortWinRate - 0.5)}">
+                        ${formatPercent(performance.shortWinRate)}
+                    </div>
+                    <div class="stat-label">Short Win Rate</div>
+                </div>
+                <div class="performance-card">
+                    <div class="performance-metric ${getColorClass(performance.profitFactor - 1)}">
+                        ${formatNumber(performance.profitFactor, 2)}
+                    </div>
+                    <div class="stat-label">Profit Factor</div>
+                </div>
+                <div class="performance-card">
+                    <div class="performance-metric ${getColorClass(performance.avgReturn)}">
+                        ${formatPercent(performance.avgReturn)}
+                    </div>
+                    <div class="stat-label">Avg Return</div>
+                </div>
+                <div class="performance-card">
+                    <div class="performance-metric neutral">
+                        ${performance.totalTrades || 0}
+                    </div>
+                    <div class="stat-label">Total Trades</div>
+                </div>
+            `;
+            
+            container.innerHTML = performanceHtml;
+        }
+        
+        // Update API endpoints
+        async function updateAPIEndpoints() {
+            const apiData = await fetchData('/api');
+            const container = document.getElementById('apiEndpoints');
+            
+            const defaultEndpoints = [
+                { method: 'GET', path: '/signals/latest', description: 'Get latest trading signals with confidence scores' },
+                { method: 'GET', path: '/signals/performance', description: 'Performance metrics and win rates' },
+                { method: 'GET', path: '/positions/open', description: 'Currently active positions with live P&L' },
+                { method: 'GET', path: '/positions/stats', description: 'Position statistics and summary' },
+                { method: 'GET', path: '/rsi/oversold', description: 'Tokens with RSI below 30 (oversold)' },
+                { method: 'GET', path: '/rsi/overbought', description: 'Tokens with RSI above 70 (overbought)' }
+            ];
+            
+            const endpoints = (apiData && apiData.endpoints) ? apiData.endpoints : defaultEndpoints;
+            
+            const endpointsHtml = endpoints.map(endpoint => `
+                <div class="endpoint-card">
+                    <span class="endpoint-method">${endpoint.method}</span>
+                    <div class="endpoint-path">${endpoint.path}</div>
+                    <p style="opacity: 0.8; font-size: 0.875rem;">
+                        ${endpoint.description}
+                    </p>
+                </div>
+            `).join('');
+            
+            container.innerHTML = endpointsHtml;
+        }
+        
+        // Main update function
+        async function updateAllData() {
+            console.log('Updating all data...');
+            
+            await Promise.all([
+                updateHeroStats(),
+                updateLiveSignals(),
+                updateRSIScanner(),
+                updatePositionTracker(),
+                updateAnalysis(),
+                updatePerformance(),
+                updateAPIEndpoints()
+            ]);
+            
+            console.log('Data update complete');
+        }
+        
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Trading Caller initialized');
+            
+            // Initial data load
+            updateAllData();
+            
+            // Set up auto-refresh
+            setInterval(updateAllData, REFRESH_INTERVAL);
+            
+            // Add fade-in animation to elements
+            const elements = document.querySelectorAll('.feature-card, .stat-card, .analysis-card');
+            elements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('animate-fade-in');
+                }, index * 100);
+            });
+        });
+        
+        // Handle visibility change to pause/resume updates when tab is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateAllData();
+            }
+        });
+    </script>
 </body>
 </html>
