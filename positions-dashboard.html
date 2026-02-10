@@ -287,7 +287,7 @@
             ${position.reasoning ? `
               <div class="signal-reasoning-item">
                 <span class="signal-reasoning-label">Technical:</span>
-                <span class="signal-reasoning-text">${position.reasoning.technical}</span>
+                <span class="signal-reasoning-text">${typeof position.reasoning === 'string' ? position.reasoning : (position.reasoning.technical || 'N/A')}</span>
               </div>
             ` : ''}
           </div>

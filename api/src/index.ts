@@ -113,6 +113,10 @@ app.get('/live', serveStatic({ path: './live-dashboard.html' }));
 app.get('/positions-dashboard.html', serveStatic({ path: './positions-dashboard.html' }));
 app.get('/backtesting-results.html', serveStatic({ path: './backtesting-results.html' }));
 app.get('/modern-ui.css', serveStatic({ path: './modern-ui.css' }));
+app.get('/rsi-enhancements.css', serveStatic({ path: './rsi-enhancements.css' }));
+app.get('/keyboard-shortcuts.css', serveStatic({ path: './keyboard-shortcuts.css' }));
+app.get('/oversold-positions.css', serveStatic({ path: './oversold-positions.css' }));
+app.get('/cache-manager.js', serveStatic({ path: './cache-manager.js' }));
 
 // Serve index.html for root and unknown routes (SPA fallback)
 app.get('/', serveStatic({ path: './index.html' }));
@@ -1100,7 +1104,7 @@ setTimeout(async () => {
     
     // Start performance scheduler (every 10 minutes price checks)
     console.log('[API] Starting performance scheduler...');
-    performanceScheduler.start();
+    if (performanceTracker?.start) performanceTracker.start();
     
     // Initialize and start volume scanner
     console.log('[API] Initializing volume scanner...');

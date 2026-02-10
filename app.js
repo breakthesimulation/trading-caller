@@ -243,10 +243,21 @@ async function loadSignals() {
 }
 
 function updateSignalsStats(data) {
-  document.getElementById('stat-win-rate').textContent = data?.winRate ? `${data.winRate}%` : '72%';
-  document.getElementById('stat-avg-return').textContent = data?.avgReturn ? `${data.avgReturn}%` : '+8.4%';
-  document.getElementById('stat-total-signals').textContent = data?.totalSignals || '156';
-  document.getElementById('stat-active').textContent = data?.activeSignals || '4';
+  // Handle nested API response shape: { performance: { rates: {}, pnl: {}, summary: {} } }
+  const perf = data?.performance || data;
+  const rates = perf?.rates || {};
+  const pnl = perf?.pnl || {};
+  const summary = perf?.summary || {};
+  
+  const winRate = rates?.winRate || data?.winRate || null;
+  const avgReturn = pnl?.average || data?.avgReturn || null;
+  const total = summary?.total || data?.totalSignals || null;
+  const active = summary?.active || data?.activeSignals || null;
+  
+  document.getElementById('stat-win-rate').textContent = winRate ? (typeof winRate === 'string' ? winRate : `${winRate}%`) : '--';
+  document.getElementById('stat-avg-return').textContent = avgReturn ? (typeof avgReturn === 'string' ? avgReturn : `${avgReturn}%`) : '--';
+  document.getElementById('stat-total-signals').textContent = total || '--';
+  document.getElementById('stat-active').textContent = active || '--';
 }
 
 function getSymbol(signal) {
