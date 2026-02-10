@@ -23,7 +23,8 @@ import volumeRoutes, { getScanner } from '../../volume-scanner/src/routes.js';
 import { rsiRoutes } from '../../oversold/src/index.js';
 
 // Backtesting module
-import { backtestRoutes } from '../../backtesting/src/index.js';
+// backtesting disabled - uses better-sqlite3 which breaks Railway builds
+// import { backtestRoutes } from '../../backtesting/src/index.js';
 
 // Positions dashboard
 import positionsRoutes from './positions-routes.js';
@@ -91,8 +92,8 @@ app.route('/', volumeRoutes);
 // Mount RSI scanner routes
 app.route('/', rsiRoutes);
 
-// Mount backtesting routes
-app.route('/', backtestRoutes);
+// Mount backtesting routes (disabled - sqlite3 breaks Railway)
+// app.route('/', backtestRoutes);
 
 // Mount positions dashboard routes
 app.route('/', positionsRoutes);

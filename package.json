@@ -4,8 +4,9 @@
   "description": "Trading Caller — Your AI trading companion for Solana. Makes the calls so you don't have to.",
   "type": "module",
   "scripts": {
+    "start": "tsx api/src/index.ts",
     "dev": "tsx watch research-engine/src/index.ts",
-    "api": "tsx watch api/src/index.ts",
+    "api": "tsx api/src/index.ts",
     "scoring": "tsx watch scoring/src/index.ts",
     "volume": "tsx volume-scanner/src/index.ts",
     "volume:watch": "tsx watch volume-scanner/src/index.ts",
@@ -19,9 +20,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
     "@hono/node-server": "^1.19.9",
-    "@solana/web3.js": "^1.95.0",
     "axios": "^1.7.0",
-    "better-sqlite3": "^11.3.0",
     "date-fns": "^3.3.0",
     "dotenv": "^16.4.0",
     "hono": "^4.0.0",
