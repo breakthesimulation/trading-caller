@@ -321,10 +321,10 @@ async function scanAllTokens(): Promise<TokenRSIData[]> {
     if (aOrder !== bOrder) return aOrder - bOrder;
     
     // Within same strength, sort by most extreme RSI
-    const aMinRSI = Math.min(Object.values(a.rsi) as number[]);
-    const bMinRSI = Math.min(Object.values(b.rsi) as number[]);
-    const aMaxRSI = Math.max(Object.values(a.rsi) as number[]);
-    const bMaxRSI = Math.max(Object.values(b.rsi) as number[]);
+    const aMinRSI = Math.min(...Object.values(a.rsi) as number[]);
+    const bMinRSI = Math.min(...Object.values(b.rsi) as number[]);
+    const aMaxRSI = Math.max(...Object.values(a.rsi) as number[]);
+    const bMaxRSI = Math.max(...Object.values(b.rsi) as number[]);
     
     if (a.signal === 'OVERSOLD' && b.signal === 'OVERSOLD') {
       return aMinRSI - bMinRSI; // Lower RSI first for oversold
