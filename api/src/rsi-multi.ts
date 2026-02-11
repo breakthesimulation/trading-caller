@@ -1,7 +1,13 @@
 // Trading Caller - Top 100 Solana RSI Scanner
 // Progressive scanning with smart rate limiting and dynamic token discovery
+// Primary OHLCV source: GeckoTerminal (free, 30 req/min)
+// Fallback: CoinGecko (free tier, heavily rate-limited)
 
 import { Hono } from 'hono';
+import {
+  searchPools,
+  getOHLCV as getGeckoOHLCV,
+} from '../../research-engine/src/data/geckoterminal.js';
 
 const app = new Hono();
 
@@ -197,10 +203,10 @@ function groupIntoHourly(candles: number[][]): number[][] {
   return grouped;
 }
 
-// Fetch OHLC data for a specific timeframe
+// Fetch OHLC data for a specific timeframe from CoinGecko (fallback)
 async function fetchOHLC(tokenId: string, days: number): Promise<number[][]> {
   const url = `https://api.coingecko.com/api/v3/coins/${tokenId}/ohlc?vs_currency=usd&days=${days}`;
-  
+
   try {
     const response = await fetch(url, {
       headers: {
@@ -208,97 +214,198 @@ async function fetchOHLC(tokenId: string, days: number): Promise<number[][]> {
         'User-Agent': 'TradingCaller/2.0'
       }
     });
-    
+
     if (!response.ok) {
       if (response.status === 429) {
-        console.warn(`[RSI Multi] Rate limited for ${tokenId}, backing off...`);
-        await new Promise(resolve => setTimeout(resolve, 10000)); // 10s backoff
+        console.warn(`[RSI Multi] CoinGecko rate limited for ${tokenId}, backing off...`);
+        await new Promise(resolve => setTimeout(resolve, 10000));
         throw new Error('Rate limited');
       }
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
-    
+
     const data = await response.json() as number[][];
     return data;
   } catch (error) {
-    console.error(`[RSI Multi] OHLC fetch failed for ${tokenId}:`, error);
+    console.error(`[RSI Multi] CoinGecko OHLC fetch failed for ${tokenId}:`, error);
     throw error;
   }
 }
 
+// Pool address cache: token symbol -> best pool address
+const poolAddressCache = new Map<string, { address: string; expiresAt: number }>();
+const POOL_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+async function findPoolForSymbol(symbol: string): Promise<string | null> {
+  const cached = poolAddressCache.get(symbol);
+  if (cached && Date.now() < cached.expiresAt) return cached.address;
+
+  try {
+    const pools = await searchPools(symbol);
+    if (pools.length === 0) return null;
+
+    // Pick the pool with highest liquidity
+    const best = pools.sort((a, b) => b.liquidity - a.liquidity)[0];
+    poolAddressCache.set(symbol, {
+      address: best.address,
+      expiresAt: Date.now() + POOL_CACHE_TTL,
+    });
+    return best.address;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try to fetch OHLCV from GeckoTerminal for a token.
+ * Returns close prices array or null if unavailable.
+ */
+async function fetchGeckoTerminalCloses(
+  symbol: string,
+  timeframe: 'hour' | 'day',
+  aggregate: number,
+  limit: number,
+): Promise<number[] | null> {
+  try {
+    const poolAddress = await findPoolForSymbol(symbol);
+    if (!poolAddress) return null;
+
+    const candles = await getGeckoOHLCV(poolAddress, timeframe, aggregate, limit);
+    if (candles.length < 15) return null;
+
+    return candles.map((c) => c.close);
+  } catch {
+    return null;
+  }
+}
+
 // Calculate all RSI timeframes for a token
+// Tries GeckoTerminal first (free OHLCV), then falls back to CoinGecko
 async function calculateTokenRSI(tokenId: string): Promise<RSIData> {
   const rsi: RSIData = { '1h': null, '4h': null, '1d': null, '1w': null };
-  
-  console.log(`[RSI Multi] Calculating RSI for ${tokenId}...`);
-  
+
+  // Resolve symbol for GeckoTerminal lookups
+  const token = tokenListCache?.tokens.find((t) => t.id === tokenId);
+  const symbol = token?.symbol?.toUpperCase() || tokenId;
+
+  console.log(`[RSI Multi] Calculating RSI for ${symbol} (${tokenId})...`);
+
+  // --- Try GeckoTerminal first (free, better rate limits) ---
+  let usedGecko = false;
   try {
-    // 1H RSI from 30-min candles (days=1)
+    const [closes1h, closes4h, closes1d] = await Promise.all([
+      fetchGeckoTerminalCloses(symbol, 'hour', 1, 48),
+      fetchGeckoTerminalCloses(symbol, 'hour', 4, 60),
+      fetchGeckoTerminalCloses(symbol, 'day', 1, 30),
+    ]);
+
+    if (closes1h && closes1h.length >= 15) {
+      rsi['1h'] = Math.round(calculateRSI(closes1h) * 10) / 10;
+      usedGecko = true;
+    }
+    if (closes4h && closes4h.length >= 15) {
+      rsi['4h'] = Math.round(calculateRSI(closes4h) * 10) / 10;
+      usedGecko = true;
+    }
+    if (closes1d && closes1d.length >= 15) {
+      rsi['1d'] = Math.round(calculateRSI(closes1d) * 10) / 10;
+      usedGecko = true;
+    }
+
+    // Weekly RSI approximation: use 90 days of daily closes for longer-term RSI
+    if (closes1d && closes1d.length >= 15) {
+      const closes1w = await fetchGeckoTerminalCloses(symbol, 'day', 1, 90);
+      if (closes1w && closes1w.length >= 15) {
+        rsi['1w'] = Math.round(calculateRSI(closes1w) * 10) / 10;
+      }
+    }
+
+    if (usedGecko) {
+      console.log(`[RSI Multi] GeckoTerminal RSI for ${symbol}: 1h=${rsi['1h']} 4h=${rsi['4h']} 1d=${rsi['1d']} 1w=${rsi['1w']}`);
+    }
+  } catch (error) {
+    console.warn(`[RSI Multi] GeckoTerminal failed for ${symbol}, falling back to CoinGecko`);
+  }
+
+  // --- Fallback to CoinGecko for any missing timeframes ---
+  if (!usedGecko || rsi['1h'] === null || rsi['4h'] === null || rsi['1d'] === null) {
+    console.log(`[RSI Multi] Using CoinGecko fallback for ${tokenId}...`);
+
     try {
-      const data1h = await fetchOHLC(tokenId, 1);
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-      
-      if (data1h.length >= 30) { // Need enough 30min candles
-        const hourlyCandles = groupIntoHourly(data1h);
-        if (hourlyCandles.length >= 15) {
-          const closes = hourlyCandles.map(c => c[4]);
-          rsi['1h'] = Math.round(calculateRSI(closes) * 10) / 10;
+      // 1H RSI from 30-min candles (days=1)
+      if (rsi['1h'] === null) {
+        try {
+          const data1h = await fetchOHLC(tokenId, 1);
+          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+
+          if (data1h.length >= 30) {
+            const hourlyCandles = groupIntoHourly(data1h);
+            if (hourlyCandles.length >= 15) {
+              const closes = hourlyCandles.map(c => c[4]);
+              rsi['1h'] = Math.round(calculateRSI(closes) * 10) / 10;
+            }
+          }
+        } catch (error) {
+          console.warn(`[RSI Multi] 1H RSI failed for ${tokenId}:`, error);
+        }
+      }
+
+      // 4H RSI (days=14)
+      if (rsi['4h'] === null) {
+        try {
+          const data4h = await fetchOHLC(tokenId, 14);
+          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+
+          if (data4h.length >= 15) {
+            const closes = data4h.map(c => c[4]);
+            rsi['4h'] = Math.round(calculateRSI(closes) * 10) / 10;
+          }
+        } catch (error) {
+          console.warn(`[RSI Multi] 4H RSI failed for ${tokenId}:`, error);
+        }
+      }
+
+      // 1D RSI (days=30)
+      if (rsi['1d'] === null) {
+        try {
+          const data1d = await fetchOHLC(tokenId, 30);
+          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+
+          if (data1d.length >= 15) {
+            const closes = data1d.map(c => c[4]);
+            rsi['1d'] = Math.round(calculateRSI(closes) * 10) / 10;
+          }
+        } catch (error) {
+          console.warn(`[RSI Multi] 1D RSI failed for ${tokenId}:`, error);
+        }
+      }
+
+      // 1W RSI (days=90)
+      if (rsi['1w'] === null) {
+        try {
+          const data1w = await fetchOHLC(tokenId, 90);
+          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
+
+          if (data1w.length >= 15) {
+            const closes = data1w.map(c => c[4]);
+            rsi['1w'] = Math.round(calculateRSI(closes) * 10) / 10;
+          }
+        } catch (error) {
+          console.warn(`[RSI Multi] 1W RSI failed for ${tokenId}:`, error);
         }
       }
     } catch (error) {
-      console.warn(`[RSI Multi] 1H RSI failed for ${tokenId}:`, error);
+      console.error(`[RSI Multi] CoinGecko fallback failed for ${tokenId}:`, error);
     }
-    
-    // 4H RSI (days=14)
-    try {
-      const data4h = await fetchOHLC(tokenId, 14);
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-      
-      if (data4h.length >= 15) {
-        const closes = data4h.map(c => c[4]);
-        rsi['4h'] = Math.round(calculateRSI(closes) * 10) / 10;
-      }
-    } catch (error) {
-      console.warn(`[RSI Multi] 4H RSI failed for ${tokenId}:`, error);
-    }
-    
-    // 1D RSI (days=30)
-    try {
-      const data1d = await fetchOHLC(tokenId, 30);
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-      
-      if (data1d.length >= 15) {
-        const closes = data1d.map(c => c[4]);
-        rsi['1d'] = Math.round(calculateRSI(closes) * 10) / 10;
-      }
-    } catch (error) {
-      console.warn(`[RSI Multi] 1D RSI failed for ${tokenId}:`, error);
-    }
-    
-    // 1W RSI (days=90, ~4-day candles)
-    try {
-      const data1w = await fetchOHLC(tokenId, 90);
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY));
-      
-      if (data1w.length >= 15) {
-        const closes = data1w.map(c => c[4]);
-        rsi['1w'] = Math.round(calculateRSI(closes) * 10) / 10;
-      }
-    } catch (error) {
-      console.warn(`[RSI Multi] 1W RSI failed for ${tokenId}:`, error);
-    }
-    
-  } catch (error) {
-    console.error(`[RSI Multi] Token RSI calculation failed for ${tokenId}:`, error);
   }
-  
+
   // Cache the result
   rsiCache.set(tokenId, {
     tokenId,
     timestamp: Date.now(),
     rsi
   });
-  
+
   return rsi;
 }
 

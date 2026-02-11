@@ -25,6 +25,7 @@ import { createDashboardRoutes } from './routes/dashboard.js';
 import { createLearningRoutes } from './routes/learning.js';
 import { createSchedulerRoutes } from './routes/scheduler.js';
 import { createHackathonRoutes } from './routes/hackathon.js';
+import { createGeckoRoutes } from './routes/gecko.js';
 import { backtestRoutes } from '../../backtesting/src/index.js';
 
 // Price update for live position tracking
@@ -93,6 +94,7 @@ const dashboardRoutes = createDashboardRoutes(engine, () => ({
 const learningRoutes = createLearningRoutes(() => ({ tracker, learner }));
 const schedulerRoutes = createSchedulerRoutes(() => scheduler);
 const hackathonRoutes = createHackathonRoutes(() => hackathon, loadOptionalModules);
+const geckoRoutes = createGeckoRoutes();
 
 // Mount existing route modules
 app.route('/', performanceRoutes);
@@ -110,6 +112,7 @@ app.route('/', learningRoutes);
 app.route('/', schedulerRoutes);
 app.route('/', backtestRoutes);
 app.route('/', hackathonRoutes);
+app.route('/', geckoRoutes);
 
 // ============ STATIC FILES ============
 app.get('/app.js', serveStatic({ path: './app.js' }));

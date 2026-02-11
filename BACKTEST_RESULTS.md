@@ -1,10 +1,10 @@
 # Backtesting Results
 
-> **Note:** This document will be updated with actual backtest results once the system is fully deployed and tests are run.
-
 ## Overview
 
 The Trading Caller backtesting system tests 8 different trading strategies across multiple tokens and timeframes to determine which approaches yield the best results.
+
+**Data source:** OHLCV candles from GeckoTerminal (primary) and DexScreener (fallback), providing real on-chain Solana pool data.
 
 ## Test Parameters
 
@@ -13,6 +13,7 @@ The Trading Caller backtesting system tests 8 different trading strategies acros
 - **Position Size:** 10% of capital per trade
 - **Timeframes Tested:** 1H, 4H, 1D
 - **Tokens Tested:** SOL, ETH, BTC, JUP, WIF, BONK, HYPE
+- **OHLCV Source:** GeckoTerminal API (free, 30 req/min)
 
 ## Strategies Tested
 
@@ -83,7 +84,13 @@ Before running the backtests, here are our expectations:
 
 ## Preliminary Findings
 
-*To be updated after running comprehensive backtests*
+**Live system results (17 signals tracked):**
+- Overall win rate: 35.3%
+- LONG win rate: 85.7%
+- Total PnL: +32.62%
+- Profit factor: 1.55x
+
+*Full backtest suite results pending. Run `npm run backtest` to generate.*
 
 ### Key Metrics to Track
 - **Win Rate:** % of profitable trades
@@ -226,5 +233,5 @@ Found a profitable strategy? Submit a PR with:
 
 ---
 
-**Last Updated:** 2026-02-07  
-**Status:** System ready, comprehensive tests pending deployment
+**Last Updated:** 2026-02-11
+**Status:** System operational with GeckoTerminal OHLCV integration. Comprehensive backtests pending.

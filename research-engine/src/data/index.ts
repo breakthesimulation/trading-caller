@@ -2,20 +2,33 @@
 
 export * from './jupiter.js';
 export * from './dexscreener.js';
+export {
+  getPoolsForToken,
+  getOHLCV as getGeckoTerminalPoolOHLCV,
+  getMultiTimeframeOHLCV as getGeckoTerminalMultiOHLCV,
+  getTrendingPools,
+  searchPools as searchGeckoTerminalPools,
+  getTokenInfo as getGeckoTerminalTokenInfo,
+  getTokenOHLCV as getGeckoTerminalTokenOHLCV,
+  clearCache as clearGeckoTerminalCache,
+} from './geckoterminal.js';
 
 import type { Token, OHLCV, MarketData } from '../signals/types.js';
 import { getPrice, getPrices, KNOWN_TOKENS } from './jupiter.js';
-import { 
-  getTokenOverview, 
+import {
+  getTokenOverview,
   getTopTokens,
   getTokenPairs,
   getOHLCV as getDexScreenerOHLCV,
-  type TokenInfo 
+  type TokenInfo
 } from './dexscreener.js';
-import { 
-  getOHLCV as getBirdeyeOHLCV, 
-  getMultiTimeframeOHLCV as getBirdeyeMultiOHLCV 
+import {
+  getOHLCV as getBirdeyeOHLCV,
+  getMultiTimeframeOHLCV as getBirdeyeMultiOHLCV
 } from './birdeye.js';
+import {
+  getTokenOHLCV as getGeckoTerminalOHLCV
+} from './geckoterminal.js';
 
 // Check if Birdeye API is available
 const hasBirdeyeKey = () => !!process.env.BIRDEYE_API_KEY;
@@ -110,29 +123,42 @@ async function fetchOHLCV(
     try {
       console.log(`[Data] Fetching OHLCV from Birdeye for ${tokenAddress}`);
       const data = await getBirdeyeMultiOHLCV(tokenAddress);
-      
+
       if (data['4H'].length >= 35) {
         console.log(`[Data] Got ${data['4H'].length} candles from Birdeye`);
         return data;
       }
     } catch (error) {
-      console.log('[Data] Birdeye OHLCV failed, trying DexScreener');
+      console.log('[Data] Birdeye OHLCV failed, trying GeckoTerminal');
     }
   }
-  
+
+  // Try GeckoTerminal (free, no API key needed, real OHLCV)
+  try {
+    console.log(`[Data] Fetching OHLCV from GeckoTerminal for ${tokenAddress}`);
+    const data = await getGeckoTerminalOHLCV(tokenAddress);
+
+    if (data && data['4H'].length >= 35) {
+      console.log(`[Data] Got ${data['4H'].length} 4H candles from GeckoTerminal`);
+      return data;
+    }
+  } catch (error) {
+    console.log('[Data] GeckoTerminal OHLCV failed, trying DexScreener');
+  }
+
   // Try DexScreener chart endpoint if we have a pair address
   if (pairAddress) {
     try {
       console.log(`[Data] Fetching OHLCV from DexScreener for pair ${pairAddress}`);
       const hourlyData = await getDexScreenerOHLCV(pairAddress, '1H');
-      
+
       if (hourlyData.length >= 35) {
         console.log(`[Data] Got ${hourlyData.length} candles from DexScreener`);
-        
+
         // Aggregate to 4H and 1D
         const fourHourData = aggregateCandles(hourlyData, 4);
         const dailyData = aggregateCandles(hourlyData, 24);
-        
+
         return {
           '1H': hourlyData.slice(-168), // Last 7 days
           '4H': fourHourData,
@@ -143,7 +169,7 @@ async function fetchOHLCV(
       console.log('[Data] DexScreener OHLCV failed');
     }
   }
-  
+
   return { '1H': [], '4H': [], '1D': [] };
 }
 
