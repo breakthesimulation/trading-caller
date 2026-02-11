@@ -44,8 +44,10 @@
     "expiresAt": "2026-02-08T03:13:20.157Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:45.911Z",
-    "highestPnl": 0,
-    "lowestPnl": 0
+    "highestPnl": -2.071005917159759,
+    "lowestPnl": -2.3668639053254457,
+    "currentPrice": 3.3,
+    "pnlPercent": -2.3668639053254457
   },
   {
     "id": "sig_lh8k9zrqmhc",
@@ -92,8 +94,10 @@
     "expiresAt": "2026-02-08T03:13:20.157Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:46.883Z",
-    "highestPnl": 0,
-    "lowestPnl": 0
+    "highestPnl": 5.600000000000005,
+    "lowestPnl": 5.600000000000005,
+    "currentPrice": 1.32,
+    "pnlPercent": 5.600000000000005
   },
   {
     "id": "sig_d2odprnglmh",
@@ -114,8 +118,10 @@
     "expiresAt": "2026-02-08T03:13:20.157Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:47.273Z",
-    "highestPnl": -0.1528384279475996,
-    "lowestPnl": -0.1528384279475996
+    "highestPnl": 10.676855895196503,
+    "lowestPnl": -0.1528384279475996,
+    "currentPrice": 0.05052,
+    "pnlPercent": 10.3056768558952
   },
   {
     "id": "sig_sny4sysl2l9",
@@ -137,7 +143,9 @@
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:47.888Z",
     "highestPnl": -0.023201856148498984,
-    "lowestPnl": -0.023201856148498984
+    "lowestPnl": -3.01624129930395,
+    "currentPrice": 0.04422,
+    "pnlPercent": -2.598607888631097
   },
   {
     "id": "sig_gfqdgjz27oh",
@@ -158,8 +166,10 @@
     "expiresAt": "2026-02-08T03:13:20.157Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:48.155Z",
-    "highestPnl": 0,
-    "lowestPnl": 0
+    "highestPnl": 5.441421432537481,
+    "lowestPnl": 4.330927262631872,
+    "currentPrice": 0.1879,
+    "pnlPercent": 4.330927262631872
   },
   {
     "id": "sig_24uq2fqpyh1",
@@ -180,8 +190,10 @@
     "expiresAt": "2026-02-08T03:13:20.157Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:48.443Z",
-    "highestPnl": 0,
-    "lowestPnl": 0
+    "highestPnl": 2.0495303159692564,
+    "lowestPnl": 2.0495303159692564,
+    "currentPrice": 0.1195,
+    "pnlPercent": 2.0495303159692564
   },
   {
     "id": "sig_k1t4b7sfk1",
@@ -250,8 +262,10 @@
     "expiresAt": "2026-02-08T03:13:20.158Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:49.562Z",
-    "highestPnl": 1.5999999999999954,
-    "lowestPnl": 1.5999999999999954
+    "highestPnl": 25,
+    "lowestPnl": 1.5999999999999954,
+    "currentPrice": 0.001233,
+    "pnlPercent": 23.29999999999999
   },
   {
     "id": "sig_dltnmxkug5r",
@@ -273,7 +287,9 @@
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:49.827Z",
     "highestPnl": -0.4833333333333252,
-    "lowestPnl": -0.4833333333333252
+    "lowestPnl": -3.016666666666662,
+    "currentPrice": 0.006135,
+    "pnlPercent": -2.249999999999995
   },
   {
     "id": "sig_qhfifc7c72h",
@@ -295,7 +311,9 @@
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:50.115Z",
     "highestPnl": -1.0882352941176514,
-    "lowestPnl": -1.0882352941176514
+    "lowestPnl": -12.11764705882353,
+    "currentPrice": 0.003809,
+    "pnlPercent": -12.029411764705886
   },
   {
     "id": "sig_vw4mt7mfrcp",
@@ -342,8 +360,10 @@
     "expiresAt": "2026-02-08T03:13:20.158Z",
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:51.279Z",
-    "highestPnl": 0,
-    "lowestPnl": 0
+    "highestPnl": -9.566258648217131,
+    "lowestPnl": -9.912187333688118,
+    "currentPrice": 0.8261,
+    "pnlPercent": -9.912187333688118
   },
   {
     "id": "sig_s1cyoi88ia",
@@ -365,7 +385,9 @@
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:51.869Z",
     "highestPnl": 0.09706045479754895,
-    "lowestPnl": 0.09706045479754895
+    "lowestPnl": -5.768164170826412,
+    "currentPrice": 0.7628,
+    "pnlPercent": -5.768164170826412
   },
   {
     "id": "sig_xnvrmmcz7jo",
@@ -387,6 +409,8 @@
     "checkCount": 1,
     "lastCheckedAt": "2026-02-06T03:13:52.427Z",
     "highestPnl": -0.14354066985647007,
-    "lowestPnl": -0.14354066985647007
+    "lowestPnl": -6.028708133971296,
+    "currentPrice": 0.02204,
+    "pnlPercent": -5.454545454545466
   }
 ]

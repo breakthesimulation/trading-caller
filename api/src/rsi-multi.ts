@@ -73,7 +73,7 @@ let scanProgress: ScanProgress = {
 
 // Cache durations
 const TOKEN_LIST_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
-const RSI_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
+const RSI_CACHE_DURATION = 120 * 60 * 1000; // 2 hours (CoinGecko free tier rate limits are harsh)
 const RATE_LIMIT_DELAY = 3000; // 3 seconds between API calls
 const BATCH_DELAY = 10000; // 10 seconds between batches
 const BATCH_SIZE = 5; // 5 tokens per batch

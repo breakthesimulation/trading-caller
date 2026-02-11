@@ -3,166 +3,217 @@
     "So11111111111111111111111111111111111111112": {
       "tokenAddress": "So11111111111111111111111111111111111111112",
       "symbol": "SOL",
-      "avgHourlyVolume": 18345180.767500002,
-      "avgHourlyTxns": 8905.875,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 7987401.697771574,
+      "avgHourlyTxns": 3532.8059099999987,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN": {
       "tokenAddress": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
       "symbol": "JUP",
-      "avgHourlyVolume": 109115.07583333332,
-      "avgHourlyTxns": 1195.4583333333333,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 32550.763537245824,
+      "avgHourlyTxns": 520.9274420833332,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263": {
       "tokenAddress": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
       "symbol": "BONK",
-      "avgHourlyVolume": 892.9558333333333,
-      "avgHourlyTxns": 39.583333333333336,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 208.27997483333326,
+      "avgHourlyTxns": 13.417210833333328,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm": {
       "tokenAddress": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
       "symbol": "WIF",
-      "avgHourlyVolume": 66116.96125000001,
-      "avgHourlyTxns": 126.04166666666667,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 19932.996065375,
+      "avgHourlyTxns": 57.63639791666667,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3": {
       "tokenAddress": "HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3",
       "symbol": "PYTH",
-      "avgHourlyVolume": 14499.622916666667,
-      "avgHourlyTxns": 74.41666666666667,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 4929.167059479166,
+      "avgHourlyTxns": 34.34793916666666,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL": {
       "tokenAddress": "jtojtomepa8beP8AuQc6eXt5FriJwfFMwQx2v2f9mCL",
       "symbol": "JTO",
-      "avgHourlyVolume": 17101.46625,
-      "avgHourlyTxns": 104.45833333333333,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 4304.245560562498,
+      "avgHourlyTxns": 38.18136458333333,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R": {
       "tokenAddress": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
       "symbol": "RAY",
-      "avgHourlyVolume": 108282.43125000001,
-      "avgHourlyTxns": 377.125,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 26789.014682887493,
+      "avgHourlyTxns": 114.00069625,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE": {
       "tokenAddress": "orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE",
       "symbol": "ORCA",
-      "avgHourlyVolume": 11605.010833333334,
-      "avgHourlyTxns": 189.45833333333334,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 2827.3135788708328,
+      "avgHourlyTxns": 63.773987083333324,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82": {
       "tokenAddress": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
       "symbol": "BOME",
-      "avgHourlyVolume": 87405.39041666668,
-      "avgHourlyTxns": 159.20833333333334,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 23462.422900941667,
+      "avgHourlyTxns": 47.84659083333333,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr": {
       "tokenAddress": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
       "symbol": "POPCAT",
-      "avgHourlyVolume": 48670.17249999999,
-      "avgHourlyTxns": 170.20833333333334,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 13563.997721449998,
+      "avgHourlyTxns": 60.65569708333332,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5": {
       "tokenAddress": "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
       "symbol": "MEW",
-      "avgHourlyVolume": 50938.75541666666,
-      "avgHourlyTxns": 161.875,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 15839.155658879163,
+      "avgHourlyTxns": 71.43565249999999,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN": {
       "tokenAddress": "6p6xgHyF7AeE6TZkSmFsko444wqoP15icUSqi2jfGiPN",
       "symbol": "TRUMP",
-      "avgHourlyVolume": 2627228.3233333332,
-      "avgHourlyTxns": 414.9583333333333,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 576936.1469216957,
+      "avgHourlyTxns": 111.90523583333331,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P": {
       "tokenAddress": "FUAfBo2jgks6gB4Z4LfZkqSZgzNucisEHqnNebaRxM1P",
       "symbol": "MELANIA",
-      "avgHourlyVolume": 7087.299166666667,
-      "avgHourlyTxns": 24.041666666666668,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 2239.9512174041665,
+      "avgHourlyTxns": 11.909354166666667,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC": {
       "tokenAddress": "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC",
       "symbol": "AI16Z",
-      "avgHourlyVolume": 3515.5383333333334,
-      "avgHourlyTxns": 142.75,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 2315.049350483333,
+      "avgHourlyTxns": 105.46172374999998,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv": {
       "tokenAddress": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
       "symbol": "PENGU",
-      "avgHourlyVolume": 48236.11666666667,
-      "avgHourlyTxns": 87.625,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 13995.513140916664,
+      "avgHourlyTxns": 33.030661249999994,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump": {
       "tokenAddress": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
       "symbol": "FARTCOIN",
-      "avgHourlyVolume": 119631.71291666666,
-      "avgHourlyTxns": 336.5833333333333,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 30698.87254767916,
+      "avgHourlyTxns": 122.84151958333331,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump": {
       "tokenAddress": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
       "symbol": "GOAT",
-      "avgHourlyVolume": 25392.42375,
-      "avgHourlyTxns": 121.41666666666667,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 6762.7944471875,
+      "avgHourlyTxns": 40.48658291666666,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump": {
       "tokenAddress": "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump",
       "symbol": "PNUT",
-      "avgHourlyVolume": 27944.04625,
-      "avgHourlyTxns": 96.08333333333333,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 7255.307809862498,
+      "avgHourlyTxns": 39.777265833333324,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY": {
       "tokenAddress": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
       "symbol": "MOODENG",
-      "avgHourlyVolume": 23142.452083333334,
-      "avgHourlyTxns": 131.54166666666666,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 9055.751390108333,
+      "avgHourlyTxns": 64.97300916666666,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     },
     "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump": {
       "tokenAddress": "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump",
       "symbol": "CHILLGUY",
-      "avgHourlyVolume": 17477.927083333332,
-      "avgHourlyTxns": 161,
-      "lastUpdated": "2026-02-06T06:11:16.488Z",
-      "dataPoints": 1
+      "avgHourlyVolume": 5936.770073708331,
+      "avgHourlyTxns": 70.93033874999998,
+      "lastUpdated": "2026-02-10T15:50:07.116Z",
+      "dataPoints": 6
     }
   },
-  "recentSpikes": [],
+  "recentSpikes": [
+    {
+      "id": "spike_1770738607116_evlo11",
+      "token": {
+        "symbol": "POPCAT",
+        "name": "Popcat",
+        "address": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr"
+      },
+      "pairAddress": "FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo",
+      "currentVolume1h": 35597.65,
+      "avgHourlyVolume": 13563.997721449998,
+      "volumeSpikeMultiple": 2.624421703028316,
+      "volumeSpikePercent": 162.44217030283158,
+      "priceUsd": 0.05052,
+      "priceChange1h": 2.05,
+      "priceChange24h": -1.82,
+      "buyCount1h": 49,
+      "sellCount1h": 30,
+      "buySellRatio": 1.6333333333333333,
+      "volume6h": 56611.08,
+      "volumeVelocity": 3.772863898727952,
+      "spikeType": "BULLISH",
+      "severity": "MEDIUM",
+      "detectedAt": "2026-02-10T15:50:07.116Z",
+      "dexScreenerUrl": "https://dexscreener.com/solana/FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo"
+    },
+    {
+      "id": "spike_1770738307737_ur95f1",
+      "token": {
+        "symbol": "POPCAT",
+        "name": "Popcat",
+        "address": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr"
+      },
+      "pairAddress": "FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo",
+      "currentVolume1h": 35498.65,
+      "avgHourlyVolume": 16529.003173499998,
+      "volumeSpikeMultiple": 2.14765824819448,
+      "volumeSpikePercent": 114.765824819448,
+      "priceUsd": 0.05056,
+      "priceChange1h": 1.24,
+      "priceChange24h": -2.02,
+      "buyCount1h": 50,
+      "sellCount1h": 35,
+      "buySellRatio": 1.4285714285714286,
+      "volume6h": 56146.51,
+      "volumeVelocity": 3.7935020360125677,
+      "spikeType": "NEUTRAL",
+      "severity": "LOW",
+      "detectedAt": "2026-02-10T15:45:07.737Z",
+      "dexScreenerUrl": "https://dexscreener.com/solana/FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo"
+    }
+  ],
   "sentAlerts": [],
   "subscriptions": [],
-  "lastScan": "2026-02-06T06:11:16.488Z"
+  "lastScan": "2026-02-10T15:50:07.116Z"
 }
