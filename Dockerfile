@@ -1,9 +1,11 @@
 FROM node:18-slim
 
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install --no-optional 2>&1 && echo "NPM INSTALL SUCCESS" || (echo "NPM INSTALL FAILED" && exit 1)
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 
