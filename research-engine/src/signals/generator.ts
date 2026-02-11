@@ -96,6 +96,21 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
   // Calculate confidence
   const confidence = calculateConfidence(analysis4H.analysis, analysis1D.analysis, avgSentiment);
 
+  // Confidence threshold filters
+  const MIN_CONFIDENCE = 65;
+  const MIN_SHORT_CONFIDENCE = 80;
+
+  if (confidence < MIN_CONFIDENCE) {
+    console.log(`[SignalGenerator] Signal for ${token.symbol} rejected: confidence ${confidence} < ${MIN_CONFIDENCE}`);
+    return null;
+  }
+
+  // SHORT signals require even higher confidence (historical win rate is 0%)
+  if (action === 'SHORT' && confidence < MIN_SHORT_CONFIDENCE) {
+    console.log(`[SignalGenerator] SHORT signal for ${token.symbol} rejected: confidence ${confidence} < ${MIN_SHORT_CONFIDENCE}`);
+    return null;
+  }
+
   // Determine risk level
   const riskLevel = determineRiskLevel(confidence, analysis4H.analysis);
 

@@ -15,12 +15,14 @@
     "signals": "tsx scripts/test-signals.ts",
     "demo": "tsx scripts/demo.ts",
     "hackathon:register": "tsx scripts/hackathon-register.ts",
-    "hackathon:status": "tsx scripts/hackathon-status.ts"
+    "hackathon:status": "tsx scripts/hackathon-status.ts",
+    "backtest": "tsx scripts/run-backtests.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.35.0",
     "@hono/node-server": "^1.19.9",
     "axios": "^1.7.0",
+    "better-sqlite3": "^12.6.2",
     "date-fns": "^3.3.0",
     "dotenv": "^16.4.0",
     "hono": "^4.0.0",
@@ -34,6 +36,6 @@
     "@types/ws": "^8.5.0",
     "tsx": "^4.21.0",
     "typescript": "^5.3.0",
-    "vitest": "^1.2.0"
+    "vitest": "^1.6.1"
   }
 }
