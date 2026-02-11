@@ -1,43 +1,58 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice, timeAgo, rsiColor, rsiBgColor } from "@/lib/utils";
 import {
   Activity,
   Search,
-  RefreshCw,
   ArrowUpDown,
   TrendingDown,
   TrendingUp,
   Zap,
+  Loader2,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
 
+interface RsiTimeframes {
+  "1h"?: number;
+  "4h"?: number;
+  "1d"?: number;
+  "1w"?: number;
+}
+
 interface TokenData {
   symbol: string;
   name: string;
-  rsi_14: { current: number };
-  price: { current: number; change_24h: number };
+  id: string;
+  image?: string;
+  price: number;
+  priceChange24h: number;
+  volume24h?: number;
+  marketCap?: number;
+  rsi: RsiTimeframes;
   signal: string;
-  lastUpdated: string;
+  strength?: string;
+  lastUpdated?: string;
+}
+
+interface ScanProgress {
+  total: number;
+  withRSI: number;
+  scanning: boolean;
+  currentBatch?: number;
+  totalBatches?: number;
+  scannedTokens?: string[];
 }
 
 interface RsiMultiResponse {
   success: boolean;
-  data: {
-    tokens: Record<string, TokenData>;
-  };
-  tokensScanned?: number;
+  lastUpdated?: string;
+  scanProgress?: ScanProgress;
+  tokens: TokenData[];
 }
 
 type SortDirection = "asc" | "desc";
@@ -48,6 +63,14 @@ const POLL_INTERVAL_MS = 60_000;
 const RSI_OVERSOLD_THRESHOLD = 30;
 const RSI_OVERBOUGHT_THRESHOLD = 70;
 const SKELETON_ROW_COUNT = 8;
+const PRIMARY_TIMEFRAME = "4h" as const;
+
+/* ---------- Helpers ---------- */
+
+/** Extract the primary (4h) RSI value, defaulting to 50 when unavailable. */
+function getPrimaryRsi(token: TokenData): number {
+  return token.rsi?.[PRIMARY_TIMEFRAME] ?? 50;
+}
 
 /* ---------- Page Component ---------- */
 
@@ -57,8 +80,8 @@ export default function MarketPage() {
   const [scanning, setScanning] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [tokensScanned, setTokensScanned] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
 
   const fetchTokens = useCallback(async () => {
     try {
@@ -67,11 +90,10 @@ export default function MarketPage() {
 
       const data: RsiMultiResponse = await res.json();
 
-      if (data.success && data.data?.tokens) {
-        const tokenArray = Object.values(data.data.tokens);
-        setTokens(tokenArray);
-        setTokensScanned(data.tokensScanned ?? tokenArray.length);
-        setLastUpdated(new Date());
+      if (data.success && Array.isArray(data.tokens)) {
+        setTokens(data.tokens);
+        setLastUpdated(data.lastUpdated ?? null);
+        setScanProgress(data.scanProgress ?? null);
       }
     } catch {
       /* Silently fail on poll -- keep stale data visible */
@@ -113,32 +135,39 @@ export default function MarketPage() {
     const filtered = query
       ? tokens.filter(
           (t) =>
-            t.symbol.toLowerCase().includes(query) ||
-            t.name.toLowerCase().includes(query)
+            t.symbol?.toLowerCase().includes(query) ||
+            t.name?.toLowerCase().includes(query)
         )
       : tokens;
 
     return [...filtered].sort((a, b) => {
-      const aRsi = a.rsi_14?.current ?? 50;
-      const bRsi = b.rsi_14?.current ?? 50;
+      const aRsi = getPrimaryRsi(a);
+      const bRsi = getPrimaryRsi(b);
       return sortDirection === "asc" ? aRsi - bRsi : bRsi - aRsi;
     });
   }, [tokens, searchQuery, sortDirection]);
 
   const oversoldCount = useMemo(
     () =>
-      tokens.filter((t) => (t.rsi_14?.current ?? 50) < RSI_OVERSOLD_THRESHOLD)
-        .length,
+      tokens.filter(
+        (t) =>
+          getPrimaryRsi(t) < RSI_OVERSOLD_THRESHOLD ||
+          t.signal?.toUpperCase() === "OVERSOLD"
+      ).length,
     [tokens]
   );
 
   const overboughtCount = useMemo(
     () =>
       tokens.filter(
-        (t) => (t.rsi_14?.current ?? 50) > RSI_OVERBOUGHT_THRESHOLD
+        (t) =>
+          getPrimaryRsi(t) > RSI_OVERBOUGHT_THRESHOLD ||
+          t.signal?.toUpperCase() === "OVERBOUGHT"
       ).length,
     [tokens]
   );
+
+  const tokensScannedCount = scanProgress?.total ?? tokens.length;
 
   /* ---------- Toggle sort ---------- */
 
@@ -169,7 +198,7 @@ export default function MarketPage() {
             </Badge>
           </div>
           <p className="text-text-secondary">
-            Real-time RSI analysis across 100 Solana tokens
+            Real-time RSI analysis across {tokensScannedCount} Solana tokens
           </p>
         </div>
 
@@ -177,7 +206,7 @@ export default function MarketPage() {
         <div className="flex items-center gap-3">
           {lastUpdated && (
             <span className="text-xs text-text-muted">
-              Updated {timeAgo(lastUpdated.toISOString())}
+              Updated {timeAgo(lastUpdated)}
             </span>
           )}
           <button
@@ -194,12 +223,18 @@ export default function MarketPage() {
         </div>
       </div>
 
+      {/* Scan progress bar */}
+      {scanProgress?.scanning && (
+        <ScanProgressBar progress={scanProgress} />
+      )}
+
       {/* Summary Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <SummaryCard
           icon={Activity}
           label="Tokens Scanned"
-          value={String(tokensScanned)}
+          value={String(scanProgress?.withRSI ?? tokens.length)}
+          subtitle={`of ${tokensScannedCount}`}
           accentBg="bg-brand-purple/15"
           accentText="text-brand-purple-light"
         />
@@ -282,6 +317,42 @@ export default function MarketPage() {
    Sub-components
    ================================================================ */
 
+/* ---------- Scan Progress Bar ---------- */
+
+function ScanProgressBar({ progress }: { progress: ScanProgress }) {
+  const percentage =
+    progress.totalBatches && progress.totalBatches > 0
+      ? Math.round(
+          ((progress.currentBatch ?? 0) / progress.totalBatches) * 100
+        )
+      : 0;
+
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 p-4">
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-cyan" />
+        <div className="flex flex-1 flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-medium text-text-secondary">
+              Scanning batch {progress.currentBatch ?? 0} of{" "}
+              {progress.totalBatches ?? "?"}
+            </span>
+            <span className="tabular-nums text-text-muted">
+              {progress.withRSI} / {progress.total} tokens with RSI
+            </span>
+          </div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
+            <div
+              className="h-full rounded-full bg-brand-cyan transition-all duration-500"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 /* ---------- Summary Card ---------- */
 
 function SummaryCard({
@@ -349,12 +420,21 @@ function TokenTable({
                   onClick={onToggleSort}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-text-muted transition-colors hover:text-text-primary"
                 >
-                  RSI
+                  RSI (4h)
                   <ArrowUpDown className="h-3 w-3" />
                   <span className="text-[10px] normal-case font-normal">
                     ({sortDirection === "asc" ? "low first" : "high first"})
                   </span>
                 </button>
+              </th>
+              <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-text-muted">
+                1h
+              </th>
+              <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-text-muted">
+                1d
+              </th>
+              <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-text-muted">
+                1w
               </th>
               <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Price
@@ -384,9 +464,12 @@ function TokenTable({
 /* ---------- Token Table Row ---------- */
 
 function TokenTableRow({ token }: { token: TokenData }) {
-  const rsi = token.rsi_14?.current ?? 0;
-  const price = token.price?.current ?? 0;
-  const change24h = token.price?.change_24h ?? 0;
+  const rsi4h = token.rsi?.["4h"] ?? 0;
+  const rsi1h = token.rsi?.["1h"];
+  const rsi1d = token.rsi?.["1d"];
+  const rsi1w = token.rsi?.["1w"];
+  const price = token.price ?? 0;
+  const change24h = token.priceChange24h ?? 0;
   const isPositiveChange = change24h >= 0;
 
   return (
@@ -394,11 +477,20 @@ function TokenTableRow({ token }: { token: TokenData }) {
       {/* Token identity */}
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-elevated">
-            <span className="text-xs font-bold text-text-secondary">
-              {token.symbol.slice(0, 2)}
-            </span>
-          </div>
+          {token.image ? (
+            <img
+              src={token.image}
+              alt={token.symbol}
+              className="h-9 w-9 shrink-0 rounded-lg"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-elevated">
+              <span className="text-xs font-bold text-text-secondary">
+                {token.symbol?.slice(0, 2)}
+              </span>
+            </div>
+          )}
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-text-primary">
               {token.symbol}
@@ -410,9 +502,24 @@ function TokenTableRow({ token }: { token: TokenData }) {
         </div>
       </td>
 
-      {/* RSI pill */}
+      {/* Primary RSI (4h) pill */}
       <td className="px-5 py-3.5">
-        <RsiPill rsi={rsi} />
+        <RsiPill rsi={rsi4h} />
+      </td>
+
+      {/* 1h RSI */}
+      <td className="px-5 py-3.5 text-center">
+        <RsiMini value={rsi1h} />
+      </td>
+
+      {/* 1d RSI */}
+      <td className="px-5 py-3.5 text-center">
+        <RsiMini value={rsi1d} />
+      </td>
+
+      {/* 1w RSI */}
+      <td className="px-5 py-3.5 text-center">
+        <RsiMini value={rsi1w} />
       </td>
 
       {/* Price */}
@@ -441,7 +548,7 @@ function TokenTableRow({ token }: { token: TokenData }) {
 
       {/* Signal */}
       <td className="px-5 py-3.5">
-        <SignalBadge signal={token.signal} />
+        <SignalBadge signal={token.signal} strength={token.strength} />
       </td>
 
       {/* Last updated */}
@@ -457,9 +564,9 @@ function TokenTableRow({ token }: { token: TokenData }) {
 /* ---------- Mobile Token Card ---------- */
 
 function TokenMobileCard({ token }: { token: TokenData }) {
-  const rsi = token.rsi_14?.current ?? 0;
-  const price = token.price?.current ?? 0;
-  const change24h = token.price?.change_24h ?? 0;
+  const rsi4h = token.rsi?.["4h"] ?? 0;
+  const price = token.price ?? 0;
+  const change24h = token.priceChange24h ?? 0;
   const isPositiveChange = change24h >= 0;
 
   return (
@@ -468,11 +575,20 @@ function TokenMobileCard({ token }: { token: TokenData }) {
         {/* Top row: token identity + RSI */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-elevated">
-              <span className="text-xs font-bold text-text-secondary">
-                {token.symbol.slice(0, 2)}
-              </span>
-            </div>
+            {token.image ? (
+              <img
+                src={token.image}
+                alt={token.symbol}
+                className="h-9 w-9 shrink-0 rounded-lg"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-elevated">
+                <span className="text-xs font-bold text-text-secondary">
+                  {token.symbol?.slice(0, 2)}
+                </span>
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="text-sm font-semibold text-text-primary">
                 {token.symbol}
@@ -482,7 +598,15 @@ function TokenMobileCard({ token }: { token: TokenData }) {
               </span>
             </div>
           </div>
-          <RsiPill rsi={rsi} />
+          <RsiPill rsi={rsi4h} />
+        </div>
+
+        {/* RSI timeframes row */}
+        <div className="flex items-center justify-between rounded-lg bg-bg-elevated px-3 py-2">
+          <RsiTimeframeLabel label="1h" value={token.rsi?.["1h"]} />
+          <RsiTimeframeLabel label="4h" value={token.rsi?.["4h"]} />
+          <RsiTimeframeLabel label="1d" value={token.rsi?.["1d"]} />
+          <RsiTimeframeLabel label="1w" value={token.rsi?.["1w"]} />
         </div>
 
         {/* Bottom row: price, change, signal */}
@@ -513,7 +637,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
 
           <div className="flex flex-col items-end gap-0.5">
             <span className="text-xs text-text-muted">Signal</span>
-            <SignalBadge signal={token.signal} />
+            <SignalBadge signal={token.signal} strength={token.strength} />
           </div>
         </div>
 
@@ -528,7 +652,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
   );
 }
 
-/* ---------- RSI Pill ---------- */
+/* ---------- RSI Pill (primary 4h display) ---------- */
 
 function RsiPill({ rsi }: { rsi: number }) {
   const displayRsi = rsi.toFixed(1);
@@ -542,25 +666,103 @@ function RsiPill({ rsi }: { rsi: number }) {
   );
 }
 
+/* ---------- RSI Mini (secondary timeframe in table) ---------- */
+
+function RsiMini({ value }: { value?: number }) {
+  if (value == null) {
+    return <span className="text-xs text-text-muted">--</span>;
+  }
+
+  return (
+    <span
+      className={`text-sm font-semibold tabular-nums ${rsiColor(value)}`}
+    >
+      {value.toFixed(1)}
+    </span>
+  );
+}
+
+/* ---------- RSI Timeframe Label (mobile) ---------- */
+
+function RsiTimeframeLabel({
+  label,
+  value,
+}: {
+  label: string;
+  value?: number;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <span className="text-[10px] font-medium uppercase text-text-muted">
+        {label}
+      </span>
+      {value != null ? (
+        <span
+          className={`text-xs font-semibold tabular-nums ${rsiColor(value)}`}
+        >
+          {value.toFixed(1)}
+        </span>
+      ) : (
+        <span className="text-xs text-text-muted">--</span>
+      )}
+    </div>
+  );
+}
+
 /* ---------- Signal Badge ---------- */
 
-function SignalBadge({ signal }: { signal: string }) {
+function SignalBadge({
+  signal,
+  strength,
+}: {
+  signal: string;
+  strength?: string;
+}) {
   const normalized = signal?.toUpperCase() ?? "";
+  const strengthLabel =
+    strength && strength !== "moderate"
+      ? ` (${strength})`
+      : "";
 
   if (normalized.includes("OVERSOLD") || normalized.includes("BUY")) {
-    return <Badge variant="long">{signal}</Badge>;
+    return (
+      <Badge variant="long">
+        {signal}
+        {strengthLabel}
+      </Badge>
+    );
   }
   if (normalized.includes("OVERBOUGHT") || normalized.includes("SELL")) {
-    return <Badge variant="short">{signal}</Badge>;
+    return (
+      <Badge variant="short">
+        {signal}
+        {strengthLabel}
+      </Badge>
+    );
   }
   if (normalized.includes("NEUTRAL")) {
-    return <Badge variant="muted">{signal}</Badge>;
+    return (
+      <Badge variant="muted">
+        {signal}
+        {strengthLabel}
+      </Badge>
+    );
   }
   if (normalized.includes("BULLISH")) {
-    return <Badge variant="long">{signal}</Badge>;
+    return (
+      <Badge variant="long">
+        {signal}
+        {strengthLabel}
+      </Badge>
+    );
   }
   if (normalized.includes("BEARISH")) {
-    return <Badge variant="short">{signal}</Badge>;
+    return (
+      <Badge variant="short">
+        {signal}
+        {strengthLabel}
+      </Badge>
+    );
   }
 
   return <Badge variant="muted">{signal || "--"}</Badge>;
@@ -639,7 +841,16 @@ function MarketSkeleton() {
                   <Skeleton className="h-3 w-12" />
                 </th>
                 <th className="px-5 py-3.5 text-left">
-                  <Skeleton className="h-3 w-8" />
+                  <Skeleton className="h-3 w-12" />
+                </th>
+                <th className="px-5 py-3.5 text-center">
+                  <Skeleton className="mx-auto h-3 w-6" />
+                </th>
+                <th className="px-5 py-3.5 text-center">
+                  <Skeleton className="mx-auto h-3 w-6" />
+                </th>
+                <th className="px-5 py-3.5 text-center">
+                  <Skeleton className="mx-auto h-3 w-6" />
                 </th>
                 <th className="px-5 py-3.5 text-right">
                   <Skeleton className="ml-auto h-3 w-10" />
@@ -669,6 +880,15 @@ function MarketSkeleton() {
                   </td>
                   <td className="px-5 py-3.5">
                     <Skeleton className="h-8 w-16 rounded-full" />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Skeleton className="mx-auto h-4 w-10" />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Skeleton className="mx-auto h-4 w-10" />
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Skeleton className="mx-auto h-4 w-10" />
                   </td>
                   <td className="px-5 py-3.5">
                     <Skeleton className="ml-auto h-4 w-16" />
@@ -704,6 +924,7 @@ function MarketSkeleton() {
                 </div>
                 <Skeleton className="h-8 w-14 rounded-full" />
               </div>
+              <Skeleton className="h-10 w-full rounded-lg" />
               <div className="flex items-center justify-between">
                 <Skeleton className="h-8 w-16" />
                 <Skeleton className="h-8 w-14" />

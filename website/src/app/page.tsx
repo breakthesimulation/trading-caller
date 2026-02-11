@@ -25,10 +25,11 @@ async function fetchPerformance(): Promise<PerformanceSnapshot> {
     });
     if (!res.ok) return FALLBACK_STATS;
     const data = await res.json();
+    const perf = data.performance;
     return {
-      totalSignals: data.performance?.totalSignals ?? 0,
-      winRate: data.performance?.winRate ?? 0,
-      avgPnl: data.performance?.avgPnl ?? 0,
+      totalSignals: perf?.summary?.total ?? 0,
+      winRate: parseFloat(perf?.rates?.winRate) || 0,
+      avgPnl: parseFloat(perf?.pnl?.average) || 0,
     };
   } catch {
     return FALLBACK_STATS;

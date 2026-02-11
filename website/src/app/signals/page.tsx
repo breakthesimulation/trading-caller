@@ -13,13 +13,52 @@ import {
   Shield,
   Clock,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 
 /* ---------- Types ---------- */
 
+interface SignalReasoning {
+  technical?: string;
+  fundamental?: string;
+  sentiment?: string;
+}
+
+interface TechnicalAnalysis {
+  rsi?: { value: number; signal: string };
+  macd?: {
+    macd: number;
+    signal: number;
+    histogram: number;
+    trend: string;
+    crossover: string | null;
+  };
+  trend?: {
+    direction: string;
+    strength: number;
+    ema20: number;
+    ema50: number;
+    ema200: number;
+  };
+  support?: number[];
+  resistance?: number[];
+  momentum?: { value: number; increasing: boolean };
+}
+
+interface SignalIndicators {
+  rsi_4h?: number;
+  rsi_1d?: number;
+  macd_trend?: string;
+  macd_histogram?: number;
+  trend_direction?: string;
+  trend_strength?: number;
+  momentum?: number;
+  volume_trend?: string;
+}
+
 interface Signal {
   id: string;
-  token: { symbol: string; address: string; name: string };
+  token: { symbol: string; address: string; name: string; decimals?: number };
   action: "LONG" | "SHORT";
   confidence: number;
   entry: number;
@@ -27,8 +66,10 @@ interface Signal {
   stopLoss: number;
   timeframe: string;
   timestamp: string;
-  reasoning: { technical: string; summary?: string };
-  indicators: { rsi: number; macd: number | string; volume: string };
+  reasoning: SignalReasoning;
+  riskLevel?: string;
+  technicalAnalysis?: TechnicalAnalysis;
+  indicators?: SignalIndicators;
 }
 
 interface SignalsResponse {
@@ -195,8 +236,7 @@ export default function SignalsPage() {
 function SignalCard({ signal }: { signal: Signal }) {
   const isLong = signal.action === "LONG";
   const ActionIcon = isLong ? TrendingUp : TrendingDown;
-  const reasoning =
-    signal.reasoning.summary || signal.reasoning.technical || "";
+  const reasoning = signal.reasoning?.technical || "";
   const truncatedReasoning =
     reasoning.length > 160 ? `${reasoning.slice(0, 157)}...` : reasoning;
 
@@ -274,16 +314,27 @@ function SignalCard({ signal }: { signal: Signal }) {
           ))}
         </div>
 
-        {/* Indicators */}
+        {/* Indicators + Risk Level */}
         <div className="flex flex-wrap items-center gap-2">
-          <IndicatorBadge label="RSI" value={signal.indicators.rsi} />
-          <IndicatorBadge
-            label="MACD"
-            value={signal.indicators.macd}
-          />
-          <Badge variant="muted" className="text-xs">
-            Vol: {signal.indicators.volume}
-          </Badge>
+          {signal.indicators?.rsi_4h != null && (
+            <IndicatorBadge label="RSI" value={signal.indicators.rsi_4h} />
+          )}
+          {signal.indicators?.macd_trend && (
+            <IndicatorBadge label="MACD" value={signal.indicators.macd_trend} />
+          )}
+          {signal.indicators?.volume_trend && (
+            <Badge variant="muted" className="text-xs">
+              Vol: {signal.indicators.volume_trend}
+            </Badge>
+          )}
+          {signal.indicators?.trend_direction && (
+            <Badge variant="muted" className="text-xs">
+              Trend: {signal.indicators.trend_direction}
+            </Badge>
+          )}
+          {signal.riskLevel && (
+            <RiskLevelBadge riskLevel={signal.riskLevel} />
+          )}
         </div>
 
         {/* Reasoning */}
@@ -377,6 +428,25 @@ function IndicatorBadge({
     <Badge variant="muted" className="text-xs">
       {label}:{" "}
       <span className="ml-0.5 font-bold tabular-nums">{displayValue}</span>
+    </Badge>
+  );
+}
+
+/* ---------- Risk Level Badge ---------- */
+
+function RiskLevelBadge({ riskLevel }: { riskLevel: string }) {
+  const RISK_VARIANT_MAP: Record<string, "long" | "warning" | "short" | "muted"> = {
+    LOW: "long",
+    MEDIUM: "warning",
+    HIGH: "short",
+  };
+
+  const variant = RISK_VARIANT_MAP[riskLevel.toUpperCase()] ?? "muted";
+
+  return (
+    <Badge variant={variant} className="text-xs">
+      <AlertTriangle className="mr-1 h-3 w-3" />
+      {riskLevel}
     </Badge>
   );
 }

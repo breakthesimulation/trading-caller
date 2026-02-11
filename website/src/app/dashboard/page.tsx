@@ -19,42 +19,104 @@ import {
   Activity,
 } from "lucide-react";
 
-/* ---------- API response types ---------- */
+/* ---------- API response types (matching real server shapes) ---------- */
 
-interface OutcomeCounts {
-  win: number;
-  loss: number;
-  pending: number;
-  breakeven: number;
+interface PerformanceSummary {
+  total: number;
+  active: number;
+  resolved: number;
 }
 
-interface ActionStats {
-  count: number;
-  winRate: number;
-  avgPnl: number;
+interface PerformanceOutcomes {
+  tp1Hits: number;
+  tp2Hits: number;
+  tp3Hits: number;
+  stoppedOut: number;
+  expired: number;
+  invalidated: number;
+}
+
+interface PerformanceRates {
+  winRate: string;
+  fullWinRate: string;
+  lossRate: string;
+}
+
+interface PerformancePnl {
+  average: string;
+  averageWin: string;
+  averageLoss: string;
+  total: string;
+  profitFactor: string;
+}
+
+interface PerformanceTiming {
+  avgTimeToTP1: string;
+  avgTimeToStop: string;
+}
+
+interface DirectionStats {
+  total: number;
+  wins: number;
+  losses: number;
+  winRate: string;
+  avgPnl: string;
 }
 
 interface PerformanceData {
-  totalSignals: number;
-  outcomes: OutcomeCounts;
-  winRate: number;
-  avgPnl: number;
-  totalPnl: number;
-  profitFactor: number;
-  byAction: {
-    LONG: ActionStats;
-    SHORT: ActionStats;
+  summary: PerformanceSummary;
+  outcomes: PerformanceOutcomes;
+  rates: PerformanceRates;
+  pnl: PerformancePnl;
+  timing: PerformanceTiming;
+  byDirection: {
+    long: DirectionStats;
+    short: DirectionStats;
   };
 }
 
-interface PositionStats {
-  totalOpen: number;
-  totalClosed: number;
+interface PositionDirectionStats {
+  total: number;
+  wins: number;
+  losses: number;
   winRate: number;
   avgPnl: number;
+}
+
+interface PositionTradeInfo {
+  id: string;
+  token: { symbol: string };
+  action: string;
+  pnl: number;
+}
+
+interface PositionStats {
+  totalPositions: number;
+  openPositions: number;
+  closedPositions: number;
   totalPnl: number;
-  bestTrade: { symbol: string; pnl: number } | null;
-  worstTrade: { symbol: string; pnl: number } | null;
+  avgPnl: number;
+  winRate: number;
+  wins: number;
+  losses: number;
+  tp1Hits: number;
+  tp2Hits: number;
+  tp3Hits: number;
+  stoppedOut: number;
+  expired: number;
+  profitFactor: number;
+  long: PositionDirectionStats;
+  short: PositionDirectionStats;
+  bestTrade: PositionTradeInfo | null;
+  worstTrade: PositionTradeInfo | null;
+}
+
+/* ---------- Helpers ---------- */
+
+/** Parse a percentage string like "12.5%" or "+3.2%" into a number. */
+function parsePercent(value: string | undefined | null): number {
+  if (!value) return 0;
+  return parseFloat(value.replace(/[^0-9.\-+]/g, "")) || 0;
 }
 
 /* ---------- Page Component ---------- */
@@ -152,17 +214,26 @@ export default function DashboardPage() {
 
   /* ---------- Derived values ---------- */
 
-  const totalSignals = performance?.totalSignals ?? 0;
-  const winRate = performance?.winRate ?? 0;
-  const totalPnl = performance?.totalPnl ?? 0;
-  const profitFactor = performance?.profitFactor ?? 0;
+  const totalSignals = performance?.summary?.total ?? 0;
+  const activeSignals = performance?.summary?.active ?? 0;
+  const resolvedSignals = performance?.summary?.resolved ?? 0;
+
+  const winRate = parsePercent(performance?.rates?.winRate);
+  const totalPnl = parsePercent(performance?.pnl?.total);
+  const profitFactor = parseFloat(performance?.pnl?.profitFactor ?? "0") || 0;
+
   const outcomes = performance?.outcomes ?? {
-    win: 0,
-    loss: 0,
-    pending: 0,
-    breakeven: 0,
+    tp1Hits: 0,
+    tp2Hits: 0,
+    tp3Hits: 0,
+    stoppedOut: 0,
+    expired: 0,
+    invalidated: 0,
   };
-  const totalResolved = outcomes.win + outcomes.loss + outcomes.breakeven;
+
+  const totalWins = outcomes.tp1Hits + outcomes.tp2Hits + outcomes.tp3Hits;
+  const totalResolved =
+    totalWins + outcomes.stoppedOut + outcomes.expired + outcomes.invalidated;
 
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
@@ -205,37 +276,52 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
           <OutcomeBar
-            label="Win"
-            count={outcomes.win}
+            label="TP1 Hits"
+            count={outcomes.tp1Hits}
             total={totalSignals}
             barClass="bg-long-green"
             textClass="text-long-green"
           />
           <OutcomeBar
-            label="Loss"
-            count={outcomes.loss}
+            label="TP2 Hits"
+            count={outcomes.tp2Hits}
             total={totalSignals}
-            barClass="bg-short-red"
-            textClass="text-short-red"
+            barClass="bg-long-green"
+            textClass="text-long-green"
           />
           <OutcomeBar
-            label="Pending"
-            count={outcomes.pending}
+            label="TP3 Hits"
+            count={outcomes.tp3Hits}
             total={totalSignals}
             barClass="bg-brand-cyan"
             textClass="text-brand-cyan"
           />
           <OutcomeBar
-            label="Breakeven"
-            count={outcomes.breakeven}
+            label="Stopped Out"
+            count={outcomes.stoppedOut}
+            total={totalSignals}
+            barClass="bg-short-red"
+            textClass="text-short-red"
+          />
+          <OutcomeBar
+            label="Expired"
+            count={outcomes.expired}
             total={totalSignals}
             barClass="bg-text-muted"
             textClass="text-text-muted"
+          />
+          <OutcomeBar
+            label="Active"
+            count={activeSignals}
+            total={totalSignals}
+            barClass="bg-brand-purple"
+            textClass="text-brand-purple-light"
           />
 
           {totalResolved > 0 && (
             <p className="pt-1 text-xs text-text-muted">
               {totalResolved} resolved of {totalSignals} total signals
+              ({activeSignals} still active)
             </p>
           )}
         </CardContent>
@@ -247,18 +333,18 @@ export default function DashboardPage() {
           Long vs Short Comparison
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <ActionCard
-            action="LONG"
+          <DirectionCard
+            direction="LONG"
             icon={TrendingUp}
-            stats={performance?.byAction.LONG ?? null}
+            stats={performance?.byDirection?.long ?? null}
             accentBg="bg-long-green-dim"
             accentText="text-long-green"
             badgeVariant="long"
           />
-          <ActionCard
-            action="SHORT"
+          <DirectionCard
+            direction="SHORT"
             icon={TrendingDown}
-            stats={performance?.byAction.SHORT ?? null}
+            stats={performance?.byDirection?.short ?? null}
             accentBg="bg-short-red-dim"
             accentText="text-short-red"
             badgeVariant="short"
@@ -273,17 +359,23 @@ export default function DashboardPage() {
             Position Summary
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MiniStat label="Open Positions" value={String(positions.totalOpen)} />
-            <MiniStat label="Closed Positions" value={String(positions.totalClosed)} />
+            <MiniStat
+              label="Open Positions"
+              value={String(positions.openPositions ?? 0)}
+            />
+            <MiniStat
+              label="Closed Positions"
+              value={String(positions.closedPositions ?? 0)}
+            />
             <MiniStat
               label="Position Win Rate"
-              value={`${positions.winRate.toFixed(1)}%`}
-              accent={positions.winRate >= 50}
+              value={`${(positions.winRate ?? 0).toFixed(1)}%`}
+              accent={(positions.winRate ?? 0) >= 50}
             />
             <MiniStat
               label="Position PnL"
-              value={formatPnl(positions.totalPnl)}
-              accent={positions.totalPnl > 0}
+              value={formatPnl(positions.totalPnl ?? 0)}
+              accent={(positions.totalPnl ?? 0) > 0}
             />
           </div>
 
@@ -297,11 +389,11 @@ export default function DashboardPage() {
                         Best Trade
                       </span>
                       <span className="text-sm font-semibold text-text-primary">
-                        {positions.bestTrade.symbol}
+                        {positions.bestTrade.token?.symbol ?? "Unknown"}
                       </span>
                     </div>
                     <span className="text-lg font-bold tabular-nums text-long-green">
-                      {formatPnl(positions.bestTrade.pnl)}
+                      {formatPnl(positions.bestTrade.pnl ?? 0)}
                     </span>
                   </CardContent>
                 </Card>
@@ -314,11 +406,11 @@ export default function DashboardPage() {
                         Worst Trade
                       </span>
                       <span className="text-sm font-semibold text-text-primary">
-                        {positions.worstTrade.symbol}
+                        {positions.worstTrade.token?.symbol ?? "Unknown"}
                       </span>
                     </div>
                     <span className="text-lg font-bold tabular-nums text-short-red">
-                      {formatPnl(positions.worstTrade.pnl)}
+                      {formatPnl(positions.worstTrade.pnl ?? 0)}
                     </span>
                   </CardContent>
                 </Card>
@@ -424,26 +516,26 @@ function OutcomeBar({
   );
 }
 
-/* ---------- Long / Short action card ---------- */
+/* ---------- Long / Short direction card ---------- */
 
-function ActionCard({
-  action,
+function DirectionCard({
+  direction,
   icon: Icon,
   stats,
   accentBg,
   accentText,
   badgeVariant,
 }: {
-  action: string;
+  direction: string;
   icon: React.ElementType;
-  stats: ActionStats | null;
+  stats: DirectionStats | null;
   accentBg: string;
   accentText: string;
   badgeVariant: "long" | "short";
 }) {
-  const count = stats?.count ?? 0;
-  const wr = stats?.winRate ?? 0;
-  const avgPnl = stats?.avgPnl ?? 0;
+  const total = stats?.total ?? 0;
+  const wr = parsePercent(stats?.winRate);
+  const avgPnl = parsePercent(stats?.avgPnl);
 
   return (
     <Card className="transition-colors hover:border-brand-purple/30">
@@ -456,10 +548,10 @@ function ActionCard({
               <Icon className={`h-5 w-5 ${accentText}`} />
             </div>
             <span className="text-lg font-semibold text-text-primary">
-              {action}
+              {direction}
             </span>
           </div>
-          <Badge variant={badgeVariant}>{count} calls</Badge>
+          <Badge variant={badgeVariant}>{total} calls</Badge>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -485,6 +577,21 @@ function ActionCard({
               }`}
             >
               {formatPnl(avgPnl)}
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-medium text-text-muted">Wins</span>
+            <span className="text-sm font-semibold tabular-nums text-text-primary">
+              {stats?.wins ?? 0}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-medium text-text-muted">Losses</span>
+            <span className="text-sm font-semibold tabular-nums text-text-primary">
+              {stats?.losses ?? 0}
             </span>
           </div>
         </div>
@@ -553,7 +660,7 @@ function DashboardSkeleton() {
           <Skeleton className="h-4 w-80" />
         </CardHeader>
         <CardContent className="flex flex-col gap-5">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between">
                 <Skeleton className="h-4 w-20" />
