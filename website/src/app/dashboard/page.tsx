@@ -1,0 +1,599 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatPnl } from "@/lib/utils";
+import {
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Activity,
+} from "lucide-react";
+
+/* ---------- API response types ---------- */
+
+interface OutcomeCounts {
+  win: number;
+  loss: number;
+  pending: number;
+  breakeven: number;
+}
+
+interface ActionStats {
+  count: number;
+  winRate: number;
+  avgPnl: number;
+}
+
+interface PerformanceData {
+  totalSignals: number;
+  outcomes: OutcomeCounts;
+  winRate: number;
+  avgPnl: number;
+  totalPnl: number;
+  profitFactor: number;
+  byAction: {
+    LONG: ActionStats;
+    SHORT: ActionStats;
+  };
+}
+
+interface PositionStats {
+  totalOpen: number;
+  totalClosed: number;
+  winRate: number;
+  avgPnl: number;
+  totalPnl: number;
+  bestTrade: { symbol: string; pnl: number } | null;
+  worstTrade: { symbol: string; pnl: number } | null;
+}
+
+/* ---------- Page Component ---------- */
+
+export default function DashboardPage() {
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+  const [positions, setPositions] = useState<PositionStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [perfRes, posRes] = await Promise.allSettled([
+          fetch("/api/signals/performance"),
+          fetch("/api/positions/stats"),
+        ]);
+
+        if (
+          perfRes.status === "fulfilled" &&
+          perfRes.value.ok
+        ) {
+          const perfJson = await perfRes.value.json();
+          if (perfJson.success) {
+            setPerformance(perfJson.performance);
+          }
+        }
+
+        if (
+          posRes.status === "fulfilled" &&
+          posRes.value.ok
+        ) {
+          const posJson = await posRes.value.json();
+          if (posJson.success) {
+            setPositions(posJson.stats);
+          }
+        }
+
+        /* If both requests failed, show an error state */
+        const perfFailed =
+          perfRes.status === "rejected" ||
+          (perfRes.status === "fulfilled" && !perfRes.value.ok);
+        const posFailed =
+          posRes.status === "rejected" ||
+          (posRes.status === "fulfilled" && !posRes.value.ok);
+
+        if (perfFailed && posFailed) {
+          setError(
+            "Unable to reach the Trading Caller API. Make sure the server is running."
+          );
+        }
+      } catch {
+        setError("An unexpected error occurred while fetching dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  /* ---------- Loading skeleton ---------- */
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
+
+  /* ---------- Error state ---------- */
+
+  if (error && !performance && !positions) {
+    return (
+      <div className="flex flex-col gap-6 py-8 md:py-16">
+        <PageHeading />
+        <Card className="border-short-red/30">
+          <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-short-red-dim">
+              <Activity className="h-7 w-7 text-short-red" />
+            </div>
+            <h3 className="text-lg font-semibold text-text-primary">
+              API Unavailable
+            </h3>
+            <p className="max-w-md text-sm text-text-secondary">{error}</p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border-default bg-bg-elevated px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-hover"
+            >
+              Retry
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  /* ---------- Derived values ---------- */
+
+  const totalSignals = performance?.totalSignals ?? 0;
+  const winRate = performance?.winRate ?? 0;
+  const totalPnl = performance?.totalPnl ?? 0;
+  const profitFactor = performance?.profitFactor ?? 0;
+  const outcomes = performance?.outcomes ?? {
+    win: 0,
+    loss: 0,
+    pending: 0,
+    breakeven: 0,
+  };
+  const totalResolved = outcomes.win + outcomes.loss + outcomes.breakeven;
+
+  return (
+    <div className="flex flex-col gap-8 py-8 md:py-16">
+      <PageHeading />
+
+      {/* ---------- Top stat cards ---------- */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          icon={Target}
+          label="Win Rate"
+          value={`${winRate.toFixed(1)}%`}
+          accent={winRate >= 50}
+        />
+        <MetricCard
+          icon={TrendingUp}
+          label="Total PnL"
+          value={formatPnl(totalPnl)}
+          accent={totalPnl > 0}
+        />
+        <MetricCard
+          icon={BarChart3}
+          label="Profit Factor"
+          value={profitFactor.toFixed(2)}
+          accent={profitFactor > 1}
+        />
+        <MetricCard
+          icon={Activity}
+          label="Total Signals"
+          value={String(totalSignals)}
+        />
+      </section>
+
+      {/* ---------- Outcome breakdown ---------- */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Outcome Breakdown</CardTitle>
+          <CardDescription>
+            Distribution of signal results across all tracked calls
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          <OutcomeBar
+            label="Win"
+            count={outcomes.win}
+            total={totalSignals}
+            barClass="bg-long-green"
+            textClass="text-long-green"
+          />
+          <OutcomeBar
+            label="Loss"
+            count={outcomes.loss}
+            total={totalSignals}
+            barClass="bg-short-red"
+            textClass="text-short-red"
+          />
+          <OutcomeBar
+            label="Pending"
+            count={outcomes.pending}
+            total={totalSignals}
+            barClass="bg-brand-cyan"
+            textClass="text-brand-cyan"
+          />
+          <OutcomeBar
+            label="Breakeven"
+            count={outcomes.breakeven}
+            total={totalSignals}
+            barClass="bg-text-muted"
+            textClass="text-text-muted"
+          />
+
+          {totalResolved > 0 && (
+            <p className="pt-1 text-xs text-text-muted">
+              {totalResolved} resolved of {totalSignals} total signals
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ---------- Long vs Short comparison ---------- */}
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold text-text-primary">
+          Long vs Short Comparison
+        </h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <ActionCard
+            action="LONG"
+            icon={TrendingUp}
+            stats={performance?.byAction.LONG ?? null}
+            accentBg="bg-long-green-dim"
+            accentText="text-long-green"
+            badgeVariant="long"
+          />
+          <ActionCard
+            action="SHORT"
+            icon={TrendingDown}
+            stats={performance?.byAction.SHORT ?? null}
+            accentBg="bg-short-red-dim"
+            accentText="text-short-red"
+            badgeVariant="short"
+          />
+        </div>
+      </section>
+
+      {/* ---------- Position stats (if available) ---------- */}
+      {positions && (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold text-text-primary">
+            Position Summary
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <MiniStat label="Open Positions" value={String(positions.totalOpen)} />
+            <MiniStat label="Closed Positions" value={String(positions.totalClosed)} />
+            <MiniStat
+              label="Position Win Rate"
+              value={`${positions.winRate.toFixed(1)}%`}
+              accent={positions.winRate >= 50}
+            />
+            <MiniStat
+              label="Position PnL"
+              value={formatPnl(positions.totalPnl)}
+              accent={positions.totalPnl > 0}
+            />
+          </div>
+
+          {(positions.bestTrade || positions.worstTrade) && (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {positions.bestTrade && (
+                <Card className="border-long-green/20">
+                  <CardContent className="flex items-center justify-between p-5">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-medium text-text-muted">
+                        Best Trade
+                      </span>
+                      <span className="text-sm font-semibold text-text-primary">
+                        {positions.bestTrade.symbol}
+                      </span>
+                    </div>
+                    <span className="text-lg font-bold tabular-nums text-long-green">
+                      {formatPnl(positions.bestTrade.pnl)}
+                    </span>
+                  </CardContent>
+                </Card>
+              )}
+              {positions.worstTrade && (
+                <Card className="border-short-red/20">
+                  <CardContent className="flex items-center justify-between p-5">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-xs font-medium text-text-muted">
+                        Worst Trade
+                      </span>
+                      <span className="text-sm font-semibold text-text-primary">
+                        {positions.worstTrade.symbol}
+                      </span>
+                    </div>
+                    <span className="text-lg font-bold tabular-nums text-short-red">
+                      {formatPnl(positions.worstTrade.pnl)}
+                    </span>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ================================================================
+   Sub-components
+   ================================================================ */
+
+function PageHeading() {
+  return (
+    <div className="flex flex-col gap-2">
+      <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+        Performance Dashboard
+      </h1>
+      <p className="text-text-secondary">
+        Real-time accuracy metrics and outcome tracking for all Trading Caller
+        signals.
+      </p>
+    </div>
+  );
+}
+
+/* ---------- Top-level metric card ---------- */
+
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  accent = false,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-4 p-5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-purple/15">
+          <Icon className="h-5 w-5 text-brand-purple-light" />
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-xs font-medium text-text-muted">{label}</span>
+          <span
+            className={`text-2xl font-bold tabular-nums ${
+              accent ? "text-long-green" : "text-text-primary"
+            }`}
+          >
+            {value}
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---------- Outcome bar row ---------- */
+
+const MIN_BAR_PERCENT = 2;
+
+function OutcomeBar({
+  label,
+  count,
+  total,
+  barClass,
+  textClass,
+}: {
+  label: string;
+  count: number;
+  total: number;
+  barClass: string;
+  textClass: string;
+}) {
+  const pct = total > 0 ? (count / total) * 100 : 0;
+  const displayWidth = pct > 0 ? Math.max(pct, MIN_BAR_PERCENT) : 0;
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between text-sm">
+        <span className={`font-medium ${textClass}`}>{label}</span>
+        <span className="tabular-nums text-text-secondary">
+          {count}{" "}
+          <span className="text-text-muted">
+            ({pct.toFixed(1)}%)
+          </span>
+        </span>
+      </div>
+      <div className="h-3 w-full overflow-hidden rounded-full bg-bg-elevated">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${barClass}`}
+          style={{ width: `${displayWidth}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Long / Short action card ---------- */
+
+function ActionCard({
+  action,
+  icon: Icon,
+  stats,
+  accentBg,
+  accentText,
+  badgeVariant,
+}: {
+  action: string;
+  icon: React.ElementType;
+  stats: ActionStats | null;
+  accentBg: string;
+  accentText: string;
+  badgeVariant: "long" | "short";
+}) {
+  const count = stats?.count ?? 0;
+  const wr = stats?.winRate ?? 0;
+  const avgPnl = stats?.avgPnl ?? 0;
+
+  return (
+    <Card className="transition-colors hover:border-brand-purple/30">
+      <CardContent className="flex flex-col gap-5 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-lg ${accentBg}`}
+            >
+              <Icon className={`h-5 w-5 ${accentText}`} />
+            </div>
+            <span className="text-lg font-semibold text-text-primary">
+              {action}
+            </span>
+          </div>
+          <Badge variant={badgeVariant}>{count} calls</Badge>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-medium text-text-muted">
+              Win Rate
+            </span>
+            <span
+              className={`text-xl font-bold tabular-nums ${
+                wr >= 50 ? "text-long-green" : "text-text-primary"
+              }`}
+            >
+              {wr.toFixed(1)}%
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs font-medium text-text-muted">
+              Avg PnL
+            </span>
+            <span
+              className={`text-xl font-bold tabular-nums ${
+                avgPnl > 0 ? "text-long-green" : avgPnl < 0 ? "text-short-red" : "text-text-primary"
+              }`}
+            >
+              {formatPnl(avgPnl)}
+            </span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---------- Mini stat card ---------- */
+
+function MiniStat({
+  label,
+  value,
+  accent = false,
+}: {
+  label: string;
+  value: string;
+  accent?: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex flex-col gap-0.5 p-5">
+        <span className="text-xs font-medium text-text-muted">{label}</span>
+        <span
+          className={`text-xl font-bold tabular-nums ${
+            accent ? "text-long-green" : "text-text-primary"
+          }`}
+        >
+          {value}
+        </span>
+      </CardContent>
+    </Card>
+  );
+}
+
+/* ---------- Loading skeleton ---------- */
+
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-8 py-8 md:py-16">
+      {/* Heading skeleton */}
+      <div className="flex flex-col gap-2">
+        <Skeleton className="h-10 w-72" />
+        <Skeleton className="h-5 w-96" />
+      </div>
+
+      {/* Stat cards skeleton */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i}>
+            <CardContent className="flex items-center gap-4 p-5">
+              <Skeleton className="h-11 w-11 shrink-0 rounded-lg" />
+              <div className="flex flex-col gap-1.5">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-7 w-20" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Outcome breakdown skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-80" />
+        </CardHeader>
+        <CardContent className="flex flex-col gap-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+              <Skeleton className="h-3 w-full rounded-full" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Long vs Short skeleton */}
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-6 w-56" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="flex flex-col gap-5 p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <Skeleton className="h-3 w-14" />
+                    <Skeleton className="h-7 w-16" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Skeleton className="h-3 w-14" />
+                    <Skeleton className="h-7 w-16" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
