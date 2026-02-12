@@ -2,7 +2,7 @@
 
 > **"Free your mind"** — Profitable, transparent, autonomous trading signals
 
-[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen)](https://trading-caller.vercel.app/)
+[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen)](https://website-nine-rho-35.vercel.app/)
 [![API Status](https://img.shields.io/badge/API-Operational-success)](https://trading-caller-production.up.railway.app/signals/latest)
 
 ---
