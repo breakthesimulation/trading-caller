@@ -1,5 +1,6 @@
 import { logger, type IAgentRuntime, type Project, type ProjectAgent } from '@elizaos/core';
 import { character } from './character.ts';
+import tradingCallerPlugin from './plugin.ts';
 
 const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
   logger.info('Initializing TradingCaller agent');
@@ -17,7 +18,7 @@ const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
 export const projectAgent: ProjectAgent = {
   character,
   init: async (runtime: IAgentRuntime) => await initCharacter({ runtime }),
-  // plugins: [tradingCallerPlugin], <-- Will be wired in a later task
+  plugins: [tradingCallerPlugin],
 };
 
 const project: Project = {
