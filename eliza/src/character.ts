@@ -21,6 +21,9 @@ export const character: Character = {
     // LLM provider — Claude for reasoning
     ...(process.env.ANTHROPIC_API_KEY?.trim() ? ['@elizaos/plugin-anthropic'] : []),
 
+    // Embeddings — Ollama (local, free) since Anthropic has no embeddings API
+    '@elizaos/plugin-ollama',
+
     // Bootstrap (core message handling)
     ...(!process.env.IGNORE_BOOTSTRAP ? ['@elizaos/plugin-bootstrap'] : []),
   ],

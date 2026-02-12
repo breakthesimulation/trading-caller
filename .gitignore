@@ -38,3 +38,6 @@ coverage/
 # Temp files
 *.tmp
 *.swp
+.eliza/.elizadb/
+.eliza/.elizadb/
+eliza/.eliza/.elizadb/
