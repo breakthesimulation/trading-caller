@@ -4,7 +4,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
-import { serveStatic } from '@hono/node-server/serve-static';
+
 import { serve } from '@hono/node-server';
 import 'dotenv/config';
 
@@ -114,19 +114,20 @@ app.route('/', backtestRoutes);
 app.route('/', hackathonRoutes);
 app.route('/', geckoRoutes);
 
-// ============ STATIC FILES ============
-app.get('/app.js', serveStatic({ path: './app.js' }));
-app.get('/styles.css', serveStatic({ path: './styles.css' }));
-app.get('/assets/*', serveStatic({ root: './' }));
-app.get('/live', serveStatic({ path: './live-dashboard.html' }));
-app.get('/positions-dashboard.html', serveStatic({ path: './positions-dashboard.html' }));
-app.get('/backtesting-results.html', serveStatic({ path: './backtesting-results.html' }));
-app.get('/modern-ui.css', serveStatic({ path: './modern-ui.css' }));
-app.get('/rsi-enhancements.css', serveStatic({ path: './rsi-enhancements.css' }));
-app.get('/keyboard-shortcuts.css', serveStatic({ path: './keyboard-shortcuts.css' }));
-app.get('/oversold-positions.css', serveStatic({ path: './oversold-positions.css' }));
-app.get('/cache-manager.js', serveStatic({ path: './cache-manager.js' }));
-app.get('/', serveStatic({ path: './index.html' }));
+// ============ API ROOT ============
+app.get('/', (c) => c.json({
+  name: 'Trading Caller API',
+  version: '1.0.0',
+  description: 'Autonomous AI trading intelligence for Solana',
+  endpoints: {
+    signals: '/signals/latest',
+    performance: '/performance',
+    rsi: '/rsi/multi',
+    gecko: '/gecko/trending',
+    volume: '/volume/signals',
+    backtest: '/backtest/strategies',
+  },
+}));
 
 // ============ START SERVER ============
 

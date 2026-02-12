@@ -2,8 +2,8 @@
 
 > **"Free your mind"** — Profitable, transparent, autonomous trading signals
 
-[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen)](https://web-production-5e86c.up.railway.app/)
-[![API Status](https://img.shields.io/badge/API-Operational-success)](https://web-production-5e86c.up.railway.app/signals/latest)
+[![Live Dashboard](https://img.shields.io/badge/Live-Dashboard-brightgreen)](https://trading-caller.vercel.app/)
+[![API Status](https://img.shields.io/badge/API-Operational-success)](https://trading-caller-production.up.railway.app/signals/latest)
 
 ---
 
@@ -78,27 +78,27 @@ Trading Caller is an autonomous AI agent that generates actionable trading signa
 
 ### Get trading signals
 ```bash
-curl https://web-production-5e86c.up.railway.app/signals/latest
+curl https://trading-caller-production.up.railway.app/signals/latest
 ```
 
 ### Find oversold tokens
 ```bash
-curl https://web-production-5e86c.up.railway.app/rsi/oversold
+curl https://trading-caller-production.up.railway.app/rsi/oversold
 ```
 
 ### Multi-timeframe RSI scanner
 ```bash
-curl https://web-production-5e86c.up.railway.app/rsi/multi
+curl https://trading-caller-production.up.railway.app/rsi/multi
 ```
 
 ### Trending Solana pools (GeckoTerminal)
 ```bash
-curl https://web-production-5e86c.up.railway.app/gecko/trending
+curl https://trading-caller-production.up.railway.app/gecko/trending
 ```
 
 ### OHLCV candle data for a pool
 ```bash
-curl "https://web-production-5e86c.up.railway.app/gecko/ohlcv/{poolAddress}?timeframe=hour&aggregate=4"
+curl "https://trading-caller-production.up.railway.app/gecko/ohlcv/{poolAddress}?timeframe=hour&aggregate=4"
 ```
 
 ---
