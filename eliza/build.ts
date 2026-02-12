@@ -42,10 +42,7 @@ async function build() {
             'path',
             'https',
             'node:*',
-            '@elizaos/core',
-            '@elizaos/plugin-bootstrap',
-            '@elizaos/plugin-sql',
-            '@elizaos/cli',
+            '@elizaos/*',
             'zod',
           ],
           naming: {
