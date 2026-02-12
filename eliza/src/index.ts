@@ -3,7 +3,7 @@ import { character } from './character.ts';
 import tradingCallerPlugin from './plugin.ts';
 
 const initCharacter = ({ runtime }: { runtime: IAgentRuntime }) => {
-  logger.info('Initializing TradingCaller agent');
+  logger.info('Initializing Agent Fox');
   logger.info({ name: character.name }, 'Character:');
 
   const tradingMode = runtime.getSetting('TRADING_MODE') || 'paper';

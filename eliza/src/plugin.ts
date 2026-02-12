@@ -752,7 +752,7 @@ const tradeEvaluator: Evaluator = {
   examples: [
     {
       prompt: 'After a trade has been closed, check if performance review is needed.',
-      messages: [{ name: 'TradingCaller', content: { text: 'Trade closed.' } }],
+      messages: [{ name: 'Agent Fox', content: { text: 'Trade closed.' } }],
       outcome:
         'Flags pending review for strategy optimization when performance shift exceeds threshold.',
     },
