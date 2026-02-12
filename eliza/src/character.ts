@@ -21,7 +21,7 @@ export const character: Character = {
     // LLM provider — Claude for reasoning
     ...(process.env.ANTHROPIC_API_KEY?.trim() ? ['@elizaos/plugin-anthropic'] : []),
 
-    // Embeddings — OpenAI on Railway, Ollama locally
+    // Embeddings — OpenAI on Railway (cloud), Ollama locally (free)
     ...(process.env.OPENAI_API_KEY?.trim() ? ['@elizaos/plugin-openai'] : ['@elizaos/plugin-ollama']),
 
     // Bootstrap (core message handling)
