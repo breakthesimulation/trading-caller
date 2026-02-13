@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -122,61 +121,21 @@ function parsePercent(value: string | undefined | null): number {
 /* ---------- Page Component ---------- */
 
 export default function DashboardPage() {
-  const [performance, setPerformance] = useState<PerformanceData | null>(null);
-  const [positions, setPositions] = useState<PositionStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [perfRes, posRes] = await Promise.allSettled([
-          fetch("/api/signals/performance"),
-          fetch("/api/positions/stats"),
-        ]);
-
-        if (
-          perfRes.status === "fulfilled" &&
-          perfRes.value.ok
-        ) {
-          const perfJson = await perfRes.value.json();
-          if (perfJson.success) {
-            setPerformance(perfJson.performance);
-          }
-        }
-
-        if (
-          posRes.status === "fulfilled" &&
-          posRes.value.ok
-        ) {
-          const posJson = await posRes.value.json();
-          if (posJson.success) {
-            setPositions(posJson.stats);
-          }
-        }
-
-        /* If both requests failed, show an error state */
-        const perfFailed =
-          perfRes.status === "rejected" ||
-          (perfRes.status === "fulfilled" && !perfRes.value.ok);
-        const posFailed =
-          posRes.status === "rejected" ||
-          (posRes.status === "fulfilled" && !posRes.value.ok);
-
-        if (perfFailed && posFailed) {
-          setError(
-            "Unable to reach the Agent Fox API. Make sure the server is running."
-          );
-        }
-      } catch {
-        setError("An unexpected error occurred while fetching dashboard data.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
+  /* Hardcoded zero stats until API routing is fixed */
+  const performance: PerformanceData = {
+    summary: { total: 0, active: 0, resolved: 0 },
+    outcomes: { tp1Hits: 0, tp2Hits: 0, tp3Hits: 0, stoppedOut: 0, expired: 0, invalidated: 0 },
+    rates: { winRate: "0.0%", fullWinRate: "0.0%", lossRate: "0.0%" },
+    pnl: { average: "+0.00%", averageWin: "+0.00%", averageLoss: "0.00%", total: "+0.00%", profitFactor: "0.00" },
+    timing: { avgTimeToTP1: "0.0h", avgTimeToStop: "0.0h" },
+    byDirection: {
+      long: { total: 0, wins: 0, losses: 0, winRate: "0.0%", avgPnl: "+0.00%" },
+      short: { total: 0, wins: 0, losses: 0, winRate: "0.0%", avgPnl: "+0.00%" },
+    },
+  };
+  const positions: PositionStats | null = null;
+  const loading = false;
+  const error: string | null = null;
 
   /* ---------- Loading skeleton ---------- */
 
@@ -352,73 +311,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* ---------- Position stats (if available) ---------- */}
-      {positions && (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-primary">
-            Position Summary
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <MiniStat
-              label="Open Positions"
-              value={String(positions.openPositions ?? 0)}
-            />
-            <MiniStat
-              label="Closed Positions"
-              value={String(positions.closedPositions ?? 0)}
-            />
-            <MiniStat
-              label="Position Win Rate"
-              value={`${(positions.winRate ?? 0).toFixed(1)}%`}
-              accent={(positions.winRate ?? 0) >= 50}
-            />
-            <MiniStat
-              label="Position PnL"
-              value={formatPnl(positions.totalPnl ?? 0)}
-              accent={(positions.totalPnl ?? 0) > 0}
-            />
-          </div>
-
-          {(positions.bestTrade || positions.worstTrade) && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {positions.bestTrade && (
-                <Card className="border-long/20">
-                  <CardContent className="flex items-center justify-between p-5">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-medium text-text-muted">
-                        Best Trade
-                      </span>
-                      <span className="text-sm font-semibold text-primary">
-                        {positions.bestTrade.token?.symbol ?? "Unknown"}
-                      </span>
-                    </div>
-                    <span className="text-lg font-bold tabular-nums text-long">
-                      {formatPnl(positions.bestTrade.pnl ?? 0)}
-                    </span>
-                  </CardContent>
-                </Card>
-              )}
-              {positions.worstTrade && (
-                <Card className="border-short/20">
-                  <CardContent className="flex items-center justify-between p-5">
-                    <div className="flex flex-col gap-0.5">
-                      <span className="text-xs font-medium text-text-muted">
-                        Worst Trade
-                      </span>
-                      <span className="text-sm font-semibold text-primary">
-                        {positions.worstTrade.token?.symbol ?? "Unknown"}
-                      </span>
-                    </div>
-                    <span className="text-lg font-bold tabular-nums text-short">
-                      {formatPnl(positions.worstTrade.pnl ?? 0)}
-                    </span>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </section>
-      )}
+      {/* Position stats hidden while API routing is being fixed */}
     </div>
   );
 }
