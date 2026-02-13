@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { formatPnl } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Radio,
   Activity,
@@ -105,10 +106,14 @@ export default async function HomePage() {
     <div className="flex flex-col">
       {/* ---------- Hero ---------- */}
       <section className="flex flex-col items-center gap-6 pb-20 pt-24 text-center md:pt-32">
-        {/* Mascot placeholder — replace with <Image> when assets are ready */}
-        <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-accent/10 text-2xl font-bold text-accent">
-          AF
-        </div>
+        <Image
+          src="/agent-fox-mascot.jpeg"
+          alt="Agent Fox mascot"
+          width={120}
+          height={120}
+          className="rounded-2xl"
+          priority
+        />
 
         <Badge variant="default" className="text-sm">
           AI-Powered

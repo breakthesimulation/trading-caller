@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 const PRODUCT_LINKS = [
   { href: "/signals", label: "Live Signals" },
@@ -20,10 +21,13 @@ export function Footer() {
           {/* Logo — wordmark placeholder */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
-              {/* Wordmark placeholder — replace with <Image> when assets are ready */}
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">
-                AF
-              </div>
+              <Image
+                src="/agent-fox-monogram.jpeg"
+                alt="Agent Fox logo"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
               <span className="text-base font-bold text-primary">
                 Agent Fox
               </span>

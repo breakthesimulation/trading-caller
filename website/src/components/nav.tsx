@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -46,10 +47,13 @@ export function Nav() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4">
         {/* Logo — left */}
         <Link href="/" className="flex items-center gap-2.5">
-          {/* Logo placeholder — replace with <Image> when assets are ready */}
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">
-            AF
-          </div>
+          <Image
+            src="/agent-fox-monogram.jpeg"
+            alt="Agent Fox logo"
+            width={32}
+            height={32}
+            className="rounded-lg"
+          />
           <span className="text-lg font-bold text-primary">
             Agent Fox
           </span>
