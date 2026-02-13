@@ -80,29 +80,29 @@ const SEVERITY_CONFIG = {
     badge: "muted" as const,
     label: "Low",
     iconColor: "text-text-muted",
-    borderColor: "border-border-default",
+    borderColor: "border-border",
     bgAccent: "bg-bg-elevated",
   },
   MEDIUM: {
     badge: "warning" as const,
     label: "Medium",
-    iconColor: "text-yellow-400",
-    borderColor: "border-yellow-500/30",
-    bgAccent: "bg-yellow-500/10",
+    iconColor: "text-warning",
+    borderColor: "border-warning/30",
+    bgAccent: "bg-warning/10",
   },
   HIGH: {
     badge: "short" as const,
     label: "High",
-    iconColor: "text-short-red",
-    borderColor: "border-short-red/30",
-    bgAccent: "bg-short-red-dim",
+    iconColor: "text-short",
+    borderColor: "border-short/30",
+    bgAccent: "bg-short/15",
   },
   EXTREME: {
     badge: "short" as const,
     label: "Extreme",
-    iconColor: "text-short-red",
-    borderColor: "border-short-red/50",
-    bgAccent: "bg-short-red-dim",
+    iconColor: "text-short",
+    borderColor: "border-short/50",
+    bgAccent: "bg-short/15",
   },
 } as const;
 
@@ -184,7 +184,7 @@ export default function VolumePage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
               Volume Scanner
             </h1>
             <Badge variant="cyan">
@@ -208,7 +208,7 @@ export default function VolumePage() {
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-bg-hover disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-bg-elevated disabled:opacity-50"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -224,34 +224,34 @@ export default function VolumePage() {
           icon={BarChart3}
           label="Tokens Tracked"
           value={String(tokens.length)}
-          accentBg="bg-brand-purple/15"
-          accentText="text-brand-purple-light"
+          accentBg="bg-accent/15"
+          accentText="text-accent-light"
         />
         <SummaryCard
           icon={Zap}
           label="Active Spikes"
           value={String(spikes.length)}
-          accentBg="bg-yellow-500/15"
-          accentText="text-yellow-400"
+          accentBg="bg-warning/15"
+          accentText="text-warning"
         />
         <SummaryCard
           icon={AlertTriangle}
           label="High / Extreme"
           value={String(highExtremeCount)}
           subtitle="Require attention"
-          accentBg="bg-short-red-dim"
-          accentText="text-short-red"
+          accentBg="bg-short/15"
+          accentText="text-short"
         />
       </div>
 
       {/* Volume Spikes Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-500/15">
-            <Zap className="h-4 w-4 text-yellow-400" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/15">
+            <Zap className="h-4 w-4 text-warning" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-lg font-bold text-text-primary">
+            <h2 className="text-lg font-bold text-primary">
               Volume Spikes
             </h2>
             <p className="text-xs text-text-muted">
@@ -278,11 +278,11 @@ export default function VolumePage() {
       {/* Top Volume Section */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-purple/15">
-            <BarChart3 className="h-4 w-4 text-brand-purple-light" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15">
+            <BarChart3 className="h-4 w-4 text-accent-light" />
           </div>
           <div className="flex flex-col">
-            <h2 className="text-lg font-bold text-text-primary">
+            <h2 className="text-lg font-bold text-primary">
               Top Volume
             </h2>
             <p className="text-xs text-text-muted">
@@ -349,7 +349,7 @@ function SummaryCard({
         <div className="flex flex-col gap-0.5">
           <span className="text-xs font-medium text-text-muted">{label}</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tabular-nums text-text-primary">
+            <span className="text-2xl font-bold tabular-nums text-primary">
               {value}
             </span>
             {subtitle && (
@@ -386,7 +386,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
 
   return (
     <Card
-      className={`transition-colors ${config.borderColor} hover:border-brand-purple/30`}
+      className={`transition-colors ${config.borderColor} hover:border-accent`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
@@ -430,12 +430,12 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
       <CardContent className="flex flex-col gap-3">
         {/* Volume multiplier */}
         <div className="flex items-center gap-2 rounded-lg bg-bg-elevated px-3 py-2">
-          <Volume2 className="h-4 w-4 shrink-0 text-brand-cyan" />
+          <Volume2 className="h-4 w-4 shrink-0 text-cyan" />
           <div className="flex flex-col">
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Volume Spike
             </span>
-            <span className="text-lg font-bold tabular-nums text-brand-cyan">
+            <span className="text-lg font-bold tabular-nums text-cyan">
               {(spike.volumeSpikeMultiple ?? 0).toFixed(1)}x{" "}
               <span className="text-xs font-normal text-text-muted">
                 avg ({(spike.volumeSpikePercent ?? 0).toFixed(0)}%)
@@ -450,7 +450,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Current 1h Vol
             </span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               ${formatNumber(spike.currentVolume1h ?? 0)}
             </span>
           </div>
@@ -470,7 +470,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Price
             </span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               ${formatPrice(spike.priceUsd ?? 0)}
             </span>
           </div>
@@ -481,7 +481,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
             </span>
             <span
               className={`inline-flex items-center gap-1 text-sm font-semibold tabular-nums ${
-                isPositiveChange1h ? "text-long-green" : "text-short-red"
+                isPositiveChange1h ? "text-long" : "text-short"
               }`}
             >
               {isPositiveChange1h ? (
@@ -500,7 +500,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
             </span>
             <span
               className={`inline-flex items-center gap-1 text-sm font-semibold tabular-nums ${
-                isPositiveChange24h ? "text-long-green" : "text-short-red"
+                isPositiveChange24h ? "text-long" : "text-short"
               }`}
             >
               {isPositiveChange24h ? (
@@ -523,7 +523,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               </span>
               <span
                 className={`text-sm font-semibold tabular-nums ${
-                  isBuyDominant ? "text-long-green" : "text-short-red"
+                  isBuyDominant ? "text-long" : "text-short"
                 }`}
               >
                 {buySellPercent}% {isBuyDominant ? "buy" : "sell"}
@@ -535,7 +535,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 Velocity
               </span>
-              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-brand-cyan">
+              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-cyan">
                 <Activity className="h-3 w-3" />
                 {spike.volumeVelocity.toFixed(2)}x
               </span>
@@ -544,7 +544,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
         </div>
 
         {/* Footer: detected time + DexScreener link */}
-        <div className="flex items-center justify-between border-t border-border-default pt-2">
+        <div className="flex items-center justify-between border-t border-border pt-2">
           <span className="text-xs text-text-muted">
             Detected {timeAgo(spike.detectedAt)}
           </span>
@@ -553,7 +553,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               href={spike.dexScreenerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-brand-cyan transition-colors hover:text-brand-purple"
+              className="inline-flex items-center gap-1 text-xs font-medium text-cyan transition-colors hover:text-accent"
             >
               DexScreener
               <ExternalLink className="h-3 w-3" />
@@ -573,7 +573,7 @@ function VolumeTable({ tokens }: { tokens: VolumeToken[] }) {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-border-default">
+            <tr className="border-b border-border">
               <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Token
               </th>
@@ -588,7 +588,7 @@ function VolumeTable({ tokens }: { tokens: VolumeToken[] }) {
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default">
+          <tbody className="divide-y divide-border">
             {tokens.map((token) => (
               <VolumeTableRow key={token.symbol} token={token} />
             ))}
@@ -605,7 +605,7 @@ function VolumeTableRow({ token }: { token: VolumeToken }) {
   const isPositivePriceChange = (token.priceChange1h ?? 0) >= 0;
 
   return (
-    <tr className="transition-colors hover:bg-bg-hover/50">
+    <tr className="transition-colors hover:bg-bg-elevated/50">
       {/* Token identity */}
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
@@ -615,7 +615,7 @@ function VolumeTableRow({ token }: { token: VolumeToken }) {
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-text-primary">
+            <span className="text-sm font-semibold text-primary">
               {token.symbol}
             </span>
             <span className="max-w-[160px] truncate text-xs text-text-muted">
@@ -627,14 +627,14 @@ function VolumeTableRow({ token }: { token: VolumeToken }) {
 
       {/* 1h volume */}
       <td className="px-5 py-3.5 text-right">
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           ${formatNumber(token.volume1h ?? 0)}
         </span>
       </td>
 
       {/* 24h volume */}
       <td className="px-5 py-3.5 text-right">
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           ${formatNumber(token.volume24h ?? 0)}
         </span>
       </td>
@@ -643,7 +643,7 @@ function VolumeTableRow({ token }: { token: VolumeToken }) {
       <td className="px-5 py-3.5 text-right">
         <span
           className={`inline-flex items-center justify-end gap-1 text-sm font-semibold tabular-nums ${
-            isPositivePriceChange ? "text-long-green" : "text-short-red"
+            isPositivePriceChange ? "text-long" : "text-short"
           }`}
         >
           {isPositivePriceChange ? (
@@ -665,7 +665,7 @@ function VolumeMobileCard({ token }: { token: VolumeToken }) {
   const isPositivePriceChange = (token.priceChange1h ?? 0) >= 0;
 
   return (
-    <Card className="transition-colors hover:border-brand-purple/30">
+    <Card className="transition-colors hover:border-accent">
       <CardContent className="flex flex-col gap-3 p-4">
         {/* Top row: token identity */}
         <div className="flex items-center justify-between">
@@ -676,7 +676,7 @@ function VolumeMobileCard({ token }: { token: VolumeToken }) {
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-text-primary">
+              <span className="text-sm font-semibold text-primary">
                 {token.symbol}
               </span>
               <span className="max-w-[140px] truncate text-xs text-text-muted">
@@ -688,7 +688,7 @@ function VolumeMobileCard({ token }: { token: VolumeToken }) {
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               24h Vol
             </span>
-            <span className="text-sm font-bold tabular-nums text-text-primary">
+            <span className="text-sm font-bold tabular-nums text-primary">
               ${formatNumber(token.volume24h ?? 0)}
             </span>
           </div>
@@ -698,7 +698,7 @@ function VolumeMobileCard({ token }: { token: VolumeToken }) {
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs text-text-muted">1h Vol</span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               ${formatNumber(token.volume1h ?? 0)}
             </span>
           </div>
@@ -707,7 +707,7 @@ function VolumeMobileCard({ token }: { token: VolumeToken }) {
             <span className="text-xs text-text-muted">1h Change</span>
             <span
               className={`inline-flex items-center gap-0.5 text-sm font-semibold tabular-nums ${
-                isPositivePriceChange ? "text-long-green" : "text-short-red"
+                isPositivePriceChange ? "text-long" : "text-short"
               }`}
             >
               {isPositivePriceChange ? (
@@ -737,12 +737,12 @@ function EmptyState({
   description: string;
 }) {
   return (
-    <Card className="border-border-default">
+    <Card className="border-border">
       <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-elevated">
           <Icon className="h-7 w-7 text-text-muted" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">{title}</h3>
+        <h3 className="text-lg font-semibold text-primary">{title}</h3>
         <p className="max-w-sm text-sm text-text-secondary">{description}</p>
       </CardContent>
     </Card>
@@ -836,7 +836,7 @@ function VolumeSkeleton() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border-default">
+                <tr className="border-b border-border">
                   <th className="px-5 py-3.5 text-left">
                     <Skeleton className="h-3 w-12" />
                   </th>
@@ -851,7 +851,7 @@ function VolumeSkeleton() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border-default">
+              <tbody className="divide-y divide-border">
                 {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (
                   <tr key={i}>
                     <td className="px-5 py-3.5">

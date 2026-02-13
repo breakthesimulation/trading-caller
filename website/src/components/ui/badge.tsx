@@ -7,12 +7,12 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-brand-purple/20 text-brand-purple-light",
-        long: "bg-long-green-dim text-long-green",
-        short: "bg-short-red-dim text-short-red",
-        cyan: "bg-brand-cyan/20 text-brand-cyan",
+        default: "bg-accent/15 text-accent",
+        long: "bg-long/15 text-long",
+        short: "bg-short/15 text-short",
+        cyan: "bg-cyan/20 text-cyan",
         muted: "bg-bg-elevated text-text-secondary",
-        warning: "bg-yellow-500/20 text-yellow-400",
+        warning: "bg-warning/20 text-warning",
       },
     },
     defaultVariants: {

@@ -21,7 +21,7 @@ export const TableHeader = forwardRef<
 >(({ className, ...props }, ref) => (
   <thead
     ref={ref}
-    className={cn("border-b border-border-default", className)}
+    className={cn("border-b border-border", className)}
     {...props}
   />
 ));
@@ -31,7 +31,14 @@ export const TableBody = forwardRef<
   HTMLTableSectionElement,
   HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tbody ref={ref} className={cn("[&_tr:last-child]:border-0", className)} {...props} />
+  <tbody
+    ref={ref}
+    className={cn(
+      "[&_tr:last-child]:border-0 [&>tr:nth-child(even)]:bg-bg-secondary",
+      className
+    )}
+    {...props}
+  />
 ));
 TableBody.displayName = "TableBody";
 
@@ -42,7 +49,7 @@ export const TableRow = forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-border-subtle transition-colors hover:bg-bg-hover",
+      "border-b border-border-subtle transition-colors hover:bg-bg-elevated",
       className
     )}
     {...props}
@@ -56,6 +63,7 @@ export const TableHead = forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     ref={ref}
+    scope="col"
     className={cn(
       "h-10 px-3 text-left align-middle text-xs font-medium text-text-muted",
       className
@@ -71,7 +79,7 @@ export const TableCell = forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("px-3 py-2.5 align-middle text-text-primary", className)}
+    className={cn("px-3 py-2.5 align-middle text-primary", className)}
     {...props}
   />
 ));

@@ -189,7 +189,7 @@ export default function MarketPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
               RSI Scanner
             </h1>
             <Badge variant="cyan">
@@ -213,7 +213,7 @@ export default function MarketPage() {
             type="button"
             onClick={handleScanNow}
             disabled={scanning}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-purple/20 px-4 py-2 text-sm font-semibold text-brand-purple-light transition-colors hover:bg-brand-purple/30 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent/20 px-4 py-2 text-sm font-semibold text-accent-light transition-colors hover:bg-accent/30 disabled:opacity-50"
           >
             <Zap
               className={`h-3.5 w-3.5 ${scanning ? "animate-pulse" : ""}`}
@@ -235,24 +235,24 @@ export default function MarketPage() {
           label="Tokens Scanned"
           value={String(scanProgress?.withRSI ?? tokens.length)}
           subtitle={`of ${tokensScannedCount}`}
-          accentBg="bg-brand-purple/15"
-          accentText="text-brand-purple-light"
+          accentBg="bg-accent/15"
+          accentText="text-accent-light"
         />
         <SummaryCard
           icon={TrendingDown}
           label="Oversold"
           value={String(oversoldCount)}
           subtitle="RSI < 30"
-          accentBg="bg-long-green-dim"
-          accentText="text-long-green"
+          accentBg="bg-long/15"
+          accentText="text-long"
         />
         <SummaryCard
           icon={TrendingUp}
           label="Overbought"
           value={String(overboughtCount)}
           subtitle="RSI > 70"
-          accentBg="bg-short-red-dim"
-          accentText="text-short-red"
+          accentBg="bg-short/15"
+          accentText="text-short"
         />
       </div>
 
@@ -266,7 +266,7 @@ export default function MarketPage() {
             placeholder="Search tokens..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-border-default bg-bg-surface py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted focus:border-brand-purple/50 focus:outline-none focus:ring-1 focus:ring-brand-purple/30"
+            className="w-full rounded-lg border border-border bg-white py-2 pl-9 pr-3 text-sm text-primary placeholder:text-text-muted focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
           />
         </div>
 
@@ -279,7 +279,7 @@ export default function MarketPage() {
           <button
             type="button"
             onClick={toggleSort}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-bg-hover"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-bg-elevated"
           >
             <ArrowUpDown className="h-3.5 w-3.5" />
             RSI {sortDirection === "asc" ? "Low to High" : "High to Low"}
@@ -330,7 +330,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-cyan" />
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-cyan" />
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium text-text-secondary">
@@ -343,7 +343,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
             <div
-              className="h-full rounded-full bg-brand-cyan transition-all duration-500"
+              className="h-full rounded-full bg-cyan transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>
@@ -381,7 +381,7 @@ function SummaryCard({
         <div className="flex flex-col gap-0.5">
           <span className="text-xs font-medium text-text-muted">{label}</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold tabular-nums text-text-primary">
+            <span className="text-2xl font-bold tabular-nums text-primary">
               {value}
             </span>
             {subtitle && (
@@ -410,7 +410,7 @@ function TokenTable({
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-border-default">
+            <tr className="border-b border-border">
               <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Token
               </th>
@@ -418,7 +418,7 @@ function TokenTable({
                 <button
                   type="button"
                   onClick={onToggleSort}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-text-muted transition-colors hover:text-text-primary"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-text-muted transition-colors hover:text-primary"
                 >
                   RSI (4h)
                   <ArrowUpDown className="h-3 w-3" />
@@ -450,7 +450,7 @@ function TokenTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border-default">
+          <tbody className="divide-y divide-border">
             {tokens.map((token) => (
               <TokenTableRow key={token.symbol} token={token} />
             ))}
@@ -473,7 +473,7 @@ function TokenTableRow({ token }: { token: TokenData }) {
   const isPositiveChange = change24h >= 0;
 
   return (
-    <tr className="transition-colors hover:bg-bg-hover/50">
+    <tr className="transition-colors hover:bg-bg-elevated/50">
       {/* Token identity */}
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
@@ -492,7 +492,7 @@ function TokenTableRow({ token }: { token: TokenData }) {
             </div>
           )}
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-text-primary">
+            <span className="text-sm font-semibold text-primary">
               {token.symbol}
             </span>
             <span className="max-w-[160px] truncate text-xs text-text-muted">
@@ -524,7 +524,7 @@ function TokenTableRow({ token }: { token: TokenData }) {
 
       {/* Price */}
       <td className="px-5 py-3.5 text-right">
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           ${formatPrice(price)}
         </span>
       </td>
@@ -533,7 +533,7 @@ function TokenTableRow({ token }: { token: TokenData }) {
       <td className="px-5 py-3.5 text-right">
         <span
           className={`inline-flex items-center gap-1 text-sm font-semibold tabular-nums ${
-            isPositiveChange ? "text-long-green" : "text-short-red"
+            isPositiveChange ? "text-long" : "text-short"
           }`}
         >
           {isPositiveChange ? (
@@ -570,7 +570,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
   const isPositiveChange = change24h >= 0;
 
   return (
-    <Card className="transition-colors hover:border-brand-purple/30">
+    <Card className="transition-colors hover:border-accent">
       <CardContent className="flex flex-col gap-3 p-4">
         {/* Top row: token identity + RSI */}
         <div className="flex items-center justify-between">
@@ -590,7 +590,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-text-primary">
+              <span className="text-sm font-semibold text-primary">
                 {token.symbol}
               </span>
               <span className="max-w-[140px] truncate text-xs text-text-muted">
@@ -613,7 +613,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs text-text-muted">Price</span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               ${formatPrice(price)}
             </span>
           </div>
@@ -622,7 +622,7 @@ function TokenMobileCard({ token }: { token: TokenData }) {
             <span className="text-xs text-text-muted">24h</span>
             <span
               className={`inline-flex items-center gap-0.5 text-sm font-semibold tabular-nums ${
-                isPositiveChange ? "text-long-green" : "text-short-red"
+                isPositiveChange ? "text-long" : "text-short"
               }`}
             >
               {isPositiveChange ? (
@@ -772,12 +772,12 @@ function SignalBadge({
 
 function EmptyState({ hasSearch }: { hasSearch: boolean }) {
   return (
-    <Card className="border-border-default">
+    <Card className="border-border">
       <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-elevated">
           <Search className="h-7 w-7 text-text-muted" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">
+        <h3 className="text-lg font-semibold text-primary">
           {hasSearch ? "No Matching Tokens" : "No Token Data"}
         </h3>
         <p className="max-w-sm text-sm text-text-secondary">
@@ -836,7 +836,7 @@ function MarketSkeleton() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border-default">
+              <tr className="border-b border-border">
                 <th className="px-5 py-3.5 text-left">
                   <Skeleton className="h-3 w-12" />
                 </th>
@@ -866,7 +866,7 @@ function MarketSkeleton() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border-default">
+            <tbody className="divide-y divide-border">
               {Array.from({ length: SKELETON_ROW_COUNT }).map((_, i) => (
                 <tr key={i}>
                   <td className="px-5 py-3.5">

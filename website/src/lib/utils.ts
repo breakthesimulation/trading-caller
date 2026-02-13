@@ -36,15 +36,15 @@ export function timeAgo(dateStr: string): string {
 }
 
 export function rsiColor(rsi: number): string {
-  if (rsi <= 30) return "text-long-green";
-  if (rsi >= 70) return "text-short-red";
-  if (rsi <= 40) return "text-long-green/70";
-  if (rsi >= 60) return "text-short-red/70";
+  if (rsi <= 30) return "text-long";
+  if (rsi >= 70) return "text-short";
+  if (rsi <= 40) return "text-long/70";
+  if (rsi >= 60) return "text-short/70";
   return "text-text-secondary";
 }
 
 export function rsiBgColor(rsi: number): string {
-  if (rsi <= 30) return "bg-long-green-dim";
-  if (rsi >= 70) return "bg-short-red-dim";
+  if (rsi <= 30) return "bg-long/15";
+  if (rsi >= 70) return "bg-short/15";
   return "bg-bg-elevated";
 }

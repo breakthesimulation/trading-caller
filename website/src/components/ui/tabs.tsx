@@ -90,7 +90,7 @@ export function TabsTrigger({
       className={cn(
         "inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
         isActive
-          ? "bg-bg-surface text-text-primary shadow-sm"
+          ? "bg-white text-primary shadow-sm"
           : "text-text-muted hover:text-text-secondary"
       , className)}
       {...props}

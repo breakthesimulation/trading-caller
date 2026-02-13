@@ -89,8 +89,8 @@ export default function LeaderboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <Trophy className="h-8 w-8 text-brand-purple-light" />
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+          <Trophy className="h-8 w-8 text-accent-light" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
             Token Leaderboard
           </h1>
         </div>
@@ -170,9 +170,9 @@ function WinRateDisplay({ winRate }: { winRate: number }) {
   let colorClass = "text-text-secondary";
 
   if (winRate >= WIN_RATE_THRESHOLDS.HIGH) {
-    colorClass = "text-long-green";
+    colorClass = "text-long";
   } else if (winRate < WIN_RATE_THRESHOLDS.LOW) {
-    colorClass = "text-short-red";
+    colorClass = "text-short";
   }
 
   return (
@@ -193,9 +193,9 @@ function PnlDisplay({
 }) {
   const colorClass =
     pnl > 0
-      ? "text-long-green"
+      ? "text-long"
       : pnl < 0
-        ? "text-short-red"
+        ? "text-short"
         : "text-text-secondary";
 
   return (
@@ -236,7 +236,7 @@ function DesktopTable({ entries }: { entries: LeaderboardEntry[] }) {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="[&>tr:nth-child(even)]:bg-bg-secondary">
             {entries.map((entry) => (
               <DesktopRow key={entry.symbol} entry={entry} />
             ))}
@@ -256,7 +256,7 @@ function DesktopRow({ entry }: { entry: LeaderboardEntry }) {
 
   return (
     <tr
-      className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-hover"
+      className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-elevated"
       style={
         isTopThree
           ? { borderLeftWidth: "3px", borderLeftColor: rankColor }
@@ -272,7 +272,7 @@ function DesktopRow({ entry }: { entry: LeaderboardEntry }) {
       <td className="px-5 py-4">
         <div className="flex flex-col gap-0.5">
           <span
-            className="text-sm font-bold text-text-primary"
+            className="text-sm font-bold text-primary"
             style={isTopThree ? { color: rankColor } : undefined}
           >
             {entry.symbol}
@@ -326,14 +326,14 @@ function MobileCard({ entry }: { entry: LeaderboardEntry }) {
   const PnlIcon = entry.totalPnl >= 0 ? TrendingUp : TrendingDown;
   const pnlIconColor =
     entry.totalPnl > 0
-      ? "text-long-green"
+      ? "text-long"
       : entry.totalPnl < 0
-        ? "text-short-red"
+        ? "text-short"
         : "text-text-muted";
 
   return (
     <Card
-      className="transition-colors hover:border-brand-purple/30"
+      className="transition-colors hover:border-accent"
       style={
         isTopThree
           ? { borderLeftWidth: "3px", borderLeftColor: rankColor }
@@ -347,7 +347,7 @@ function MobileCard({ entry }: { entry: LeaderboardEntry }) {
             <RankDisplay rank={entry.rank} />
             <div className="flex flex-col gap-0.5">
               <span
-                className="text-sm font-bold text-text-primary"
+                className="text-sm font-bold text-primary"
                 style={isTopThree ? { color: rankColor } : undefined}
               >
                 {entry.symbol}
@@ -393,7 +393,7 @@ function StatCell({
         {label}
       </span>
       {children ?? (
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           {value}
         </span>
       )}
@@ -405,12 +405,12 @@ function StatCell({
 
 function EmptyState() {
   return (
-    <Card className="border-border-default">
+    <Card className="border-border">
       <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-elevated">
           <Trophy className="h-7 w-7 text-text-muted" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">
+        <h3 className="text-lg font-semibold text-primary">
           No Leaderboard Data
         </h3>
         <p className="max-w-sm text-sm text-text-secondary">

@@ -156,13 +156,13 @@ export default function SignalsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
               Live Signals
             </h1>
             <span className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-long-green opacity-75" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-long-green" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-long opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-long" />
               </span>
               <span className="text-sm font-semibold tabular-nums text-text-secondary">
                 {count}
@@ -185,7 +185,7 @@ export default function SignalsPage() {
             type="button"
             onClick={handleRefresh}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-default bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary transition-colors hover:bg-bg-hover disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-elevated px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-bg-elevated disabled:opacity-50"
           >
             <RefreshCw
               className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
@@ -196,16 +196,18 @@ export default function SignalsPage() {
       </div>
 
       {/* Filter pills */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" role="radiogroup">
         {FILTER_OPTIONS.map((option) => (
           <button
             key={option}
             type="button"
+            role="radio"
+            aria-checked={filter === option}
             onClick={() => setFilter(option)}
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
               filter === option
-                ? "bg-brand-purple/20 text-brand-purple-light"
-                : "bg-bg-elevated text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+                ? "bg-accent/20 text-accent-light"
+                : "bg-bg-elevated text-text-secondary hover:bg-bg-elevated hover:text-primary"
             }`}
           >
             {option}
@@ -241,19 +243,19 @@ function SignalCard({ signal }: { signal: Signal }) {
     reasoning.length > 160 ? `${reasoning.slice(0, 157)}...` : reasoning;
 
   return (
-    <Card className="transition-colors hover:border-brand-purple/30">
+    <Card className="transition-colors hover:border-accent">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           {/* Token info */}
           <div className="flex items-center gap-3">
             <div
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                isLong ? "bg-long-green-dim" : "bg-short-red-dim"
+                isLong ? "bg-long/15" : "bg-short/15"
               }`}
             >
               <ActionIcon
                 className={`h-5 w-5 ${
-                  isLong ? "text-long-green" : "text-short-red"
+                  isLong ? "text-long" : "text-short"
                 }`}
               />
             </div>
@@ -291,7 +293,7 @@ function SignalCard({ signal }: { signal: Signal }) {
             icon={Radio}
             label="Entry"
             price={signal.entry}
-            colorClass="text-brand-cyan"
+            colorClass="text-cyan"
           />
 
           {/* Stop Loss */}
@@ -299,7 +301,7 @@ function SignalCard({ signal }: { signal: Signal }) {
             icon={Shield}
             label="Stop Loss"
             price={signal.stopLoss}
-            colorClass="text-short-red"
+            colorClass="text-short"
           />
 
           {/* Targets */}
@@ -309,7 +311,7 @@ function SignalCard({ signal }: { signal: Signal }) {
               icon={Target}
               label={`TP${i + 1}`}
               price={tp}
-              colorClass="text-long-green"
+              colorClass="text-long"
             />
           ))}
         </div>
@@ -361,16 +363,16 @@ function ConfidenceBar({ confidence }: { confidence: number }) {
   const clampedConfidence = Math.max(0, Math.min(100, confidence));
 
   function getConfidenceColor(value: number): string {
-    if (value < CONFIDENCE_THRESHOLDS.LOW) return "bg-short-red";
+    if (value < CONFIDENCE_THRESHOLDS.LOW) return "bg-short";
     if (value < CONFIDENCE_THRESHOLDS.MEDIUM) return "bg-yellow-500";
-    return "bg-long-green";
+    return "bg-long";
   }
 
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-xs">
         <span className="font-medium text-text-secondary">Confidence</span>
-        <span className="font-bold tabular-nums text-text-primary">
+        <span className="font-bold tabular-nums text-primary">
           {clampedConfidence}%
         </span>
       </div>
@@ -404,7 +406,7 @@ function PriceLevel({
         <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
           {label}
         </span>
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           ${formatPrice(price)}
         </span>
       </div>
@@ -457,12 +459,12 @@ function EmptyState({ filter }: { filter: ActionFilter }) {
   const filterLabel = filter === "ALL" ? "" : ` ${filter}`;
 
   return (
-    <Card className="border-border-default">
+    <Card className="border-border">
       <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-elevated">
           <Radio className="h-7 w-7 text-text-muted" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">
+        <h3 className="text-lg font-semibold text-primary">
           No{filterLabel} Signals
         </h3>
         <p className="max-w-sm text-sm text-text-secondary">

@@ -190,19 +190,19 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col gap-6 py-8 md:py-16">
         <PageHeading />
-        <Card className="border-short-red/30">
+        <Card className="border-short/30">
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-short-red-dim">
-              <Activity className="h-7 w-7 text-short-red" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-short/15">
+              <Activity className="h-7 w-7 text-short" />
             </div>
-            <h3 className="text-lg font-semibold text-text-primary">
+            <h3 className="text-lg font-semibold text-primary">
               API Unavailable
             </h3>
             <p className="max-w-md text-sm text-text-secondary">{error}</p>
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border-default bg-bg-elevated px-5 py-2.5 text-sm font-semibold text-text-primary transition-colors hover:bg-bg-hover"
+              className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border bg-bg-elevated px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-bg-elevated"
             >
               Retry
             </button>
@@ -279,29 +279,29 @@ export default function DashboardPage() {
             label="TP1 Hits"
             count={outcomes.tp1Hits}
             total={totalSignals}
-            barClass="bg-long-green"
-            textClass="text-long-green"
+            barClass="bg-long"
+            textClass="text-long"
           />
           <OutcomeBar
             label="TP2 Hits"
             count={outcomes.tp2Hits}
             total={totalSignals}
-            barClass="bg-long-green"
-            textClass="text-long-green"
+            barClass="bg-long"
+            textClass="text-long"
           />
           <OutcomeBar
             label="TP3 Hits"
             count={outcomes.tp3Hits}
             total={totalSignals}
-            barClass="bg-brand-cyan"
-            textClass="text-brand-cyan"
+            barClass="bg-cyan"
+            textClass="text-cyan"
           />
           <OutcomeBar
             label="Stopped Out"
             count={outcomes.stoppedOut}
             total={totalSignals}
-            barClass="bg-short-red"
-            textClass="text-short-red"
+            barClass="bg-short"
+            textClass="text-short"
           />
           <OutcomeBar
             label="Expired"
@@ -314,8 +314,8 @@ export default function DashboardPage() {
             label="Active"
             count={activeSignals}
             total={totalSignals}
-            barClass="bg-brand-purple"
-            textClass="text-brand-purple-light"
+            barClass="bg-accent"
+            textClass="text-accent-light"
           />
 
           {totalResolved > 0 && (
@@ -329,7 +329,7 @@ export default function DashboardPage() {
 
       {/* ---------- Long vs Short comparison ---------- */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold text-text-primary">
+        <h2 className="text-lg font-semibold text-primary">
           Long vs Short Comparison
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -337,16 +337,16 @@ export default function DashboardPage() {
             direction="LONG"
             icon={TrendingUp}
             stats={performance?.byDirection?.long ?? null}
-            accentBg="bg-long-green-dim"
-            accentText="text-long-green"
+            accentBg="bg-long/15"
+            accentText="text-long"
             badgeVariant="long"
           />
           <DirectionCard
             direction="SHORT"
             icon={TrendingDown}
             stats={performance?.byDirection?.short ?? null}
-            accentBg="bg-short-red-dim"
-            accentText="text-short-red"
+            accentBg="bg-short/15"
+            accentText="text-short"
             badgeVariant="short"
           />
         </div>
@@ -355,7 +355,7 @@ export default function DashboardPage() {
       {/* ---------- Position stats (if available) ---------- */}
       {positions && (
         <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-text-primary">
+          <h2 className="text-lg font-semibold text-primary">
             Position Summary
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -382,34 +382,34 @@ export default function DashboardPage() {
           {(positions.bestTrade || positions.worstTrade) && (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {positions.bestTrade && (
-                <Card className="border-long-green/20">
+                <Card className="border-long/20">
                   <CardContent className="flex items-center justify-between p-5">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-xs font-medium text-text-muted">
                         Best Trade
                       </span>
-                      <span className="text-sm font-semibold text-text-primary">
+                      <span className="text-sm font-semibold text-primary">
                         {positions.bestTrade.token?.symbol ?? "Unknown"}
                       </span>
                     </div>
-                    <span className="text-lg font-bold tabular-nums text-long-green">
+                    <span className="text-lg font-bold tabular-nums text-long">
                       {formatPnl(positions.bestTrade.pnl ?? 0)}
                     </span>
                   </CardContent>
                 </Card>
               )}
               {positions.worstTrade && (
-                <Card className="border-short-red/20">
+                <Card className="border-short/20">
                   <CardContent className="flex items-center justify-between p-5">
                     <div className="flex flex-col gap-0.5">
                       <span className="text-xs font-medium text-text-muted">
                         Worst Trade
                       </span>
-                      <span className="text-sm font-semibold text-text-primary">
+                      <span className="text-sm font-semibold text-primary">
                         {positions.worstTrade.token?.symbol ?? "Unknown"}
                       </span>
                     </div>
-                    <span className="text-lg font-bold tabular-nums text-short-red">
+                    <span className="text-lg font-bold tabular-nums text-short">
                       {formatPnl(positions.worstTrade.pnl ?? 0)}
                     </span>
                   </CardContent>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
 function PageHeading() {
   return (
     <div className="flex flex-col gap-2">
-      <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+      <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
         Performance Dashboard
       </h1>
       <p className="text-text-secondary">
@@ -455,16 +455,16 @@ function MetricCard({
   accent?: boolean;
 }) {
   return (
-    <Card>
+    <Card className={accent ? "border-l-4 border-l-long" : "border-l-4 border-l-accent"}>
       <CardContent className="flex items-center gap-4 p-5">
-        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand-purple/15">
-          <Icon className="h-5 w-5 text-brand-purple-light" />
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent/15">
+          <Icon className="h-5 w-5 text-accent-light" />
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-xs font-medium text-text-muted">{label}</span>
           <span
             className={`text-2xl font-bold tabular-nums ${
-              accent ? "text-long-green" : "text-text-primary"
+              accent ? "text-long" : "text-primary"
             }`}
           >
             {value}
@@ -537,8 +537,10 @@ function DirectionCard({
   const wr = parsePercent(stats?.winRate);
   const avgPnl = parsePercent(stats?.avgPnl);
 
+  const borderTopClass = direction === "LONG" ? "border-t-4 border-t-long" : "border-t-4 border-t-short";
+
   return (
-    <Card className="transition-colors hover:border-brand-purple/30">
+    <Card className={`transition-colors hover:border-accent/30 ${borderTopClass}`}>
       <CardContent className="flex flex-col gap-5 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -547,7 +549,7 @@ function DirectionCard({
             >
               <Icon className={`h-5 w-5 ${accentText}`} />
             </div>
-            <span className="text-lg font-semibold text-text-primary">
+            <span className="text-lg font-semibold text-primary">
               {direction}
             </span>
           </div>
@@ -561,7 +563,7 @@ function DirectionCard({
             </span>
             <span
               className={`text-xl font-bold tabular-nums ${
-                wr >= 50 ? "text-long-green" : "text-text-primary"
+                wr >= 50 ? "text-long" : "text-primary"
               }`}
             >
               {wr.toFixed(1)}%
@@ -573,7 +575,7 @@ function DirectionCard({
             </span>
             <span
               className={`text-xl font-bold tabular-nums ${
-                avgPnl > 0 ? "text-long-green" : avgPnl < 0 ? "text-short-red" : "text-text-primary"
+                avgPnl > 0 ? "text-long" : avgPnl < 0 ? "text-short" : "text-primary"
               }`}
             >
               {formatPnl(avgPnl)}
@@ -584,13 +586,13 @@ function DirectionCard({
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-medium text-text-muted">Wins</span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               {stats?.wins ?? 0}
             </span>
           </div>
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-medium text-text-muted">Losses</span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               {stats?.losses ?? 0}
             </span>
           </div>
@@ -617,7 +619,7 @@ function MiniStat({
         <span className="text-xs font-medium text-text-muted">{label}</span>
         <span
           className={`text-xl font-bold tabular-nums ${
-            accent ? "text-long-green" : "text-text-primary"
+            accent ? "text-long" : "text-primary"
           }`}
         >
           {value}

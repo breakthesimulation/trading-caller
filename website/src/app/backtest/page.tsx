@@ -113,8 +113,8 @@ export default function BacktestPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <FlaskConical className="h-8 w-8 text-brand-purple-light" />
-          <h1 className="text-3xl font-extrabold tracking-tight text-text-primary md:text-4xl">
+          <FlaskConical className="h-8 w-8 text-accent-light" />
+          <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
             Backtest Results
           </h1>
         </div>
@@ -127,8 +127,8 @@ export default function BacktestPage() {
       {strategies.length > 0 && (
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-brand-cyan" />
-            <h2 className="text-xl font-bold text-text-primary">
+            <BarChart3 className="h-5 w-5 text-cyan" />
+            <h2 className="text-xl font-bold text-primary">
               Strategy Comparison
             </h2>
           </div>
@@ -151,8 +151,8 @@ export default function BacktestPage() {
       ) : (
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-brand-purple-light" />
-            <h2 className="text-xl font-bold text-text-primary">
+            <Target className="h-5 w-5 text-accent-light" />
+            <h2 className="text-xl font-bold text-primary">
               Detailed Results
             </h2>
           </div>
@@ -199,17 +199,17 @@ function StrategyCard({
 }) {
   const pnlColorClass =
     strategy.avgPnl > 0
-      ? "text-long-green"
+      ? "text-long"
       : strategy.avgPnl < 0
-        ? "text-short-red"
+        ? "text-short"
         : "text-text-secondary";
 
   return (
     <Card
       className={
         isBest
-          ? "border-brand-purple transition-colors"
-          : "transition-colors hover:border-brand-purple/30"
+          ? "border-accent transition-colors"
+          : "transition-colors hover:border-accent"
       }
     >
       <CardHeader>
@@ -240,7 +240,7 @@ function StrategyCard({
           </MetricCell>
 
           <MetricCell label="Trades">
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               {strategy.totalTrades}
             </span>
           </MetricCell>
@@ -249,8 +249,8 @@ function StrategyCard({
             <span
               className={`text-sm font-semibold tabular-nums ${
                 strategy.profitFactor >= 1
-                  ? "text-long-green"
-                  : "text-short-red"
+                  ? "text-long"
+                  : "text-short"
               }`}
             >
               {strategy.profitFactor.toFixed(2)}
@@ -274,10 +274,10 @@ function WinRateBar({ winRate }: { winRate: number }) {
         <span
           className={`font-bold tabular-nums ${
             clampedRate >= WIN_RATE_THRESHOLDS.HIGH
-              ? "text-long-green"
+              ? "text-long"
               : clampedRate < WIN_RATE_THRESHOLDS.LOW
-                ? "text-short-red"
-                : "text-text-primary"
+                ? "text-short"
+                : "text-primary"
           }`}
         >
           {clampedRate.toFixed(1)}%
@@ -285,7 +285,7 @@ function WinRateBar({ winRate }: { winRate: number }) {
       </div>
       <div className="h-2.5 w-full overflow-hidden rounded-full bg-bg-elevated">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-long-green/70 to-long-green transition-all duration-500"
+          className="h-full rounded-full bg-gradient-to-r from-long/70 to-long transition-all duration-500"
           style={{ width: `${clampedRate}%` }}
         />
       </div>
@@ -323,9 +323,9 @@ function PnlDisplay({
 }) {
   const colorClass =
     pnl > 0
-      ? "text-long-green"
+      ? "text-long"
       : pnl < 0
-        ? "text-short-red"
+        ? "text-short"
         : "text-text-secondary";
 
   return (
@@ -343,9 +343,9 @@ function WinRateDisplay({ winRate }: { winRate: number }) {
   let colorClass = "text-text-secondary";
 
   if (winRate >= WIN_RATE_THRESHOLDS.HIGH) {
-    colorClass = "text-long-green";
+    colorClass = "text-long";
   } else if (winRate < WIN_RATE_THRESHOLDS.LOW) {
-    colorClass = "text-short-red";
+    colorClass = "text-short";
   }
 
   return (
@@ -390,7 +390,7 @@ function DesktopTable({ results }: { results: BacktestResult[] }) {
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="[&>tr:nth-child(even)]:bg-bg-secondary">
             {results.map((result, index) => (
               <DesktopRow key={`${result.strategy}-${result.symbol}-${index}`} result={result} />
             ))}
@@ -405,7 +405,7 @@ function DesktopTable({ results }: { results: BacktestResult[] }) {
 
 function DesktopRow({ result }: { result: BacktestResult }) {
   return (
-    <tr className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-hover">
+    <tr className="border-b border-border-subtle transition-colors last:border-b-0 hover:bg-bg-elevated">
       {/* Strategy */}
       <td className="px-5 py-4">
         <Badge variant="default">{result.strategy}</Badge>
@@ -413,14 +413,14 @@ function DesktopRow({ result }: { result: BacktestResult }) {
 
       {/* Symbol */}
       <td className="px-5 py-4">
-        <span className="text-sm font-bold text-text-primary">
+        <span className="text-sm font-bold text-primary">
           {result.symbol}
         </span>
       </td>
 
       {/* Trades */}
       <td className="px-5 py-4 text-right">
-        <span className="text-sm font-semibold tabular-nums text-text-primary">
+        <span className="text-sm font-semibold tabular-nums text-primary">
           {result.trades}
         </span>
       </td>
@@ -439,7 +439,7 @@ function DesktopRow({ result }: { result: BacktestResult }) {
       <td className="px-5 py-4 text-right">
         <span
           className={`font-semibold tabular-nums ${
-            result.profitFactor >= 1 ? "text-long-green" : "text-short-red"
+            result.profitFactor >= 1 ? "text-long" : "text-short"
           }`}
         >
           {result.profitFactor.toFixed(2)}
@@ -448,7 +448,7 @@ function DesktopRow({ result }: { result: BacktestResult }) {
 
       {/* Max Drawdown */}
       <td className="px-5 py-4 text-right">
-        <span className="font-semibold tabular-nums text-short-red">
+        <span className="font-semibold tabular-nums text-short">
           {result.maxDrawdown.toFixed(2)}%
         </span>
       </td>
@@ -458,10 +458,10 @@ function DesktopRow({ result }: { result: BacktestResult }) {
         <span
           className={`font-semibold tabular-nums ${
             result.sharpeRatio >= 1
-              ? "text-long-green"
+              ? "text-long"
               : result.sharpeRatio >= 0
                 ? "text-text-secondary"
-                : "text-short-red"
+                : "text-short"
           }`}
         >
           {result.sharpeRatio.toFixed(2)}
@@ -492,13 +492,13 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
   const PnlIcon = result.totalPnl >= 0 ? TrendingUp : FlaskConical;
   const pnlIconColor =
     result.totalPnl > 0
-      ? "text-long-green"
+      ? "text-long"
       : result.totalPnl < 0
-        ? "text-short-red"
+        ? "text-short"
         : "text-text-muted";
 
   return (
-    <Card className="transition-colors hover:border-brand-purple/30">
+    <Card className="transition-colors hover:border-accent">
       <CardContent className="flex flex-col gap-4 p-5">
         {/* Top row: Strategy + Symbol */}
         <div className="flex items-center justify-between">
@@ -507,7 +507,7 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
               <PnlIcon className={`h-5 w-5 ${pnlIconColor}`} />
             </div>
             <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-bold text-text-primary">
+              <span className="text-sm font-bold text-primary">
                 {result.symbol}
               </span>
               <Badge variant="default" className="w-fit text-[10px]">
@@ -521,7 +521,7 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
           <MetricCell label="Trades">
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
+            <span className="text-sm font-semibold tabular-nums text-primary">
               {result.trades}
             </span>
           </MetricCell>
@@ -532,15 +532,15 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
             <span
               className={`text-sm font-semibold tabular-nums ${
                 result.profitFactor >= 1
-                  ? "text-long-green"
-                  : "text-short-red"
+                  ? "text-long"
+                  : "text-short"
               }`}
             >
               {result.profitFactor.toFixed(2)}
             </span>
           </MetricCell>
           <MetricCell label="Max Drawdown">
-            <span className="text-sm font-semibold tabular-nums text-short-red">
+            <span className="text-sm font-semibold tabular-nums text-short">
               {result.maxDrawdown.toFixed(2)}%
             </span>
           </MetricCell>
@@ -548,10 +548,10 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
             <span
               className={`text-sm font-semibold tabular-nums ${
                 result.sharpeRatio >= 1
-                  ? "text-long-green"
+                  ? "text-long"
                   : result.sharpeRatio >= 0
                     ? "text-text-secondary"
-                    : "text-short-red"
+                    : "text-short"
               }`}
             >
               {result.sharpeRatio.toFixed(2)}
@@ -567,12 +567,12 @@ function MobileResultCard({ result }: { result: BacktestResult }) {
 
 function EmptyState() {
   return (
-    <Card className="border-border-default">
+    <Card className="border-border">
       <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-bg-elevated">
           <FlaskConical className="h-7 w-7 text-text-muted" />
         </div>
-        <h3 className="text-lg font-semibold text-text-primary">
+        <h3 className="text-lg font-semibold text-primary">
           No Backtest Data
         </h3>
         <p className="max-w-sm text-sm text-text-secondary">

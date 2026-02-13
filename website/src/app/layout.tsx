@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,13 +16,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-bg-primary antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-white"
+        >
+          Skip to content
+        </a>
         <Nav />
-        <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
-        <footer className="border-t border-border-default py-6 text-center text-sm text-text-muted">
-          Trading Caller &mdash; AI-powered Solana trading companion
-        </footer>
+        <main id="main-content" className="mx-auto max-w-[1200px] px-4 py-6">
+          {children}
+        </main>
+        <Footer />
       </body>
     </html>
   );
