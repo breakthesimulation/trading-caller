@@ -2,7 +2,7 @@ FROM node:23.3.0-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    build-essential curl g++ git make python3 unzip && \
+    build-essential ca-certificates curl g++ git make python3 unzip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install bun via official script, copy to shared path
@@ -17,6 +17,11 @@ COPY package.json bun.lock ./
 
 # Install deps
 RUN bun install --frozen-lockfile
+
+# Patch ElizaOS server to set trust proxy = 1 (Railway reverse proxy fix)
+# express-rate-limit rejects both true and false; numeric 1 passes both checks
+RUN sed -i 's/this\.app = express35();/this.app = express35(); this.app.set("trust proxy", 1);/' \
+    node_modules/@elizaos/server/dist/index.js
 
 # Copy only what's needed for the build
 COPY src ./src

@@ -27,7 +27,8 @@ import { DEFAULT_STRATEGY_CONFIG } from './types.ts';
 // ---------------------------------------------------------------------------
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
-const DEFAULT_API_URL = 'https://trading-caller-production.up.railway.app';
+const DEFAULT_API_URL =
+  process.env.TRADING_CALLER_API_URL || 'https://trading-caller-production-d7d3.up.railway.app';
 const SEEN_SIGNALS_MAX = 500;
 const MIN_TRADES_FOR_REVIEW = 3;
 const RECENT_TRADES_WINDOW = 5;
