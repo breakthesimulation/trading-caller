@@ -26,6 +26,14 @@ export const character: Character = {
 
     // Bootstrap (core message handling)
     ...(!process.env.IGNORE_BOOTSTRAP ? ['@elizaos/plugin-bootstrap'] : []),
+
+    // Social platforms — auto-activate when credentials are set
+    ...(process.env.TWITTER_USERNAME?.trim() || process.env.TWITTER_API_KEY?.trim()
+      ? ['@elizaos/plugin-twitter']
+      : []),
+    ...(process.env.DISCORD_API_TOKEN?.trim() ? ['@elizaos/plugin-discord'] : []),
+    ...(process.env.TELEGRAM_BOT_TOKEN?.trim() ? ['@elizaos/plugin-telegram'] : []),
+    ...(process.env.FARCASTER_NEYNAR_API_KEY?.trim() ? ['@elizaos/plugin-farcaster'] : []),
   ],
 
   // ──────────────────────────────────────────────────────────────────────────
