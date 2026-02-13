@@ -477,6 +477,15 @@ export function updateCurrentPrice(id: string, currentPrice: number): TrackedSig
   return signal;
 }
 
+/**
+ * Reset all tracked signals (clears history)
+ */
+export function resetAllSignals(): void {
+  signals = [];
+  forceSave();
+  console.log('[PerfStorage] All signals reset');
+}
+
 export const storage = {
   createSignal,
   getSignal,
@@ -489,6 +498,7 @@ export const storage = {
   getTokenPerformanceStats,
   getTokenLeaderboard,
   forceSave,
+  resetAllSignals,
 };
 
 export default storage;

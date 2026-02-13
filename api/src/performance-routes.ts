@@ -378,4 +378,25 @@ performanceRoutes.post('/performance/scheduler/trigger', async (c) => {
   }
 });
 
+/**
+ * POST /signals/reset
+ *
+ * Reset all tracked signals (clears performance history)
+ */
+performanceRoutes.post('/signals/reset', (c) => {
+  try {
+    storage.resetAllSignals();
+    return c.json({
+      success: true,
+      message: 'All tracked signals have been reset',
+    });
+  } catch (error) {
+    console.error('[PerformanceAPI] Error resetting signals:', error);
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to reset signals',
+    }, 500);
+  }
+});
+
 export default performanceRoutes;
