@@ -10,7 +10,7 @@ const badgeVariants = cva(
         default: "bg-accent/15 text-accent",
         long: "bg-long/15 text-long",
         short: "bg-short/15 text-short",
-        cyan: "bg-cyan/20 text-cyan",
+        purple: "bg-purple/15 text-purple",
         muted: "bg-bg-elevated text-text-secondary",
         warning: "bg-warning/20 text-warning",
       },

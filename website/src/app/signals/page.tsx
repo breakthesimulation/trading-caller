@@ -293,7 +293,7 @@ function SignalCard({ signal }: { signal: Signal }) {
             icon={Radio}
             label="Entry"
             price={signal.entry}
-            colorClass="text-cyan"
+            colorClass="text-purple"
           />
 
           {/* Stop Loss */}

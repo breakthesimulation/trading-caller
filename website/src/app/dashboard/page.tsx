@@ -165,7 +165,7 @@ export default function DashboardPage() {
 
         if (perfFailed && posFailed) {
           setError(
-            "Unable to reach the Trading Caller API. Make sure the server is running."
+            "Unable to reach the Agent Fox API. Make sure the server is running."
           );
         }
       } catch {
@@ -293,8 +293,8 @@ export default function DashboardPage() {
             label="TP3 Hits"
             count={outcomes.tp3Hits}
             total={totalSignals}
-            barClass="bg-cyan"
-            textClass="text-cyan"
+            barClass="bg-purple"
+            textClass="text-purple"
           />
           <OutcomeBar
             label="Stopped Out"
@@ -434,7 +434,7 @@ function PageHeading() {
         Performance Dashboard
       </h1>
       <p className="text-text-secondary">
-        Real-time accuracy metrics and outcome tracking for all Trading Caller
+        Real-time accuracy metrics and outcome tracking for all Agent Fox
         signals.
       </p>
     </div>

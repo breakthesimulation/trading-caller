@@ -10,9 +10,9 @@ import {
 const FAQ_ITEMS = [
   {
     id: "what-is",
-    question: "What is Trading Caller?",
+    question: "What is Agent Fox?",
     answer:
-      "Trading Caller is an AI-powered trading companion for Solana. It generates LONG and SHORT signals using real technical analysis \u2014 RSI, MACD, support/resistance, and volume data \u2014 then tracks every call against actual market outcomes.",
+      "Agent Fox is an AI-powered trading companion for Solana. It generates LONG and SHORT signals using real technical analysis \u2014 RSI, MACD, support/resistance, and volume data \u2014 then tracks every call against actual market outcomes.",
   },
   {
     id: "how-generated",
@@ -30,7 +30,7 @@ const FAQ_ITEMS = [
     id: "financial-advice",
     question: "Is this financial advice?",
     answer:
-      "No. Trading Caller provides AI-generated technical analysis signals for educational and informational purposes. Always do your own research and never trade more than you can afford to lose.",
+      "No. Agent Fox provides AI-generated technical analysis signals for educational and informational purposes. Always do your own research and never trade more than you can afford to lose.",
   },
 ];
 

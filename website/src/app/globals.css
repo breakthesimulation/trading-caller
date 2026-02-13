@@ -10,13 +10,20 @@
   --color-border: #E5E7EB;
   --color-border-subtle: #F3F4F6;
 
-  /* Brand */
-  --color-accent: #7B61FF;
-  --color-accent-light: #9B85FF;
-  --color-cyan: #00D9FF;
+  /* Brand — Agent Fox */
+  --color-accent: #FF5722;
+  --color-accent-light: #FF8A65;
+  --color-purple: #7E73F2;
+  --color-teal: #007AFF;
+
+  /* Brand secondary */
+  --color-lavender: #D6D3FF;
+  --color-light-teal: #80E4E0;
+  --color-cream: #FFCC99;
+  --color-mint: #B3DDFE;
 
   /* Semantic */
-  --color-long: #16A34A;
+  --color-long: #009F85;
   --color-short: #DC2626;
   --color-warning: #F59E0B;
 
@@ -39,15 +46,20 @@
 
   /* Fonts */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
 }
 
 /* Focus indicators */

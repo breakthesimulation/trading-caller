@@ -7,9 +7,6 @@ import {
   BarChart3,
   FlaskConical,
   ArrowRight,
-  Target,
-  Zap,
-  LineChart,
 } from "lucide-react";
 import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { FaqSection } from "@/components/landing/faq-section";
@@ -108,6 +105,11 @@ export default async function HomePage() {
     <div className="flex flex-col">
       {/* ---------- Hero ---------- */}
       <section className="flex flex-col items-center gap-6 pb-20 pt-24 text-center md:pt-32">
+        {/* Mascot placeholder — replace with <Image> when assets are ready */}
+        <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-dashed border-accent bg-accent/10 text-2xl font-bold text-accent">
+          AF
+        </div>
+
         <Badge variant="default" className="text-sm">
           AI-Powered
         </Badge>

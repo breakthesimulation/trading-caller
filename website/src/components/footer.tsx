@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LineChart } from "lucide-react";
 
 const PRODUCT_LINKS = [
   { href: "/signals", label: "Live Signals" },
@@ -18,12 +17,15 @@ export function Footer() {
     <footer className="border-t border-border">
       <div className="mx-auto max-w-[1200px] px-4 py-12">
         <div className="flex flex-col gap-8 md:flex-row md:justify-between">
-          {/* Logo */}
+          {/* Logo — wordmark placeholder */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2.5">
-              <LineChart className="h-5 w-5 text-accent" />
+              {/* Wordmark placeholder — replace with <Image> when assets are ready */}
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">
+                AF
+              </div>
               <span className="text-base font-bold text-primary">
-                Trading Caller
+                Agent Fox
               </span>
             </div>
             <p className="max-w-xs text-sm text-text-secondary">
@@ -68,7 +70,7 @@ export function Footer() {
         {/* Bottom line */}
         <div className="mt-10 border-t border-border pt-6">
           <p className="text-xs text-text-muted">
-            &copy; {new Date().getFullYear()} Trading Caller. Not financial
+            &copy; {new Date().getFullYear()} Agent Fox. Not financial
             advice. All signals are for informational purposes only.
           </p>
         </div>

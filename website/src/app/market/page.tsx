@@ -192,7 +192,7 @@ export default function MarketPage() {
             <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
               RSI Scanner
             </h1>
-            <Badge variant="cyan">
+            <Badge variant="purple">
               <Activity className="mr-1 h-3 w-3" />
               Live
             </Badge>
@@ -330,7 +330,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-cyan" />
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-purple" />
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium text-text-secondary">
@@ -343,7 +343,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
             <div
-              className="h-full rounded-full bg-cyan transition-all duration-500"
+              className="h-full rounded-full bg-purple transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>

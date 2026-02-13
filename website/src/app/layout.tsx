@@ -4,7 +4,7 @@ import { Footer } from "@/components/footer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trading Caller — AI Solana Trading Signals",
+  title: "Agent Fox — AI Solana Trading Signals",
   description:
     "Real-time AI trading signals for Solana tokens with RSI scanning, volume analysis, and performance tracking.",
   icons: { icon: "/icon.svg" },
@@ -25,7 +25,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>

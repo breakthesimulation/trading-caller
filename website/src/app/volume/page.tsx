@@ -187,7 +187,7 @@ export default function VolumePage() {
             <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
               Volume Scanner
             </h1>
-            <Badge variant="cyan">
+            <Badge variant="purple">
               <Volume2 className="mr-1 h-3 w-3" />
               Live
             </Badge>
@@ -430,12 +430,12 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
       <CardContent className="flex flex-col gap-3">
         {/* Volume multiplier */}
         <div className="flex items-center gap-2 rounded-lg bg-bg-elevated px-3 py-2">
-          <Volume2 className="h-4 w-4 shrink-0 text-cyan" />
+          <Volume2 className="h-4 w-4 shrink-0 text-purple" />
           <div className="flex flex-col">
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Volume Spike
             </span>
-            <span className="text-lg font-bold tabular-nums text-cyan">
+            <span className="text-lg font-bold tabular-nums text-purple">
               {(spike.volumeSpikeMultiple ?? 0).toFixed(1)}x{" "}
               <span className="text-xs font-normal text-text-muted">
                 avg ({(spike.volumeSpikePercent ?? 0).toFixed(0)}%)
@@ -535,7 +535,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 Velocity
               </span>
-              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-cyan">
+              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-purple">
                 <Activity className="h-3 w-3" />
                 {spike.volumeVelocity.toFixed(2)}x
               </span>
@@ -553,7 +553,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               href={spike.dexScreenerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-cyan transition-colors hover:text-accent"
+              className="inline-flex items-center gap-1 text-xs font-medium text-purple transition-colors hover:text-accent"
             >
               DexScreener
               <ExternalLink className="h-3 w-3" />

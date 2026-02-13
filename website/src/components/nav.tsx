@@ -7,7 +7,6 @@ import {
   Activity,
   Radio,
   TrendingUp,
-  LineChart,
   Menu,
   X,
   BarChart3,
@@ -47,9 +46,12 @@ export function Nav() {
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4">
         {/* Logo — left */}
         <Link href="/" className="flex items-center gap-2.5">
-          <LineChart className="h-6 w-6 text-accent" />
+          {/* Logo placeholder — replace with <Image> when assets are ready */}
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-xs font-bold text-white">
+            AF
+          </div>
           <span className="text-lg font-bold text-primary">
-            Trading Caller
+            Agent Fox
           </span>
         </Link>
 
