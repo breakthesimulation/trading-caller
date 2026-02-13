@@ -83,7 +83,7 @@ export default function MarketPage() {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null);
 
-  const fetchTokens = useCallback(async () => {
+  const fetchTokens = useCallback(async (autoTriggerScan = false) => {
     try {
       const res = await fetch("/api/rsi/multi");
       if (!res.ok) throw new Error(`API ${res.status}`);
@@ -94,6 +94,14 @@ export default function MarketPage() {
         setTokens(data.tokens);
         setLastUpdated(data.lastUpdated ?? null);
         setScanProgress(data.scanProgress ?? null);
+
+        // Auto-trigger scan if no RSI data and not already scanning
+        if (autoTriggerScan) {
+          const hasRSI = data.tokens.some((t) => t.rsi?.["4h"] != null);
+          if (!hasRSI && !data.scanProgress?.scanning) {
+            fetch("/api/rsi/multi/scan", { method: "POST" }).catch(() => {});
+          }
+        }
       }
     } catch {
       /* Silently fail on poll -- keep stale data visible */
@@ -102,13 +110,16 @@ export default function MarketPage() {
     }
   }, []);
 
-  /* Initial fetch + poll every 60s */
+  /* Initial fetch + adaptive polling: faster while scanning, slower when idle */
   useEffect(() => {
-    fetchTokens();
+    fetchTokens(true);
 
-    const interval = setInterval(fetchTokens, POLL_INTERVAL_MS);
+    const interval = setInterval(
+      () => fetchTokens(),
+      scanProgress?.scanning ? 10_000 : POLL_INTERVAL_MS
+    );
     return () => clearInterval(interval);
-  }, [fetchTokens]);
+  }, [fetchTokens, scanProgress?.scanning]);
 
   /* ---------- Scan Now ---------- */
 

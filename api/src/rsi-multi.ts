@@ -81,8 +81,9 @@ let scanProgress: ScanProgress = {
 const TOKEN_LIST_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const RSI_CACHE_DURATION = 120 * 60 * 1000; // 2 hours (CoinGecko free tier rate limits are harsh)
 const RATE_LIMIT_DELAY = 3000; // 3 seconds between API calls
-const BATCH_DELAY = 10000; // 10 seconds between batches
-const BATCH_SIZE = 5; // 5 tokens per batch
+const BATCH_DELAY = 5000; // 5 seconds between batches
+const BATCH_SIZE = 5; // 5 tokens concurrently (~20 API calls, within 30 req/min limit)
+const MAX_TOKENS_TO_SCAN = 30; // Scan top 30 tokens by volume for speed
 
 // Background scanning state
 let backgroundScanInterval: NodeJS.Timeout | null = null;
@@ -155,8 +156,8 @@ async function fetchSolanaTokens(): Promise<TokenBasicData[]> {
              token.market_cap > 1000000; // Min $1M market cap
     });
     
-    console.log(`[RSI Multi] Found ${filtered.length} valid Solana tokens`);
-    return filtered.slice(0, 100); // Ensure max 100
+    console.log(`[RSI Multi] Found ${filtered.length} valid Solana tokens, using top ${MAX_TOKENS_TO_SCAN}`);
+    return filtered.slice(0, MAX_TOKENS_TO_SCAN);
   } catch (error) {
     console.error('[RSI Multi] Failed to fetch Solana tokens:', error);
     throw error;
@@ -469,15 +470,21 @@ async function startProgressiveScan() {
       
       console.log(`[RSI Multi] Batch ${scanProgress.currentBatch}/${scanProgress.totalBatches}: Scanning ${batch.map(t => t.symbol).join(', ')}...`);
       
-      // Process batch concurrently but respect rate limits
-      for (const token of batch) {
-        try {
-          await calculateTokenRSI(token.id);
+      // Process batch concurrently for speed
+      const results = await Promise.allSettled(
+        batch.map(async (token) => {
+          const rsi = await calculateTokenRSI(token.id);
+          return { token, rsi };
+        })
+      );
+
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
           scanProgress.withRSI++;
-          scanProgress.scannedTokens.push(token.symbol);
-          console.log(`[RSI Multi] ✓ ${token.symbol} RSI calculated`);
-        } catch (error) {
-          console.error(`[RSI Multi] ✗ Failed to calculate RSI for ${token.symbol}:`, error);
+          scanProgress.scannedTokens.push(result.value.token.symbol);
+          console.log(`[RSI Multi] ✓ ${result.value.token.symbol} RSI calculated`);
+        } else {
+          console.error(`[RSI Multi] ✗ Batch token failed:`, result.reason);
         }
       }
       
@@ -714,12 +721,10 @@ app.get('/rsi/multi/search', async (c) => {
 // Background scanner initialization
 function startBackgroundScanner() {
   console.log('[RSI Multi] Starting background scanner...');
-  
-  // Initial scan after 30 seconds
-  setTimeout(() => {
-    startProgressiveScan();
-  }, 30000);
-  
+
+  // Start scanning immediately on boot
+  startProgressiveScan();
+
   // Then scan every 5 minutes
   backgroundScanInterval = setInterval(() => {
     if (!scanProgress.scanning) {

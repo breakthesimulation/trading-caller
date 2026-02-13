@@ -53,7 +53,7 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   });
 
   routes.get('/dashboard-simple', (c) => {
-    return c.text('Trading Caller Dashboard - Win Rate: 35.3% | Total PnL: +32.62% | LONG: 85.7% | SHORT: 0.0%');
+    return c.text('Trading Caller Dashboard - Win Rate: 0% | Total PnL: 0% | LONG: 0% | SHORT: 0%');
   });
 
   routes.get('/test-deploy', (c) => {
@@ -63,12 +63,12 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   routes.get('/performance-dashboard', (c) => {
     return c.json({
       status: "Trading Caller Performance Dashboard",
-      winRate: "35.3%",
-      totalPnL: "+32.62%",
-      longWinRate: "85.7%",
-      shortWinRate: "0.0%",
-      totalSignals: 17,
-      profitFactor: "1.55x",
+      winRate: "0%",
+      totalPnL: "0%",
+      longWinRate: "0%",
+      shortWinRate: "0%",
+      totalSignals: 0,
+      profitFactor: "0x",
       api: "/signals/latest",
       performance: "/signals/performance",
       github: "https://github.com/breakthesimulation/trading-caller",
@@ -96,12 +96,12 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   routes.get('/dashboard', (c) => {
     return c.json({
       status: "Trading Caller Dashboard",
-      winRate: "35.3%",
-      totalPnL: "+32.62%",
-      longWinRate: "85.7%",
-      shortWinRate: "0.0%",
-      totalSignals: 17,
-      profitFactor: "1.55x",
+      winRate: "0%",
+      totalPnL: "0%",
+      longWinRate: "0%",
+      shortWinRate: "0%",
+      totalSignals: 0,
+      profitFactor: "0x",
       api: "/signals/latest",
       performance: "/signals/performance",
       github: "https://github.com/breakthesimulation/trading-caller",
@@ -125,12 +125,12 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
 <body>
   <h1>🎯 Trading Caller Dashboard</h1>
   <p><strong>Free your mind — AI trading calls for Solana</strong></p>
-  <div class="stat"><h3>Win Rate</h3><div class="positive">35.3%</div></div>
-  <div class="stat"><h3>Total PnL</h3><div class="positive">+32.62%</div></div>
-  <div class="stat"><h3>LONG Win Rate</h3><div class="positive">85.7%</div></div>
-  <div class="stat"><h3>SHORT Win Rate</h3><div class="negative">0.0%</div></div>
-  <div class="stat"><h3>Total Signals</h3><div>17</div></div>
-  <div class="stat"><h3>Profit Factor</h3><div class="positive">1.55x</div></div>
+  <div class="stat"><h3>Win Rate</h3><div>0%</div></div>
+  <div class="stat"><h3>Total PnL</h3><div>0%</div></div>
+  <div class="stat"><h3>LONG Win Rate</h3><div>0%</div></div>
+  <div class="stat"><h3>SHORT Win Rate</h3><div>0%</div></div>
+  <div class="stat"><h3>Total Signals</h3><div>0</div></div>
+  <div class="stat"><h3>Profit Factor</h3><div>0x</div></div>
   <hr style="margin: 30px 0;">
   <h2>🔗 API Endpoints</h2>
   <p><strong>Latest Signals:</strong> <a href="/signals/latest" style="color: #60a5fa;">/signals/latest</a></p>
