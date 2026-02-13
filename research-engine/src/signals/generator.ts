@@ -27,6 +27,10 @@ interface SignalInput {
   sentimentContext?: string;
 }
 
+// SHORT signals are disabled by default — historical win rate is 0%.
+// Enable only after the strategy proves profitable on shorts in backtesting.
+const SHORTS_ENABLED = false;
+
 // List of stablecoins that should NEVER be shorted
 const STABLECOINS = new Set([
   'USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'FRAX', 'USDD', 
@@ -79,6 +83,12 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
     return null;
   }
 
+  // Layer 1: SHORT kill switch
+  if (action === 'SHORT' && !SHORTS_ENABLED) {
+    console.log(`[SignalGenerator] SHORT signal for ${token.symbol} blocked: SHORTS_ENABLED=false`);
+    return null;
+  }
+
   // 🚨 ADDITIONAL STABLECOIN SAFETY CHECK
   // Double-check: if somehow a SHORT signal was generated for a stablecoin, reject it
   if (action === 'SHORT' && isStablecoin(token.symbol)) {
@@ -98,17 +108,29 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
 
   // Confidence threshold filters
   const MIN_CONFIDENCE = 65;
-  const MIN_SHORT_CONFIDENCE = 80;
+  const MIN_SHORT_CONFIDENCE = 90;
 
   if (confidence < MIN_CONFIDENCE) {
     console.log(`[SignalGenerator] Signal for ${token.symbol} rejected: confidence ${confidence} < ${MIN_CONFIDENCE}`);
     return null;
   }
 
-  // SHORT signals require even higher confidence (historical win rate is 0%)
+  // Layer 2: SHORT signals require very high confidence (historical win rate is 0%)
   if (action === 'SHORT' && confidence < MIN_SHORT_CONFIDENCE) {
     console.log(`[SignalGenerator] SHORT signal for ${token.symbol} rejected: confidence ${confidence} < ${MIN_SHORT_CONFIDENCE}`);
     return null;
+  }
+
+  // Layer 3: Reject SHORTs during strong uptrends on either timeframe
+  if (action === 'SHORT') {
+    const uptrend4H = analysis4H.analysis.trend.direction === 'UP' && analysis4H.analysis.trend.strength > 40;
+    const uptrend1D = analysis1D.analysis.trend.direction === 'UP' && analysis1D.analysis.trend.strength > 40;
+    if (uptrend4H || uptrend1D) {
+      const tf = uptrend4H ? '4H' : '1D';
+      const strength = uptrend4H ? analysis4H.analysis.trend.strength : analysis1D.analysis.trend.strength;
+      console.log(`[SignalGenerator] SHORT signal for ${token.symbol} rejected: strong uptrend on ${tf} (strength=${strength})`);
+      return null;
+    }
   }
 
   // Determine risk level
