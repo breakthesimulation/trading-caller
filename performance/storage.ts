@@ -51,7 +51,9 @@ function saveJson(filename: string, data: any): void {
 // ============ Data Store ============
 
 // In-memory store, persisted to JSON
-let signals: TrackedSignal[] = loadJson('tracked_signals.json', []);
+// Start fresh on every deploy — old resolved signals with stale PnL are discarded
+let signals: TrackedSignal[] = [];
+saveJson('tracked_signals.json', signals);
 
 // Save with debounce to avoid excessive writes
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
