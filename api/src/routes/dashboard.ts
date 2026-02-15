@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { TradingCallerEngine } from '../../../research-engine/src/index.js';
+import { getRealPerformance } from './real-performance.js';
 
 export function createDashboardRoutes(engine: TradingCallerEngine, getState: () => { calls: any[]; analysts: Map<string, any>; webhooks: Map<string, any>; scheduler: any }) {
   const routes = new Hono();
@@ -53,7 +54,8 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   });
 
   routes.get('/dashboard-simple', (c) => {
-    return c.text('Trading Caller Dashboard - Win Rate: 0% | Total PnL: 0% | LONG: 0% | SHORT: 0%');
+    const perf = getRealPerformance();
+    return c.text(`Trading Caller Dashboard - Win Rate: ${perf.winRate} | Total PnL: ${perf.totalPnL} | LONG: ${perf.longWinRate} | SHORT: ${perf.shortWinRate}`);
   });
 
   routes.get('/test-deploy', (c) => {
@@ -61,14 +63,17 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   });
 
   routes.get('/performance-dashboard', (c) => {
+    const perf = getRealPerformance();
     return c.json({
       status: "Trading Caller Performance Dashboard",
-      winRate: "0%",
-      totalPnL: "0%",
-      longWinRate: "0%",
-      shortWinRate: "0%",
-      totalSignals: 0,
-      profitFactor: "0x",
+      winRate: perf.winRate,
+      totalPnL: perf.totalPnL,
+      longWinRate: perf.longWinRate,
+      shortWinRate: perf.shortWinRate,
+      totalSignals: perf.totalSignals,
+      activeSignals: perf.activeSignals,
+      resolvedSignals: perf.resolvedSignals,
+      profitFactor: perf.profitFactor,
       api: "/signals/latest",
       performance: "/signals/performance",
       github: "https://github.com/breakthesimulation/trading-caller",
@@ -94,14 +99,17 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   });
 
   routes.get('/dashboard', (c) => {
+    const perf = getRealPerformance();
     return c.json({
       status: "Trading Caller Dashboard",
-      winRate: "0%",
-      totalPnL: "0%",
-      longWinRate: "0%",
-      shortWinRate: "0%",
-      totalSignals: 0,
-      profitFactor: "0x",
+      winRate: perf.winRate,
+      totalPnL: perf.totalPnL,
+      longWinRate: perf.longWinRate,
+      shortWinRate: perf.shortWinRate,
+      totalSignals: perf.totalSignals,
+      activeSignals: perf.activeSignals,
+      resolvedSignals: perf.resolvedSignals,
+      profitFactor: perf.profitFactor,
       api: "/signals/latest",
       performance: "/signals/performance",
       github: "https://github.com/breakthesimulation/trading-caller",
@@ -110,6 +118,10 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
   });
 
   routes.get('/dashboard-html', (c) => {
+    const perf = getRealPerformance();
+    const isPositivePnL = perf.rawData?.totalPnL >= 0;
+    const pnlClass = isPositivePnL ? 'positive' : 'negative';
+    
     return c.html(`<!DOCTYPE html>
 <html>
 <head>
@@ -125,12 +137,12 @@ export function createDashboardRoutes(engine: TradingCallerEngine, getState: () 
 <body>
   <h1>🎯 Trading Caller Dashboard</h1>
   <p><strong>Free your mind — AI trading calls for Solana</strong></p>
-  <div class="stat"><h3>Win Rate</h3><div>0%</div></div>
-  <div class="stat"><h3>Total PnL</h3><div>0%</div></div>
-  <div class="stat"><h3>LONG Win Rate</h3><div>0%</div></div>
-  <div class="stat"><h3>SHORT Win Rate</h3><div>0%</div></div>
-  <div class="stat"><h3>Total Signals</h3><div>0</div></div>
-  <div class="stat"><h3>Profit Factor</h3><div>0x</div></div>
+  <div class="stat"><h3>Win Rate</h3><div>${perf.winRate}</div></div>
+  <div class="stat"><h3>Total PnL</h3><div class="${pnlClass}">${perf.totalPnL}</div></div>
+  <div class="stat"><h3>LONG Win Rate</h3><div>${perf.longWinRate}</div></div>
+  <div class="stat"><h3>SHORT Win Rate</h3><div>${perf.shortWinRate}</div></div>
+  <div class="stat"><h3>Total Signals</h3><div>${perf.totalSignals}</div></div>
+  <div class="stat"><h3>Profit Factor</h3><div>${perf.profitFactor}</div></div>
   <hr style="margin: 30px 0;">
   <h2>🔗 API Endpoints</h2>
   <p><strong>Latest Signals:</strong> <a href="/signals/latest" style="color: #60a5fa;">/signals/latest</a></p>
