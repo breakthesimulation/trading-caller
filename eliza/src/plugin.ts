@@ -21,6 +21,17 @@ import type {
   SignalsApiResponse,
 } from './types.ts';
 import { DEFAULT_STRATEGY_CONFIG } from './types.ts';
+import {
+  storeGet,
+  storeSet,
+  KEY_SEEN_SIGNAL_IDS,
+  KEY_PENDING_SIGNALS,
+  KEY_OPEN_TRADES,
+  KEY_TRADE_JOURNAL,
+  KEY_STRATEGY_CONFIG,
+  KEY_COOL_OFF_UNTIL,
+  KEY_PENDING_REVIEW,
+} from './trade-store.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -36,35 +47,6 @@ const PERFORMANCE_SHIFT_THRESHOLD = 20;
 
 /** Simulated portfolio value for paper trading (USD) */
 const PAPER_PORTFOLIO_VALUE_USD = 1000;
-
-// ---------------------------------------------------------------------------
-// In-memory store
-//
-// ElizaOS v1.7.2 does not expose cacheManager on IAgentRuntime.  We use a
-// module-scoped Map instead.  This is fine for a single-process agent — data
-// persists for the lifetime of the process and is fast to access.
-// ---------------------------------------------------------------------------
-
-const store = new Map<string, unknown>();
-
-function storeGet<T>(key: string): T | null {
-  const value = store.get(key);
-  if (value === undefined) return null;
-  return value as T;
-}
-
-function storeSet<T>(key: string, value: T): void {
-  store.set(key, value);
-}
-
-// Store keys (named constants to avoid magic strings)
-const KEY_SEEN_SIGNAL_IDS = 'seen-signal-ids';
-const KEY_PENDING_SIGNALS = 'pending-signals';
-const KEY_OPEN_TRADES = 'open-trades';
-const KEY_TRADE_JOURNAL = 'trade-journal';
-const KEY_STRATEGY_CONFIG = 'strategy-config';
-const KEY_COOL_OFF_UNTIL = 'cool-off-until';
-const KEY_PENDING_REVIEW = 'pending-review';
 
 // ---------------------------------------------------------------------------
 // 1. SignalPollerService

@@ -41,3 +41,6 @@ coverage/
 .eliza/.elizadb/
 .eliza/.elizadb/
 eliza/.eliza/.elizadb/
+
+# Agent Fox persistent trade store
+data/trade-store/

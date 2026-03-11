@@ -35,7 +35,7 @@ RUN echo '#!/bin/bash\nexec /app/node_modules/.bin/elizaos "$@"' > /usr/local/bi
     chmod +x /usr/local/bin/elizaos
 
 # Prepare PGLite data dir on volume mount point
-RUN mkdir -p /data/pglite && \
+RUN mkdir -p /data/pglite /app/data/trade-store && \
     chown -R node:node /app /data && \
     mkdir -p /home/node/.bun && chown -R node:node /home/node/.bun
 
