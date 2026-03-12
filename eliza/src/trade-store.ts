@@ -33,6 +33,7 @@ export const KEY_OPEN_TRADES = 'open-trades';
 export const KEY_TRADE_JOURNAL = 'trade-journal';
 export const KEY_STRATEGY_CONFIG = 'strategy-config';
 export const KEY_COOL_OFF_UNTIL = 'cool-off-until';
+export const KEY_AGENT_MEMORIES = 'agent-memories';
 export const KEY_PENDING_REVIEW = 'pending-review'; // ephemeral — not persisted
 
 // ---------------------------------------------------------------------------
@@ -46,6 +47,7 @@ const PERSISTENT_KEYS: Record<string, string> = {
   [KEY_TRADE_JOURNAL]: 'trade-journal.json',
   [KEY_STRATEGY_CONFIG]: 'strategy-config.json',
   [KEY_COOL_OFF_UNTIL]: 'cool-off-until.json',
+  [KEY_AGENT_MEMORIES]: 'agent-memories.json',
 };
 
 // ---------------------------------------------------------------------------

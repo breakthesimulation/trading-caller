@@ -16,7 +16,7 @@ import { runTechnicalAnalysis, getTechnicalSentiment } from '../technical/index.
 import { analyzeVolume, calculateVolumeScore } from '../technical/volume.js';
 import { calculateFibonacciLevels, getFibDescription, isNearFibLevel } from '../technical/fibonacci.js';
 import { getUnlockSummary } from '../fundamental/unlocks.js';
-import { calculateConfidenceBreakdown, getHistoricalWinRate } from './confidence.js';
+import { calculateConfidenceBreakdown } from './confidence.js';
 
 // Generate a simple UUID without external dependency
 function generateId(): string {
@@ -95,21 +95,13 @@ export function generateEnhancedSignal(input: EnhancedSignalInput): TradingSigna
   // Add volume score
   const volumeScore = calculateVolumeScore(volumeAnalysis, action);
   
-  // Get historical win rate for similar setups
-  const historicalData = getHistoricalWinRate(
-    action,
-    analysis4H.analysis.rsi.value,
-    analysis4H.analysis.trend.direction,
-    '4H'
-  );
-  
   // Calculate detailed confidence breakdown
   const confidenceBreakdown = calculateConfidenceBreakdown(
     analysis4H.analysis,
     analysis1D.analysis,
     avgSentiment,
-    fundamentalScore + volumeScore, // Combined fundamental+volume score
-    historicalData
+    volumeAnalysis,
+    fundamentalScore + volumeScore,
   );
   
   const confidence = confidenceBreakdown.totalConfidence;

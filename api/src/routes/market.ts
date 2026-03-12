@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { TradingCallerEngine } from '../../../research-engine/src/index.js';
 import funding from '../../../research-engine/src/data/funding.js';
+import { dispatchSignals } from '../webhook-dispatch.js';
 
 function interpretFunding(analysis: any): string {
   const { avgFundingRate, sentiment, squeezePotential, squeezeAlert } = analysis;
@@ -201,6 +202,16 @@ export function createMarketRoutes(engine: TradingCallerEngine, performanceTrack
       }
 
       console.log(`[API] Market scan complete: ${signals.length} signals, ${tracked} tracked`);
+
+      // Dispatch actionable signals to webhook subscribers (non-blocking)
+      const actionableSignals = signals.filter(
+        (s) => s.action !== 'HOLD' && s.action !== 'AVOID',
+      );
+      if (actionableSignals.length > 0) {
+        dispatchSignals(actionableSignals).catch((error) => {
+          console.warn('[API] Webhook dispatch failed:', error);
+        });
+      }
 
       return c.json({
         success: true,

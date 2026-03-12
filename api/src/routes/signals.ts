@@ -1,6 +1,11 @@
 import { Hono } from 'hono';
 import { TradingCallerEngine, KNOWN_TOKENS } from '../../../research-engine/src/index.js';
 import type { AnalystCall, AnalystStats } from '../../../research-engine/src/signals/types.js';
+import {
+  saveSubscriber,
+  removeSubscriber,
+  loadSubscribers,
+} from '../webhook-dispatch.js';
 
 // These will be passed in via factory function
 export function createSignalRoutes(engine: TradingCallerEngine) {
@@ -176,36 +181,86 @@ export function createSignalRoutes(engine: TradingCallerEngine) {
     return c.json({ success: true, stats });
   });
 
-  // Subscribe to webhooks
+  // -- Webhook Subscription Endpoints --
+
+  // Kept for backward-compat: dashboard reads webhooks.size
   const webhooks: Map<string, string[]> = new Map();
+
+  /** Sync the in-memory map from the persisted subscriber list */
+  function refreshWebhooksMap(): void {
+    webhooks.clear();
+    for (const sub of loadSubscribers()) {
+      webhooks.set(sub.url, sub.events);
+    }
+  }
+
+  // Hydrate map on startup
+  refreshWebhooksMap();
 
   routes.post('/subscribe', async (c) => {
     try {
       const body = await c.req.json();
-      const { webhook, events } = body;
+      const { url, webhook, events } = body;
 
-      if (!webhook) {
+      // Accept either 'url' or legacy 'webhook' field
+      const subscriberUrl = url || webhook;
+      if (!subscriberUrl) {
         return c.json({
           success: false,
-          error: 'Missing webhook URL'
+          error: 'Missing required field: url',
         }, 400);
       }
 
-      const subscriberId = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-      webhooks.set(subscriberId, events || ['signals']);
+      const subscriber = saveSubscriber(subscriberUrl, events || ['signal']);
+      refreshWebhooksMap();
 
       return c.json({
         success: true,
-        subscriberId,
-        webhook,
-        events: events || ['signals'],
+        subscriber,
       }, 201);
     } catch (error) {
       return c.json({
         success: false,
-        error: 'Invalid request body'
+        error: 'Invalid request body',
       }, 400);
     }
+  });
+
+  routes.delete('/subscribe', async (c) => {
+    try {
+      const body = await c.req.json();
+      const { url } = body;
+
+      if (!url) {
+        return c.json({
+          success: false,
+          error: 'Missing required field: url',
+        }, 400);
+      }
+
+      const removed = removeSubscriber(url);
+      refreshWebhooksMap();
+
+      if (!removed) {
+        return c.json({ success: false, error: 'Subscriber not found' }, 404);
+      }
+
+      return c.json({ success: true, message: 'Subscriber removed' });
+    } catch (error) {
+      return c.json({
+        success: false,
+        error: 'Invalid request body',
+      }, 400);
+    }
+  });
+
+  routes.get('/subscribers', (c) => {
+    const subscribers = loadSubscribers();
+    return c.json({
+      success: true,
+      count: subscribers.length,
+      subscribers,
+    });
   });
 
   return { routes, calls, analysts, webhooks };

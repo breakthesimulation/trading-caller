@@ -7,13 +7,21 @@ import type { OHLCV } from '../signals/types.js';
 const GECKO_TERMINAL_API = 'https://api.geckoterminal.com/api/v2';
 const NETWORK = 'solana';
 
-// Rate limiter: 30 requests per 60 seconds
+// Rate limiter: 30 requests per 60 seconds (conservative: use 25 to leave headroom)
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const MAX_REQUESTS_PER_WINDOW = 30;
+const MAX_REQUESTS_PER_WINDOW = 25;
+const MIN_REQUEST_INTERVAL_MS = 2_500; // At least 2.5s between requests
 
 let requestTimestamps: number[] = [];
+let lastRequestTime = 0;
 
 async function throttle(): Promise<void> {
+  // Enforce minimum interval between requests
+  const timeSinceLast = Date.now() - lastRequestTime;
+  if (timeSinceLast < MIN_REQUEST_INTERVAL_MS) {
+    await new Promise((r) => setTimeout(r, MIN_REQUEST_INTERVAL_MS - timeSinceLast));
+  }
+
   const now = Date.now();
   requestTimestamps = requestTimestamps.filter(
     (ts) => now - ts < RATE_LIMIT_WINDOW_MS,
@@ -21,12 +29,13 @@ async function throttle(): Promise<void> {
 
   if (requestTimestamps.length >= MAX_REQUESTS_PER_WINDOW) {
     const oldestInWindow = requestTimestamps[0];
-    const waitMs = RATE_LIMIT_WINDOW_MS - (now - oldestInWindow) + 100;
-    console.log(`[GeckoTerminal] Rate limit reached, waiting ${waitMs}ms`);
+    const waitMs = RATE_LIMIT_WINDOW_MS - (now - oldestInWindow) + 500;
+    console.log(`[GeckoTerminal] Rate limit reached, waiting ${(waitMs / 1000).toFixed(1)}s`);
     await new Promise((r) => setTimeout(r, waitMs));
   }
 
   requestTimestamps.push(Date.now());
+  lastRequestTime = Date.now();
 }
 
 // Simple in-memory cache
@@ -122,8 +131,11 @@ async function geckoFetch<T>(path: string): Promise<T | null> {
 
     if (!response.ok) {
       if (response.status === 429) {
-        console.warn('[GeckoTerminal] Rate limited, backing off 5s');
-        await new Promise((r) => setTimeout(r, 5000));
+        console.warn('[GeckoTerminal] Rate limited (429), backing off 15s');
+        await new Promise((r) => setTimeout(r, 15_000));
+        // Retry once after backoff
+        const retry = await fetch(url, { headers: { Accept: 'application/json' } });
+        if (retry.ok) return (await retry.json()) as T;
         return null;
       }
       console.error(`[GeckoTerminal] HTTP ${response.status} for ${path}`);
@@ -227,15 +239,14 @@ export async function getOHLCV(
 
 /**
  * Get multi-timeframe OHLCV for a pool (1H, 4H, 1D)
+ * Sequential to avoid rate limit (30 req/min on GeckoTerminal)
  */
 export async function getMultiTimeframeOHLCV(
   poolAddress: string,
 ): Promise<{ '1H': OHLCV[]; '4H': OHLCV[]; '1D': OHLCV[] }> {
-  const [hourly, fourHour, daily] = await Promise.all([
-    getOHLCV(poolAddress, 'hour', 1, 168), // 7 days of hourly
-    getOHLCV(poolAddress, 'hour', 4, 60), // 10 days of 4H
-    getOHLCV(poolAddress, 'day', 1, 90), // 90 days daily
-  ]);
+  const hourly = await getOHLCV(poolAddress, 'hour', 1, 168);
+  const fourHour = await getOHLCV(poolAddress, 'hour', 4, 60);
+  const daily = await getOHLCV(poolAddress, 'day', 1, 90);
 
   return {
     '1H': hourly,
@@ -343,9 +354,15 @@ export async function getTokenInfo(
   return result;
 }
 
+// Stablecoin token IDs on GeckoTerminal (used for pool selection)
+const STABLECOIN_IDS = new Set([
+  'solana_EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', // USDC
+  'solana_Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB', // USDT
+]);
+
 /**
- * Convenience: Get the best pool for a token (highest liquidity)
- * Then fetch multi-timeframe OHLCV from that pool
+ * Convenience: Get the best pool for a token, then fetch multi-timeframe OHLCV.
+ * Prefers pools paired with stablecoins (USDC/USDT) for accurate USD pricing.
  */
 export async function getTokenOHLCV(
   tokenAddress: string,
@@ -353,8 +370,15 @@ export async function getTokenOHLCV(
   const pools = await getPoolsForToken(tokenAddress);
   if (pools.length === 0) return null;
 
-  // Pick the pool with highest liquidity
-  const bestPool = pools.sort((a, b) => b.liquidity - a.liquidity)[0];
+  // Prefer stablecoin-paired pools for accurate pricing
+  const stablePools = pools.filter(
+    (p) =>
+      STABLECOIN_IDS.has(p.quoteTokenId) || STABLECOIN_IDS.has(p.baseTokenId),
+  );
+
+  // Use stablecoin pool if available, otherwise highest liquidity
+  const candidates = stablePools.length > 0 ? stablePools : pools;
+  const bestPool = candidates.sort((a, b) => b.liquidity - a.liquidity)[0];
   console.log(
     `[GeckoTerminal] Using pool ${bestPool.name} (${bestPool.address}) for ${tokenAddress}`,
   );

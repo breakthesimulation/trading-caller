@@ -1,4 +1,5 @@
-// Data Layer - Unified data fetching with proper OHLCV support
+// Data Layer - Unified data fetching with quality filters
+// NEVER uses simulated OHLCV — only real market data produces signals
 
 export * from './jupiter.js';
 export * from './dexscreener.js';
@@ -14,117 +15,96 @@ export {
 } from './geckoterminal.js';
 
 import type { Token, OHLCV, MarketData } from '../signals/types.js';
-import { getPrice, getPrices, KNOWN_TOKENS } from './jupiter.js';
+import {
+  getPrice,
+  getPrices,
+  KNOWN_TOKENS,
+  getTopJupiterTokens,
+  extractMarketMetrics,
+  type JupiterTokenData,
+  type JupiterMarketMetrics,
+} from './jupiter.js';
 import {
   getTokenOverview,
   getTopTokens,
-  getTokenPairs,
   getOHLCV as getDexScreenerOHLCV,
-  type TokenInfo
 } from './dexscreener.js';
 import {
-  getOHLCV as getBirdeyeOHLCV,
-  getMultiTimeframeOHLCV as getBirdeyeMultiOHLCV
+  getMultiTimeframeOHLCV as getBirdeyeMultiOHLCV,
 } from './birdeye.js';
 import {
-  getTokenOHLCV as getGeckoTerminalOHLCV
+  getTokenOHLCV as getGeckoTerminalOHLCV,
 } from './geckoterminal.js';
 
-// Check if Birdeye API is available
+// --- Quality thresholds ---
+// Only generate signals for tokens meeting these minimum requirements
+const MIN_LIQUIDITY_USD = 500_000;
+const MIN_MARKET_CAP_USD = 5_000_000;
+const MIN_OHLCV_CANDLES = 35;
+
 const hasBirdeyeKey = () => !!process.env.BIRDEYE_API_KEY;
 
-/**
- * Generate simulated OHLCV data based on current price and volatility
- * This is a fallback when we can't get real historical data
- */
-function generateSimulatedOHLCV(
-  currentPrice: number,
-  priceChange24h: number, // percentage
-  candleCount: number,
-  timeframeMinutes: number
-): OHLCV[] {
-  const candles: OHLCV[] = [];
-  const now = Date.now();
-  
-  // Calculate per-candle volatility based on 24h change
-  // Assume 24h has about 24 * 60 / timeframeMinutes candles
-  const candlesIn24h = (24 * 60) / timeframeMinutes;
-  const totalVolatility = Math.abs(priceChange24h) / 100;
-  const avgCandleMove = totalVolatility / Math.sqrt(candlesIn24h);
-  
-  // Add some randomness factor
-  const volatilityMultiplier = 1.5 + Math.random() * 0.5;
-  const candleVolatility = avgCandleMove * volatilityMultiplier;
-  
-  // Start from a price that would get us to currentPrice
-  let price = currentPrice / (1 + priceChange24h / 100);
-  
-  // Trend direction based on 24h change
-  const trendBias = priceChange24h > 0 ? 0.02 : priceChange24h < 0 ? -0.02 : 0;
-  
-  for (let i = 0; i < candleCount; i++) {
-    const timestamp = now - (candleCount - i) * timeframeMinutes * 60 * 1000;
-    
-    // Random walk with trend bias
-    const randomMove = (Math.random() - 0.5 + trendBias) * candleVolatility;
-    const newPrice = price * (1 + randomMove);
-    
-    // Create candle with realistic OHLC relationships
-    const moveSize = Math.abs(newPrice - price);
-    const wickSize = moveSize * (0.3 + Math.random() * 0.4);
-    
-    const open = price;
-    const close = newPrice;
-    const high = Math.max(open, close) + wickSize * Math.random();
-    const low = Math.min(open, close) - wickSize * Math.random();
-    
-    candles.push({
-      timestamp,
-      open,
-      high,
-      low,
-      close,
-      volume: 100000 + Math.random() * 500000, // Simulated volume
-    });
-    
-    price = newPrice;
-  }
-  
-  // Adjust last candle to match actual current price
-  if (candles.length > 0) {
-    const lastCandle = candles[candles.length - 1];
-    const adjustment = currentPrice / lastCandle.close;
-    
-    // Scale last few candles to match current price
-    for (let i = Math.max(0, candles.length - 5); i < candles.length; i++) {
-      const factor = 1 + (adjustment - 1) * ((i - (candles.length - 5)) / 5);
-      candles[i].open *= factor;
-      candles[i].high *= factor;
-      candles[i].low *= factor;
-      candles[i].close *= factor;
-    }
-    
-    // Ensure last close is exactly current price
-    candles[candles.length - 1].close = currentPrice;
-  }
-  
-  return candles;
+export interface MarketQuality {
+  hasMinimumLiquidity: boolean;
+  hasMinimumMarketCap: boolean;
+  hasRealOHLCV: boolean;
+  isSuspicious: boolean;
+  isValid: boolean;
+  rejectionReason: string | null;
 }
 
 /**
- * Fetch OHLCV data from available sources
+ * Validate that market data meets quality thresholds for signal generation
+ */
+export function validateMarketQuality(
+  marketCap: number,
+  liquidity: number,
+  ohlcvCandleCount: number,
+  isSuspicious: boolean = false,
+): MarketQuality {
+  const hasMinimumLiquidity = liquidity >= MIN_LIQUIDITY_USD;
+  const hasMinimumMarketCap = marketCap >= MIN_MARKET_CAP_USD;
+  const hasRealOHLCV = ohlcvCandleCount >= MIN_OHLCV_CANDLES;
+
+  let rejectionReason: string | null = null;
+  if (isSuspicious) {
+    rejectionReason = 'Token flagged as suspicious';
+  } else if (!hasMinimumLiquidity) {
+    rejectionReason = `Liquidity $${(liquidity / 1000).toFixed(0)}K < $${MIN_LIQUIDITY_USD / 1000}K minimum`;
+  } else if (!hasMinimumMarketCap) {
+    rejectionReason = `Market cap $${(marketCap / 1_000_000).toFixed(1)}M < $${MIN_MARKET_CAP_USD / 1_000_000}M minimum`;
+  } else if (!hasRealOHLCV) {
+    rejectionReason = `Only ${ohlcvCandleCount} candles available (need ${MIN_OHLCV_CANDLES})`;
+  }
+
+  return {
+    hasMinimumLiquidity,
+    hasMinimumMarketCap,
+    hasRealOHLCV,
+    isSuspicious,
+    isValid:
+      hasMinimumLiquidity &&
+      hasMinimumMarketCap &&
+      hasRealOHLCV &&
+      !isSuspicious,
+    rejectionReason,
+  };
+}
+
+/**
+ * Fetch real OHLCV data from available sources
+ * Returns empty arrays if no real data available — NEVER simulates
  */
 async function fetchOHLCV(
   tokenAddress: string,
-  pairAddress?: string
+  pairAddress?: string,
 ): Promise<{ '1H': OHLCV[]; '4H': OHLCV[]; '1D': OHLCV[] }> {
-  // Try Birdeye first if API key is available
+  // Try Birdeye first if API key is available (best quality)
   if (hasBirdeyeKey()) {
     try {
       console.log(`[Data] Fetching OHLCV from Birdeye for ${tokenAddress}`);
       const data = await getBirdeyeMultiOHLCV(tokenAddress);
-
-      if (data['4H'].length >= 35) {
+      if (data['4H'].length >= MIN_OHLCV_CANDLES) {
         console.log(`[Data] Got ${data['4H'].length} candles from Birdeye`);
         return data;
       }
@@ -133,12 +113,11 @@ async function fetchOHLCV(
     }
   }
 
-  // Try GeckoTerminal (free, no API key needed, real OHLCV)
+  // Try GeckoTerminal (free, real OHLCV)
   try {
     console.log(`[Data] Fetching OHLCV from GeckoTerminal for ${tokenAddress}`);
     const data = await getGeckoTerminalOHLCV(tokenAddress);
-
-    if (data && data['4H'].length >= 35) {
+    if (data && data['4H'].length >= MIN_OHLCV_CANDLES) {
       console.log(`[Data] Got ${data['4H'].length} 4H candles from GeckoTerminal`);
       return data;
     }
@@ -146,21 +125,17 @@ async function fetchOHLCV(
     console.log('[Data] GeckoTerminal OHLCV failed, trying DexScreener');
   }
 
-  // Try DexScreener chart endpoint if we have a pair address
+  // Try DexScreener chart endpoint
   if (pairAddress) {
     try {
       console.log(`[Data] Fetching OHLCV from DexScreener for pair ${pairAddress}`);
       const hourlyData = await getDexScreenerOHLCV(pairAddress, '1H');
-
-      if (hourlyData.length >= 35) {
+      if (hourlyData.length >= MIN_OHLCV_CANDLES) {
         console.log(`[Data] Got ${hourlyData.length} candles from DexScreener`);
-
-        // Aggregate to 4H and 1D
         const fourHourData = aggregateCandles(hourlyData, 4);
         const dailyData = aggregateCandles(hourlyData, 24);
-
         return {
-          '1H': hourlyData.slice(-168), // Last 7 days
+          '1H': hourlyData.slice(-168),
           '4H': fourHourData,
           '1D': dailyData,
         };
@@ -170,6 +145,8 @@ async function fetchOHLCV(
     }
   }
 
+  // No real data available — return empty (NEVER simulate)
+  console.warn(`[Data] No real OHLCV data available for ${tokenAddress} — skipping`);
   return { '1H': [], '4H': [], '1D': [] };
 }
 
@@ -178,28 +155,27 @@ async function fetchOHLCV(
  */
 function aggregateCandles(candles: OHLCV[], factor: number): OHLCV[] {
   const result: OHLCV[] = [];
-  
   for (let i = 0; i < candles.length; i += factor) {
     const chunk = candles.slice(i, i + factor);
     if (chunk.length === 0) continue;
-    
     result.push({
       timestamp: chunk[0].timestamp,
       open: chunk[0].open,
-      high: Math.max(...chunk.map(c => c.high)),
-      low: Math.min(...chunk.map(c => c.low)),
+      high: Math.max(...chunk.map((c) => c.high)),
+      low: Math.min(...chunk.map((c) => c.low)),
       close: chunk[chunk.length - 1].close,
       volume: chunk.reduce((sum, c) => sum + c.volume, 0),
     });
   }
-  
   return result;
 }
 
 /**
- * Get complete market data for a token with proper OHLCV
+ * Get complete market data for a token with quality validation
  */
-export async function getMarketData(tokenAddress: string): Promise<MarketData | null> {
+export async function getMarketData(
+  tokenAddress: string,
+): Promise<MarketData | null> {
   try {
     const [price, overview] = await Promise.all([
       getPrice(tokenAddress),
@@ -210,7 +186,6 @@ export async function getMarketData(tokenAddress: string): Promise<MarketData | 
       return null;
     }
 
-    // Build token info
     const token: Token = {
       symbol: overview?.symbol || 'UNKNOWN',
       name: overview?.name || 'Unknown Token',
@@ -222,19 +197,8 @@ export async function getMarketData(tokenAddress: string): Promise<MarketData | 
     const priceChange = overview?.priceChange24h || 0;
     const pairAddress = overview?.pairAddress;
 
-    // Try to get real OHLCV data
-    let ohlcv = await fetchOHLCV(tokenAddress, pairAddress);
-    
-    // If we couldn't get real data, generate simulated data
-    // This ensures TA calculations can still work
-    if (ohlcv['4H'].length < 35 && currentPrice > 0) {
-      console.log(`[Data] Generating simulated OHLCV for ${token.symbol}`);
-      ohlcv = {
-        '1H': generateSimulatedOHLCV(currentPrice, priceChange, 168, 60),  // 7 days of hourly
-        '4H': generateSimulatedOHLCV(currentPrice, priceChange, 60, 240),  // 10 days of 4H
-        '1D': generateSimulatedOHLCV(currentPrice, priceChange, 90, 1440), // 90 days daily
-      };
-    }
+    // Fetch real OHLCV data — no simulation fallback
+    const ohlcv = await fetchOHLCV(tokenAddress, pairAddress);
 
     return {
       token,
@@ -252,25 +216,69 @@ export async function getMarketData(tokenAddress: string): Promise<MarketData | 
 }
 
 /**
+ * Get enriched market data using Jupiter Token API v2
+ * Returns market data plus Jupiter-specific metrics (buy/sell pressure, organic score)
+ */
+export async function getEnrichedMarketData(
+  tokenData: JupiterTokenData,
+): Promise<{
+  marketData: MarketData;
+  metrics: JupiterMarketMetrics;
+  quality: MarketQuality;
+} | null> {
+  const metrics = extractMarketMetrics(tokenData);
+  if (!metrics) return null;
+
+  const token: Token = {
+    symbol: tokenData.symbol,
+    name: tokenData.name,
+    address: tokenData.id,
+    decimals: tokenData.decimals,
+  };
+
+  // Fetch OHLCV
+  const ohlcv = await fetchOHLCV(tokenData.id);
+
+  // Validate quality
+  const quality = validateMarketQuality(
+    metrics.marketCap,
+    metrics.liquidity,
+    ohlcv['4H'].length,
+    metrics.isSuspicious,
+  );
+
+  const marketData: MarketData = {
+    token,
+    price: metrics.price,
+    priceChange24h: metrics.priceChange24h,
+    volume24h: metrics.volume24h,
+    marketCap: metrics.marketCap,
+    ohlcv,
+    lastUpdated: new Date().toISOString(),
+  };
+
+  return { marketData, metrics, quality };
+}
+
+/**
  * Get market data for multiple tokens
  */
 export async function getBatchMarketData(
-  tokenAddresses: string[]
+  tokenAddresses: string[],
 ): Promise<Map<string, MarketData>> {
   const results = new Map<string, MarketData>();
 
   // Batch price fetch from Jupiter
-  const prices = await getPrices(tokenAddresses);
+  await getPrices(tokenAddresses);
 
-  // Fetch individual data (with rate limiting)
   for (const address of tokenAddresses) {
     try {
       const data = await getMarketData(address);
       if (data) {
         results.set(address, data);
       }
-      // Rate limit - be nice to free APIs
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Rate limit — be nice to free APIs
+      await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (error) {
       console.error(`Error fetching data for ${address}:`, error);
     }
@@ -280,9 +288,11 @@ export async function getBatchMarketData(
 }
 
 /**
- * Get watchlist tokens (top tokens + known tokens)
+ * Get watchlist tokens from Jupiter's top traded/trending
  */
-export async function getWatchlistTokens(limit: number = 50): Promise<Token[]> {
+export async function getWatchlistTokens(
+  limit: number = 50,
+): Promise<Token[]> {
   const tokens: Token[] = [];
 
   // Add known tokens first
@@ -290,25 +300,20 @@ export async function getWatchlistTokens(limit: number = 50): Promise<Token[]> {
     tokens.push(token);
   }
 
-  // Get top tokens from DexScreener
+  // Get top traded tokens from Jupiter Token API v2
   try {
-    const topTokens = await getTopTokens(limit);
-    
-    for (const t of topTokens) {
-      // Skip if already in list
-      if (tokens.some(existing => existing.address === t.address)) {
-        continue;
-      }
-      
+    const topTraded = await getTopJupiterTokens('toptraded', '1h', limit);
+    for (const t of topTraded) {
+      if (tokens.some((existing) => existing.address === t.id)) continue;
       tokens.push({
         symbol: t.symbol,
         name: t.name,
-        address: t.address,
-        decimals: 9,
+        address: t.id,
+        decimals: t.decimals,
       });
     }
   } catch (error) {
-    console.error('Error fetching top tokens:', error);
+    console.error('[Data] Error fetching Jupiter top tokens:', error);
   }
 
   return tokens.slice(0, limit);
@@ -318,22 +323,21 @@ export async function getWatchlistTokens(limit: number = 50): Promise<Token[]> {
  * Simple cache for market data
  */
 class MarketDataCache {
-  private cache: Map<string, { data: MarketData; timestamp: number }> = new Map();
+  private cache: Map<string, { data: MarketData; timestamp: number }> =
+    new Map();
   private ttlMs: number;
 
-  constructor(ttlMs: number = 60000) { // Default 1 minute TTL
+  constructor(ttlMs: number = 60000) {
     this.ttlMs = ttlMs;
   }
 
   get(address: string): MarketData | null {
     const entry = this.cache.get(address);
     if (!entry) return null;
-    
     if (Date.now() - entry.timestamp > this.ttlMs) {
       this.cache.delete(address);
       return null;
     }
-    
     return entry.data;
   }
 

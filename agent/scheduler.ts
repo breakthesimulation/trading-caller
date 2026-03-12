@@ -15,6 +15,7 @@ import forum from './forum.js';
 import { tracker, learner } from '../learning/index.js';
 import { TradingCallerEngine } from '../research-engine/src/index.js';
 import { performanceTracker } from '../performance/index.js';
+import { dispatchSignals } from '../api/src/webhook-dispatch.js';
 
 interface SchedulerState {
   started: boolean;
@@ -137,6 +138,13 @@ async function runMarketScanTask(): Promise<void> {
     
     const actionableSignals = signals.filter(s => s.action !== 'HOLD' && s.action !== 'AVOID');
     console.log(`[Scheduler] Market scan complete: ${signals.length} signals generated, ${actionableSignals.length} actionable`);
+
+    // Dispatch actionable signals to webhook subscribers (non-blocking)
+    if (actionableSignals.length > 0) {
+      dispatchSignals(actionableSignals).catch((error) => {
+        console.warn('[Scheduler] Webhook dispatch failed:', error);
+      });
+    }
   } catch (error) {
     console.error('[Scheduler] Market scan task failed:', error);
   }
