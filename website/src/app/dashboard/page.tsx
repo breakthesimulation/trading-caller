@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -9,13 +10,24 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPnl } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatPnl, formatPrice, timeAgo } from "@/lib/utils";
 import {
   BarChart3,
   TrendingUp,
   TrendingDown,
   Target,
   Activity,
+  RefreshCw,
+  Clock,
+  Shield,
 } from "lucide-react";
 
 /* ---------- API response types (matching real server shapes) ---------- */
@@ -74,68 +86,125 @@ interface PerformanceData {
   };
 }
 
-interface PositionDirectionStats {
-  total: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  avgPnl: number;
+interface OpenPosition {
+  id: string;
+  token: { symbol: string; address: string };
+  action: "LONG" | "SHORT";
+  status: string;
+  entry: number;
+  current: number;
+  targets: { tp1: number; tp2: number; tp3: number; hit: { tp1: boolean; tp2: boolean; tp3: boolean } };
+  stopLoss: number;
+  pnl: number;
+  highestPnl: number;
+  lowestPnl: number;
+  timeInPosition: string;
+  openedAt: string;
+  confidence: number;
 }
 
-interface PositionTradeInfo {
+interface ClosedPosition {
   id: string;
   token: { symbol: string };
-  action: string;
+  action: "LONG" | "SHORT";
+  status: string;
+  entry: number;
+  current: number;
   pnl: number;
+  timeInPosition: string;
+  openedAt: string;
+  closedAt?: string;
+  confidence: number;
 }
 
-interface PositionStats {
-  totalPositions: number;
-  openPositions: number;
-  closedPositions: number;
-  totalPnl: number;
-  avgPnl: number;
-  winRate: number;
-  wins: number;
-  losses: number;
-  tp1Hits: number;
-  tp2Hits: number;
-  tp3Hits: number;
-  stoppedOut: number;
-  expired: number;
-  profitFactor: number;
-  long: PositionDirectionStats;
-  short: PositionDirectionStats;
-  bestTrade: PositionTradeInfo | null;
-  worstTrade: PositionTradeInfo | null;
-}
+/* ---------- Constants ---------- */
+
+const REFRESH_INTERVAL_MS = 30_000;
+const API_BASE = "/api";
 
 /* ---------- Helpers ---------- */
 
-/** Parse a percentage string like "12.5%" or "+3.2%" into a number. */
 function parsePercent(value: string | undefined | null): number {
   if (!value) return 0;
   return parseFloat(value.replace(/[^0-9.\-+]/g, "")) || 0;
 }
 
+function statusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    ACTIVE: "Active",
+    TP1_HIT: "TP1",
+    TP2_HIT: "TP2",
+    TP3_HIT: "TP3",
+    STOPPED_OUT: "Stopped",
+    EXPIRED: "Expired",
+  };
+  return labels[status] ?? status;
+}
+
+function statusVariant(status: string): "long" | "short" | "muted" | "purple" | "default" {
+  if (["TP1_HIT", "TP2_HIT"].includes(status)) return "long";
+  if (status === "TP3_HIT") return "purple";
+  if (status === "STOPPED_OUT") return "short";
+  if (status === "EXPIRED") return "muted";
+  return "default";
+}
+
 /* ---------- Page Component ---------- */
 
 export default function DashboardPage() {
-  /* Hardcoded zero stats until API routing is fixed */
-  const performance: PerformanceData = {
-    summary: { total: 0, active: 0, resolved: 0 },
-    outcomes: { tp1Hits: 0, tp2Hits: 0, tp3Hits: 0, stoppedOut: 0, expired: 0, invalidated: 0 },
-    rates: { winRate: "0.0%", fullWinRate: "0.0%", lossRate: "0.0%" },
-    pnl: { average: "+0.00%", averageWin: "+0.00%", averageLoss: "0.00%", total: "+0.00%", profitFactor: "0.00" },
-    timing: { avgTimeToTP1: "0.0h", avgTimeToStop: "0.0h" },
-    byDirection: {
-      long: { total: 0, wins: 0, losses: 0, winRate: "0.0%", avgPnl: "+0.00%" },
-      short: { total: 0, wins: 0, losses: 0, winRate: "0.0%", avgPnl: "+0.00%" },
-    },
-  };
-  const positions: PositionStats | null = null;
-  const loading = false;
-  const error: string | null = null;
+  const [performance, setPerformance] = useState<PerformanceData | null>(null);
+  const [openPositions, setOpenPositions] = useState<OpenPosition[]>([]);
+  const [closedPositions, setClosedPositions] = useState<ClosedPosition[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      const [perfRes, openRes, closedRes] = await Promise.allSettled([
+        fetch(`${API_BASE}/signals/performance`),
+        fetch(`${API_BASE}/positions/open`),
+        fetch(`${API_BASE}/positions/closed?limit=20`),
+      ]);
+
+      if (perfRes.status === "fulfilled" && perfRes.value.ok) {
+        const data = await perfRes.value.json();
+        if (data.success) setPerformance(data.performance);
+      }
+
+      if (openRes.status === "fulfilled" && openRes.value.ok) {
+        const data = await openRes.value.json();
+        if (data.success) setOpenPositions(data.positions ?? []);
+      }
+
+      if (closedRes.status === "fulfilled" && closedRes.value.ok) {
+        const data = await closedRes.value.json();
+        if (data.success) setClosedPositions(data.positions ?? []);
+      }
+
+      const anySucceeded =
+        (perfRes.status === "fulfilled" && perfRes.value.ok) ||
+        (openRes.status === "fulfilled" && openRes.value.ok);
+
+      if (!anySucceeded) {
+        setError("Could not reach the Trading Caller API.");
+      } else {
+        setError(null);
+      }
+
+      setLastUpdated(new Date());
+    } catch {
+      setError("Could not reach the Trading Caller API.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    const id = setInterval(fetchData, REFRESH_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [fetchData]);
 
   /* ---------- Loading skeleton ---------- */
 
@@ -145,10 +214,10 @@ export default function DashboardPage() {
 
   /* ---------- Error state ---------- */
 
-  if (error && !performance && !positions) {
+  if (error && !performance) {
     return (
       <div className="flex flex-col gap-6 py-8 md:py-16">
-        <PageHeading />
+        <PageHeading lastUpdated={lastUpdated} onRefresh={fetchData} />
         <Card className="border-short/30">
           <CardContent className="flex flex-col items-center gap-4 p-10 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-short/15">
@@ -160,7 +229,7 @@ export default function DashboardPage() {
             <p className="max-w-md text-sm text-text-secondary">{error}</p>
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={fetchData}
               className="mt-2 inline-flex items-center gap-2 rounded-xl border border-border bg-bg-elevated px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-bg-elevated"
             >
               Retry
@@ -175,7 +244,6 @@ export default function DashboardPage() {
 
   const totalSignals = performance?.summary?.total ?? 0;
   const activeSignals = performance?.summary?.active ?? 0;
-  const resolvedSignals = performance?.summary?.resolved ?? 0;
 
   const winRate = parsePercent(performance?.rates?.winRate);
   const totalPnl = parsePercent(performance?.pnl?.total);
@@ -196,7 +264,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
-      <PageHeading />
+      <PageHeading lastUpdated={lastUpdated} onRefresh={fetchData} />
 
       {/* ---------- Top stat cards ---------- */}
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -224,6 +292,74 @@ export default function DashboardPage() {
           value={String(totalSignals)}
         />
       </section>
+
+      {/* ---------- Open Positions ---------- */}
+      {openPositions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-accent-light" />
+              Open Positions
+              <Badge variant="default">{openPositions.length}</Badge>
+            </CardTitle>
+            <CardDescription>
+              Live positions with real-time P&L — auto-refreshes every 30s
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Token</TableHead>
+                  <TableHead>Side</TableHead>
+                  <TableHead className="text-right">Entry</TableHead>
+                  <TableHead className="text-right">Current</TableHead>
+                  <TableHead className="text-right">PnL</TableHead>
+                  <TableHead className="text-right">SL</TableHead>
+                  <TableHead className="text-right">TP1</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead className="text-right">Conf</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {openPositions.map((pos) => (
+                  <TableRow key={pos.id}>
+                    <TableCell className="font-semibold">{pos.token.symbol}</TableCell>
+                    <TableCell>
+                      <Badge variant={pos.action === "LONG" ? "long" : "short"}>
+                        {pos.action}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      ${formatPrice(pos.entry)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      ${formatPrice(pos.current)}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right tabular-nums font-semibold ${
+                        pos.pnl > 0 ? "text-long" : pos.pnl < 0 ? "text-short" : "text-primary"
+                      }`}
+                    >
+                      {pos.pnl >= 0 ? "+" : ""}{pos.pnl.toFixed(2)}%
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-short">
+                      ${formatPrice(pos.stopLoss)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums text-long">
+                      ${formatPrice(pos.targets.tp1)}
+                    </TableCell>
+                    <TableCell className="text-text-secondary">
+                      {pos.timeInPosition}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">{pos.confidence}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* ---------- Outcome breakdown ---------- */}
       <Card>
@@ -311,7 +447,85 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* Position stats hidden while API routing is being fixed */}
+      {/* ---------- PnL Details ---------- */}
+      {performance && (
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold text-primary">PnL Details</h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <MiniStat label="Avg PnL" value={performance.pnl.average} accent={parsePercent(performance.pnl.average) > 0} />
+            <MiniStat label="Avg Win" value={performance.pnl.averageWin} accent />
+            <MiniStat label="Avg Loss" value={performance.pnl.averageLoss} />
+            <MiniStat label="Avg Time to TP1" value={performance.timing.avgTimeToTP1} />
+          </div>
+        </section>
+      )}
+
+      {/* ---------- Recent Closed Trades ---------- */}
+      {closedPositions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-text-muted" />
+              Recent Trades
+            </CardTitle>
+            <CardDescription>
+              Last {closedPositions.length} resolved positions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Token</TableHead>
+                  <TableHead>Side</TableHead>
+                  <TableHead>Result</TableHead>
+                  <TableHead className="text-right">Entry</TableHead>
+                  <TableHead className="text-right">Exit</TableHead>
+                  <TableHead className="text-right">PnL</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Closed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {closedPositions.map((pos) => (
+                  <TableRow key={pos.id}>
+                    <TableCell className="font-semibold">{pos.token.symbol}</TableCell>
+                    <TableCell>
+                      <Badge variant={pos.action === "LONG" ? "long" : "short"}>
+                        {pos.action}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(pos.status)}>
+                        {statusLabel(pos.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      ${formatPrice(pos.entry)}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      ${formatPrice(pos.current)}
+                    </TableCell>
+                    <TableCell
+                      className={`text-right tabular-nums font-semibold ${
+                        pos.pnl > 0 ? "text-long" : pos.pnl < 0 ? "text-short" : "text-primary"
+                      }`}
+                    >
+                      {pos.pnl >= 0 ? "+" : ""}{pos.pnl.toFixed(2)}%
+                    </TableCell>
+                    <TableCell className="text-text-secondary">
+                      {pos.timeInPosition}
+                    </TableCell>
+                    <TableCell className="text-text-muted text-xs">
+                      {pos.closedAt ? timeAgo(pos.closedAt) : pos.openedAt ? timeAgo(pos.openedAt) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -320,16 +534,33 @@ export default function DashboardPage() {
    Sub-components
    ================================================================ */
 
-function PageHeading() {
+function PageHeading({ lastUpdated, onRefresh }: { lastUpdated: Date | null; onRefresh: () => void }) {
   return (
-    <div className="flex flex-col gap-2">
-      <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
-        Performance Dashboard
-      </h1>
-      <p className="text-text-secondary">
-        Real-time accuracy metrics and outcome tracking for all Agent Fox
-        signals.
-      </p>
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
+          Performance Dashboard
+        </h1>
+        <p className="text-text-secondary">
+          Real-time accuracy metrics and outcome tracking for all Agent Fox
+          signals.
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        {lastUpdated && (
+          <span className="text-xs text-text-muted">
+            Updated {lastUpdated.toLocaleTimeString()}
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={onRefresh}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-elevated px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:text-primary"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          Refresh
+        </button>
+      </div>
     </div>
   );
 }
@@ -547,6 +778,19 @@ function DashboardSkeleton() {
           </Card>
         ))}
       </div>
+
+      {/* Positions skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-72" />
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </CardContent>
+      </Card>
 
       {/* Outcome breakdown skeleton */}
       <Card>
