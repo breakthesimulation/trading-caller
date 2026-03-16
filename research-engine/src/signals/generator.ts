@@ -20,6 +20,12 @@ function generateId(): string {
   return 'sig_' + Math.random().toString(36).substring(2, 15);
 }
 
+/** Round a price preserving 4 significant figures (handles micro-cap tokens). */
+function roundPrice(price: number): number {
+  if (price === 0 || !isFinite(price)) return 0;
+  return parseFloat(price.toPrecision(4));
+}
+
 interface SignalInput {
   token: Token;
   ohlcv: {
@@ -372,9 +378,9 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
     timestamp: new Date().toISOString(),
     token,
     action,
-    entry: Math.round(entry * 10000) / 10000,
-    targets: targets.map((t) => Math.round(t * 10000) / 10000),
-    stopLoss: Math.round(stopLoss * 10000) / 10000,
+    entry: roundPrice(entry),
+    targets: targets.map(roundPrice),
+    stopLoss: roundPrice(stopLoss),
     confidence,
     timeframe,
     reasoning,
@@ -390,6 +396,22 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
       atr: atr,
     },
   };
+
+  // Reject signals with invalid prices (micro-cap rounding to zero)
+  if (signal.entry <= 0 || signal.stopLoss <= 0 || signal.targets.some((t) => t <= 0)) {
+    console.log(
+      `[SignalGenerator] ${token.symbol}: rejecting — price rounded to zero (entry=${signal.entry}, sl=${signal.stopLoss})`,
+    );
+    return null;
+  }
+
+  // Reject signals where stop loss equals entry (zero risk = meaningless trade)
+  if (signal.entry === signal.stopLoss) {
+    console.log(
+      `[SignalGenerator] ${token.symbol}: rejecting — stopLoss equals entry (${signal.entry})`,
+    );
+    return null;
+  }
 
   console.log(
     `[SignalGenerator] ${token.symbol} ${action} signal: confidence=${confidence}, confluence=${confluence.count} [${confluence.factors.join(', ')}]`,
