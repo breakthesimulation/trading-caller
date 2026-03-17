@@ -206,7 +206,7 @@ export default function SignalsPage() {
             onClick={() => setFilter(option)}
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
               filter === option
-                ? "bg-accent/20 text-accent-light"
+                ? "bg-accent/15 text-accent"
                 : "bg-bg-elevated text-text-secondary hover:bg-bg-elevated hover:text-primary"
             }`}
           >
@@ -293,7 +293,7 @@ function SignalCard({ signal }: { signal: Signal }) {
             icon={Radio}
             label="Entry"
             price={signal.entry}
-            colorClass="text-purple"
+            colorClass="text-accent"
           />
 
           {/* Stop Loss */}

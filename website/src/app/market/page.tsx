@@ -224,7 +224,7 @@ export default function MarketPage() {
             type="button"
             onClick={handleScanNow}
             disabled={scanning}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent/20 px-4 py-2 text-sm font-semibold text-accent-light transition-colors hover:bg-accent/30 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-accent/15 px-4 py-2 text-sm font-semibold text-accent transition-colors hover:bg-accent/25 disabled:opacity-50"
           >
             <Zap
               className={`h-3.5 w-3.5 ${scanning ? "animate-pulse" : ""}`}
@@ -247,7 +247,7 @@ export default function MarketPage() {
           value={String(scanProgress?.withRSI ?? tokens.length)}
           subtitle={`of ${tokensScannedCount}`}
           accentBg="bg-accent/15"
-          accentText="text-accent-light"
+          accentText="text-accent"
         />
         <SummaryCard
           icon={TrendingDown}
@@ -341,7 +341,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-purple" />
+        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-accent" />
         <div className="flex flex-1 flex-col gap-1.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium text-text-secondary">
@@ -354,7 +354,7 @@ function ScanProgressBar({ progress }: { progress: ScanProgress }) {
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg-elevated">
             <div
-              className="h-full rounded-full bg-purple transition-all duration-500"
+              className="h-full rounded-full bg-accent transition-all duration-500"
               style={{ width: `${percentage}%` }}
             />
           </div>

@@ -113,7 +113,7 @@ export default function BacktestPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <FlaskConical className="h-8 w-8 text-accent-light" />
+          <FlaskConical className="h-8 w-8 text-accent" />
           <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
             Backtest Results
           </h1>
@@ -127,7 +127,7 @@ export default function BacktestPage() {
       {strategies.length > 0 && (
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-purple" />
+            <BarChart3 className="h-5 w-5 text-accent" />
             <h2 className="text-xl font-bold text-primary">
               Strategy Comparison
             </h2>
@@ -151,7 +151,7 @@ export default function BacktestPage() {
       ) : (
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-accent-light" />
+            <Target className="h-5 w-5 text-accent" />
             <h2 className="text-xl font-bold text-primary">
               Detailed Results
             </h2>
