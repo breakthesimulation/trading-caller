@@ -298,7 +298,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-accent-light" />
+              <Activity className="h-5 w-5 text-accent" />
               Open Positions
               <Badge variant="default">{openPositions.length}</Badge>
             </CardTitle>
@@ -388,8 +388,8 @@ export default function DashboardPage() {
             label="TP3 Hits"
             count={outcomes.tp3Hits}
             total={totalSignals}
-            barClass="bg-purple"
-            textClass="text-purple"
+            barClass="bg-accent"
+            textClass="text-accent"
           />
           <OutcomeBar
             label="Stopped Out"
@@ -410,7 +410,7 @@ export default function DashboardPage() {
             count={activeSignals}
             total={totalSignals}
             barClass="bg-accent"
-            textClass="text-accent-light"
+            textClass="text-accent"
           />
 
           {totalResolved > 0 && (
@@ -582,7 +582,7 @@ function MetricCard({
     <Card className={accent ? "border-l-4 border-l-long" : "border-l-4 border-l-accent"}>
       <CardContent className="flex items-center gap-4 p-5">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent/15">
-          <Icon className="h-5 w-5 text-accent-light" />
+          <Icon className="h-5 w-5 text-accent" />
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-xs font-medium text-text-muted">{label}</span>

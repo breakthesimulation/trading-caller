@@ -18,19 +18,22 @@
 
 | Color | Hex Code | Description |
 |-------|----------|-------------|
-| Purple | `#7E73F2` | Soft violet/purple |
-| Green | `#009F85` | Deep teal green |
-| Orange | `#FF5722` | Vibrant orange |
-| Teal | `#007AFF` | Bright blue/teal |
+| Purple (Accent) | `#7B61FF` | Primary brand purple — CTAs, active states, brand elements |
+| Purple Light | `#9B85FF` | Hover states, lighter accent usage |
+| Cyan | `#00D9FF` | Secondary accent, links, highlights |
+| Green (Long/Profit) | `#16A34A` | Bullish signals, profit, success, positive metrics |
+| Red (Short/Loss) | `#DC2626` | Bearish signals, loss, danger, negative metrics |
+| Warning | `#F59E0B` | Medium confidence, caution states |
 
 ### Secondary Palette
 
 | Color | Hex Code | Description |
 |-------|----------|-------------|
-| Lavender | `#D6D3FF` | Light pastel purple |
-| Light Teal | `#80E4E0` | Soft aqua/teal |
-| Cream | `#FFCC99` | Warm pastel peach |
-| Mint | `#B3DDFE` | Light pastel blue |
+| Background Primary | `#FFFFFF` | Page background |
+| Background Secondary | `#F8F9FA` | Card backgrounds, sections |
+| Background Elevated | `#F0F1F3` | Hover states, active items |
+| Border | `#E5E7EB` | Card borders, table dividers |
+| Border Subtle | `#F3F4F6` | Subtle internal separators |
 
 ---
 

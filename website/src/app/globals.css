@@ -11,19 +11,12 @@
   --color-border-subtle: #F3F4F6;
 
   /* Brand — Agent Fox */
-  --color-accent: #FF5722;
-  --color-accent-light: #FF8A65;
-  --color-purple: #7E73F2;
-  --color-teal: #007AFF;
-
-  /* Brand secondary */
-  --color-lavender: #D6D3FF;
-  --color-light-teal: #80E4E0;
-  --color-cream: #FFCC99;
-  --color-mint: #B3DDFE;
+  --color-accent: #7B61FF;
+  --color-accent-light: #9B85FF;
+  --color-cyan: #00D9FF;
 
   /* Semantic */
-  --color-long: #009F85;
+  --color-long: #16A34A;
   --color-short: #DC2626;
   --color-warning: #F59E0B;
 

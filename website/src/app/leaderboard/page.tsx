@@ -89,7 +89,7 @@ export default function LeaderboardPage() {
       {/* Header */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <Trophy className="h-8 w-8 text-accent-light" />
+          <Trophy className="h-8 w-8 text-accent" />
           <h1 className="text-3xl font-extrabold tracking-tight text-primary md:text-4xl">
             Token Leaderboard
           </h1>

@@ -225,7 +225,7 @@ export default function VolumePage() {
           label="Tokens Tracked"
           value={String(tokens.length)}
           accentBg="bg-accent/15"
-          accentText="text-accent-light"
+          accentText="text-accent"
         />
         <SummaryCard
           icon={Zap}
@@ -279,7 +279,7 @@ export default function VolumePage() {
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/15">
-            <BarChart3 className="h-4 w-4 text-accent-light" />
+            <BarChart3 className="h-4 w-4 text-accent" />
           </div>
           <div className="flex flex-col">
             <h2 className="text-lg font-bold text-primary">
@@ -430,12 +430,12 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
       <CardContent className="flex flex-col gap-3">
         {/* Volume multiplier */}
         <div className="flex items-center gap-2 rounded-lg bg-bg-elevated px-3 py-2">
-          <Volume2 className="h-4 w-4 shrink-0 text-purple" />
+          <Volume2 className="h-4 w-4 shrink-0 text-accent" />
           <div className="flex flex-col">
             <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
               Volume Spike
             </span>
-            <span className="text-lg font-bold tabular-nums text-purple">
+            <span className="text-lg font-bold tabular-nums text-accent">
               {(spike.volumeSpikeMultiple ?? 0).toFixed(1)}x{" "}
               <span className="text-xs font-normal text-text-muted">
                 avg ({(spike.volumeSpikePercent ?? 0).toFixed(0)}%)
@@ -535,7 +535,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               <span className="text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 Velocity
               </span>
-              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-purple">
+              <span className="inline-flex items-center gap-1 text-sm font-semibold tabular-nums text-accent">
                 <Activity className="h-3 w-3" />
                 {spike.volumeVelocity.toFixed(2)}x
               </span>
@@ -553,7 +553,7 @@ function SpikeCard({ spike }: { spike: VolumeSpike }) {
               href={spike.dexScreenerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-medium text-purple transition-colors hover:text-accent"
+              className="inline-flex items-center gap-1 text-xs font-medium text-accent transition-colors hover:text-accent"
             >
               DexScreener
               <ExternalLink className="h-3 w-3" />
