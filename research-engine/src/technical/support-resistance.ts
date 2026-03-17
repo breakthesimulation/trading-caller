@@ -85,7 +85,9 @@ function clusterLevels(prices: number[], threshold: number = 0.02): number[] {
     .filter(c => c.length >= 1)
     .map(cluster => {
       const sum = cluster.reduce((a, b) => a + b, 0);
-      return Math.round((sum / cluster.length) * 100) / 100;
+      const avg = sum / cluster.length;
+      // Use toPrecision for micro-cap tokens where Math.round(x*100)/100 → 0
+      return avg === 0 ? 0 : parseFloat(avg.toPrecision(avg >= 0.01 ? 4 : 6));
     })
     .sort((a, b) => a - b);
 }
