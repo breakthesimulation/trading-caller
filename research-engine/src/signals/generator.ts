@@ -20,10 +20,15 @@ function generateId(): string {
   return 'sig_' + Math.random().toString(36).substring(2, 15);
 }
 
-/** Round a price preserving 4 significant figures (handles micro-cap tokens). */
+/** Round a price preserving significant figures.
+ *  Uses 4 sig figs for normal prices (>= $0.01), 6 for micro-cap prices.
+ *  Without this, tokens at e.g. $0.00000267 get entry/targets/SL rounded to 0,
+ *  which causes the performance tracker to reject them (entry <= 0 check),
+ *  resulting in 0% win rate on the dashboard despite signals being generated. */
 function roundPrice(price: number): number {
   if (price === 0 || !isFinite(price)) return 0;
-  return parseFloat(price.toPrecision(4));
+  const sigFigs = price >= 0.01 ? 4 : 6;
+  return parseFloat(price.toPrecision(sigFigs));
 }
 
 interface SignalInput {

@@ -54,10 +54,13 @@ export function calculateTrendEMAs(prices: number[]): {
   ema50: number;
   ema200: number;
 } {
+  // Use toPrecision to handle both normal and micro-cap token prices.
+  // Math.round(x * 100) / 100 destroys prices < $0.005 (rounds to 0).
+  const round = (v: number) => v === 0 ? 0 : parseFloat(v.toPrecision(v >= 0.01 ? 4 : 6));
   return {
-    ema20: Math.round(calculateEMA(prices, 20) * 100) / 100,
-    ema50: Math.round(calculateEMA(prices, 50) * 100) / 100,
-    ema200: Math.round(calculateEMA(prices, 200) * 100) / 100,
+    ema20: round(calculateEMA(prices, 20)),
+    ema50: round(calculateEMA(prices, 50)),
+    ema200: round(calculateEMA(prices, 200)),
   };
 }
 

@@ -113,9 +113,10 @@ export function calculateMACD(
   }
 
   return {
-    macd: Math.round(currentMACD * 10000) / 10000,
-    signal: Math.round(currentSignal * 10000) / 10000,
-    histogram: Math.round(currentHistogram * 10000) / 10000,
+    // Use toPrecision for micro-cap tokens where fixed decimal rounding → 0
+    macd: currentMACD === 0 ? 0 : parseFloat(currentMACD.toPrecision(4)),
+    signal: currentSignal === 0 ? 0 : parseFloat(currentSignal.toPrecision(4)),
+    histogram: currentHistogram === 0 ? 0 : parseFloat(currentHistogram.toPrecision(4)),
     trend,
     crossover,
     values: {
