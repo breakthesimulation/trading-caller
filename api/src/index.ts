@@ -75,10 +75,7 @@ app.use('*', prettyJSON());
 // Initialize engine
 const engine = new TradingCallerEngine();
 
-// Connect scheduler to engine (if loaded)
-if (scheduler?.setEngine) {
-  scheduler.setEngine(engine);
-}
+// Note: scheduler.setEngine is called after loadOptionalModules() in the startup block below
 
 // ============ MOUNT ROUTES ============
 
@@ -193,7 +190,11 @@ setTimeout(async () => {
       console.error('[API] Volume scanner initialization failed (non-fatal):', volumeError);
     }
 
-    // Start scheduler if available
+    // Connect engine to scheduler and start it
+    if (scheduler?.setEngine) {
+      scheduler.setEngine(engine);
+      console.log('[API] Engine connected to scheduler');
+    }
     if (scheduler?.start) {
       console.log('[API] Starting main scheduler...');
       scheduler.start();
