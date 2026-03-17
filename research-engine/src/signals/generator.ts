@@ -20,10 +20,14 @@ function generateId(): string {
   return 'sig_' + Math.random().toString(36).substring(2, 15);
 }
 
-/** Round a price preserving 4 significant figures (handles micro-cap tokens). */
+/** Round a price preserving significant figures.
+ *  Uses 4 sig figs for prices >= $0.01, 6 for smaller prices.
+ *  This prevents micro-cap tokens (e.g. $0.00000267) from rounding to zero. */
 function roundPrice(price: number): number {
   if (price === 0 || !isFinite(price)) return 0;
-  return parseFloat(price.toPrecision(4));
+  // Use more precision for tiny prices to avoid rounding to zero
+  const sigFigs = price >= 0.01 ? 4 : 6;
+  return parseFloat(price.toPrecision(sigFigs));
 }
 
 interface SignalInput {
