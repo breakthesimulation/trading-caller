@@ -119,6 +119,19 @@ class TradingCallerEngine {
     const startTime = Date.now();
 
     try {
+      // Phase 0: Determine BTC regime (most alts follow BTC)
+      let btcTrendDirection: 'UP' | 'DOWN' | 'SIDEWAYS' = 'SIDEWAYS';
+      try {
+        const btcData = await getMarketData(KNOWN_TOKENS.BTC?.address || '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh');
+        if (btcData && btcData.ohlcv['1D'].length >= 20) {
+          const btcAnalysis = runTechnicalAnalysis(btcData.ohlcv['1D']);
+          btcTrendDirection = btcAnalysis.analysis.trend.direction as 'UP' | 'DOWN' | 'SIDEWAYS';
+          console.log(`[TradingCaller] BTC regime: ${btcTrendDirection} (strength: ${btcAnalysis.analysis.trend.strength.toFixed(0)}%)`);
+        }
+      } catch (e) {
+        console.warn('[TradingCaller] BTC regime check failed, defaulting to SIDEWAYS');
+      }
+
       // Phase 1: Discover tokens via Jupiter Token API v2
       const jupiterTokens = await getTopJupiterTokens('toptraded', '1h', this.config.tokenLimit);
       console.log(`[TradingCaller] Jupiter returned ${jupiterTokens.length} top traded tokens`);
@@ -160,13 +173,14 @@ class TradingCallerEngine {
             continue;
           }
 
-          // Generate signal with Jupiter buy/sell pressure
+          // Generate signal with Jupiter buy/sell pressure + BTC regime
           const signal = generateSignal({
             token: enriched.marketData.token,
             ohlcv: enriched.marketData.ohlcv,
             buyPressureRatio: metrics.buyPressureRatio,
             liquidity: metrics.liquidity,
             marketCap: metrics.marketCap,
+            btcTrendDirection,
           });
 
           if (signal) {
@@ -209,6 +223,7 @@ class TradingCallerEngine {
           const signal = generateSignal({
             token: marketData.token,
             ohlcv: marketData.ohlcv,
+            btcTrendDirection,
           });
 
           if (signal) signals.push(signal);

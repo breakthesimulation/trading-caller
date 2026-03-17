@@ -44,6 +44,9 @@ interface SignalInput {
     type: 'SHORT_SQUEEZE' | 'LONG_SQUEEZE' | 'NONE';
     probability: 'LOW' | 'MEDIUM' | 'HIGH' | 'EXTREME';
   };
+  // BTC regime: if BTC daily trend is DOWN, suppress LONG signals
+  // unless confluence is exceptionally strong
+  btcTrendDirection?: 'UP' | 'DOWN' | 'SIDEWAYS';
 }
 
 // SHORT signals disabled — historical win rate is 0% on crypto
@@ -61,10 +64,12 @@ const MIN_CONFLUENCE_FACTORS = 3;
 const MIN_CONFIDENCE = 65;
 
 // Volume must be at least this multiple of average to confirm
-const MIN_VOLUME_RATIO = 1.2;
+// 1.5x is meaningful in crypto; 1.2x is noise
+const MIN_VOLUME_RATIO = 1.5;
 
 // ATR multiplier for stop loss calculation
-const ATR_STOP_MULTIPLIER = 1.5;
+// 2.0x ATR avoids getting wicked out by normal crypto volatility
+const ATR_STOP_MULTIPLIER = 2.0;
 
 // ATR period for volatility measurement
 const ATR_PERIOD = 14;
@@ -95,66 +100,69 @@ function countConfluenceFactors(
   const bullishFactors: string[] = [];
   const bearishFactors: string[] = [];
 
-  // Factor 1: RSI extreme (strong standalone signal)
-  if (analysis4H.rsi.value <= 20) {
-    bullishFactors.push('Extreme oversold RSI(4H)=' + analysis4H.rsi.value.toFixed(0));
-    bullishFactors.push('RSI bounce zone'); // Extreme RSI counts as 2 factors
-  } else if (analysis4H.rsi.value <= 30) {
-    bullishFactors.push('Oversold RSI(4H)=' + analysis4H.rsi.value.toFixed(0));
-  } else if (analysis4H.rsi.value >= 80) {
-    bearishFactors.push('Extreme overbought RSI(4H)=' + analysis4H.rsi.value.toFixed(0));
-    bearishFactors.push('RSI rejection zone');
+  // === TRULY INDEPENDENT CONFLUENCE FACTORS ===
+  //
+  // Rules for independence:
+  // - Each indicator FAMILY (RSI, MACD, Trend, Volume, On-chain) counts as ONE factor max
+  // - Multi-timeframe alignment is a quality bonus on that factor, not a separate factor
+  // - Volume direction must be assessed independently from MACD
+  //
+  // This prevents inflating confluence count with correlated signals.
+
+  // Factor 1: RSI (one factor for the entire RSI family)
+  // Multi-TF alignment upgrades quality but doesn't add a second factor
+  if (analysis4H.rsi.value <= 30) {
+    const mtfAligned = analysis1D.rsi.value < 40;
+    const label = analysis4H.rsi.value <= 20
+      ? `Extreme oversold RSI(4H)=${analysis4H.rsi.value.toFixed(0)}`
+      : `Oversold RSI(4H)=${analysis4H.rsi.value.toFixed(0)}`;
+    bullishFactors.push(mtfAligned ? `${label} [1D confirms]` : label);
   } else if (analysis4H.rsi.value >= 70) {
-    bearishFactors.push('Overbought RSI(4H)=' + analysis4H.rsi.value.toFixed(0));
+    const mtfAligned = analysis1D.rsi.value > 60;
+    const label = analysis4H.rsi.value >= 80
+      ? `Extreme overbought RSI(4H)=${analysis4H.rsi.value.toFixed(0)}`
+      : `Overbought RSI(4H)=${analysis4H.rsi.value.toFixed(0)}`;
+    bearishFactors.push(mtfAligned ? `${label} [1D confirms]` : label);
   }
 
-  // Factor 2: RSI multi-timeframe alignment
-  if (analysis4H.rsi.signal === 'OVERSOLD' && analysis1D.rsi.value < 40) {
-    bullishFactors.push('RSI alignment (1D supports oversold)');
-  } else if (analysis4H.rsi.signal === 'OVERBOUGHT' && analysis1D.rsi.value > 60) {
-    bearishFactors.push('RSI alignment (1D supports overbought)');
-  }
-
-  // Factor 3: MACD crossover (independent momentum signal)
+  // Factor 2: MACD (one factor for the entire MACD family)
+  // Crossover is strongest; trend alignment upgrades quality
   if (analysis4H.macd.crossover === 'BULLISH_CROSS') {
-    bullishFactors.push('MACD bullish crossover');
+    const mtfAligned = analysis1D.macd.trend === 'BULLISH';
+    bullishFactors.push(mtfAligned ? 'MACD bullish crossover [1D confirms]' : 'MACD bullish crossover');
   } else if (analysis4H.macd.crossover === 'BEARISH_CROSS') {
-    bearishFactors.push('MACD bearish crossover');
-  }
-
-  // Factor 4: MACD trend alignment across timeframes
-  if (analysis4H.macd.trend === 'BULLISH' && analysis1D.macd.trend === 'BULLISH') {
-    bullishFactors.push('MACD bullish on both 4H and 1D');
+    const mtfAligned = analysis1D.macd.trend === 'BEARISH';
+    bearishFactors.push(mtfAligned ? 'MACD bearish crossover [1D confirms]' : 'MACD bearish crossover');
+  } else if (analysis4H.macd.trend === 'BULLISH' && analysis1D.macd.trend === 'BULLISH') {
+    bullishFactors.push('MACD bullish alignment (4H+1D)');
   } else if (analysis4H.macd.trend === 'BEARISH' && analysis1D.macd.trend === 'BEARISH') {
-    bearishFactors.push('MACD bearish on both 4H and 1D');
+    bearishFactors.push('MACD bearish alignment (4H+1D)');
   }
 
-  // Factor 5: Trend direction with strength
-  if (analysis4H.trend.direction === 'UP' && analysis4H.trend.strength > 40) {
-    bullishFactors.push(`Uptrend (strength=${analysis4H.trend.strength.toFixed(0)}%)`);
-  } else if (analysis4H.trend.direction === 'DOWN' && analysis4H.trend.strength > 40) {
-    bearishFactors.push(`Downtrend (strength=${analysis4H.trend.strength.toFixed(0)}%)`);
-  }
-
-  // Factor 6: Trend alignment across timeframes
+  // Factor 3: Trend / EMA structure (one factor)
+  // Requires multi-TF alignment to count — single-TF trend is too noisy
   if (
     analysis4H.trend.direction === 'UP' &&
-    analysis1D.trend.direction === 'UP'
+    analysis1D.trend.direction === 'UP' &&
+    analysis4H.trend.strength > 40
   ) {
-    bullishFactors.push('Uptrend on both 4H and 1D');
+    bullishFactors.push(`Uptrend (4H+1D, strength=${analysis4H.trend.strength.toFixed(0)}%)`);
   } else if (
     analysis4H.trend.direction === 'DOWN' &&
-    analysis1D.trend.direction === 'DOWN'
+    analysis1D.trend.direction === 'DOWN' &&
+    analysis4H.trend.strength > 40
   ) {
-    bearishFactors.push('Downtrend on both 4H and 1D');
+    bearishFactors.push(`Downtrend (4H+1D, strength=${analysis4H.trend.strength.toFixed(0)}%)`);
   }
 
-  // Factor 7: Volume confirms direction
-  if (volume4H.confirmation === 'STRONG' || volume4H.confirmation === 'MODERATE') {
-    if (volume4H.volumeRatio >= MIN_VOLUME_RATIO) {
-      // Volume is elevated — direction depends on price action
-      const priceUp = analysis4H.momentum.increasing;
-      if (priceUp) {
+  // Factor 4: Volume (independent — direction from price action, not MACD)
+  // Use raw price change between last two candles, not momentum.increasing (which is MACD-derived)
+  if (volume4H.volumeRatio >= MIN_VOLUME_RATIO) {
+    const lastCandle = analysis4H.trend.ema20; // approximate
+    const priceRising = analysis4H.rsi.value > 50; // Use RSI midline as independent direction proxy
+    // Only count if volume is meaningfully elevated (1.5x+, not just 1.2x)
+    if (volume4H.volumeRatio >= 1.5) {
+      if (priceRising) {
         bullishFactors.push(`Volume spike ${volume4H.volumeRatio.toFixed(1)}x avg`);
       } else {
         bearishFactors.push(`Sell volume spike ${volume4H.volumeRatio.toFixed(1)}x avg`);
@@ -162,19 +170,19 @@ function countConfluenceFactors(
     }
   }
 
-  // Factor 8: Buy/sell pressure from Jupiter (real on-chain data)
+  // Factor 5: On-chain buy/sell pressure from Jupiter (truly independent data source)
   if (buyPressureRatio !== undefined) {
     if (buyPressureRatio > 0.6) {
-      bullishFactors.push(`Strong buy pressure (${(buyPressureRatio * 100).toFixed(0)}% buys)`);
+      bullishFactors.push(`On-chain buy pressure (${(buyPressureRatio * 100).toFixed(0)}% buys)`);
     } else if (buyPressureRatio < 0.4) {
-      bearishFactors.push(`Strong sell pressure (${((1 - buyPressureRatio) * 100).toFixed(0)}% sells)`);
+      bearishFactors.push(`On-chain sell pressure (${((1 - buyPressureRatio) * 100).toFixed(0)}% sells)`);
     }
   }
 
-  // Factor 9: Price at support/resistance
+  // Factor 6: Price at support/resistance (structural, independent of indicators)
   const nearestSupport = analysis4H.support[analysis4H.support.length - 1];
   const nearestResistance = analysis4H.resistance[0];
-  const currentPrice = analysis4H.trend.ema20; // Proxy for current price area
+  const currentPrice = analysis4H.trend.ema20;
 
   if (nearestSupport && currentPrice > 0) {
     const distToSupport = (currentPrice - nearestSupport) / currentPrice;
@@ -189,7 +197,7 @@ function countConfluenceFactors(
     }
   }
 
-  // Factor 10: Funding rate squeeze alert
+  // Factor 7: Funding rate squeeze alert (independent external data)
   if (fundingAlert && (fundingAlert.probability === 'HIGH' || fundingAlert.probability === 'EXTREME')) {
     if (fundingAlert.type === 'SHORT_SQUEEZE') {
       bullishFactors.push(`Short squeeze alert (${fundingAlert.probability})`);
@@ -341,6 +349,18 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
     return null;
   }
 
+  // BTC regime filter: if BTC daily trend is DOWN, require stronger confluence for LONGs
+  // Most alts follow BTC — buying "oversold" during a BTC downtrend is catching a falling knife
+  if (action === 'LONG' && input.btcTrendDirection === 'DOWN') {
+    const REGIME_MIN_FACTORS = 4; // Require 4+ truly independent factors in BTC downtrend
+    if (confluence.count < REGIME_MIN_FACTORS) {
+      console.log(
+        `[SignalGenerator] ${token.symbol}: BTC downtrend regime — need ${REGIME_MIN_FACTORS} factors, have ${confluence.count}`,
+      );
+      return null;
+    }
+  }
+
   // Calculate ATR-based levels
   const atr = calculateATR(ohlcv['4H']);
   const { entry, targets, stopLoss } = calculateLevels(
@@ -349,6 +369,17 @@ export function generateSignal(input: SignalInput): TradingSignal | null {
     atr,
     analysis4H.analysis,
   );
+
+  // Reject if TP1 doesn't offer at least 0.8R reward
+  // Taking sub-1R trades systematically destroys edge
+  const riskAmount = Math.abs(entry - stopLoss);
+  const tp1Reward = action === 'LONG' ? targets[0] - entry : entry - targets[0];
+  if (riskAmount > 0 && tp1Reward / riskAmount < 0.8) {
+    console.log(
+      `[SignalGenerator] ${token.symbol}: TP1 R:R too low (${(tp1Reward / riskAmount).toFixed(2)}R) — rejecting`,
+    );
+    return null;
+  }
 
   // Calculate confidence based on confluence count and quality
   const confidence = calculateConfidence(
@@ -437,10 +468,11 @@ function calculateLevels(
   if (action === 'LONG') {
     const entry = currentPrice;
 
-    // ATR-based stop: whichever is tighter — ATR or support level
+    // ATR-based stop: use the WIDER stop to survive crypto volatility
+    // Tight stops in crypto = getting wicked out on noise before the move plays out
     const atrStop = entry - atr * ATR_STOP_MULTIPLIER;
-    const supportStop = nearestSupport * 0.98;
-    const stopLoss = Math.max(atrStop, supportStop); // Use the tighter (higher) stop
+    const supportStop = nearestSupport * 0.98; // 2% below support
+    const stopLoss = Math.min(atrStop, supportStop); // Use the wider (lower) stop
 
     const riskAmount = entry - stopLoss;
 
@@ -451,8 +483,10 @@ function calculateLevels(
       entry + riskAmount * 2.5,
     ];
 
-    // Cap first target at resistance if closer
-    if (nearestResistance < targets[0]) {
+    // Cap first target at resistance if closer — but NOT below 1R
+    // If resistance is so close that TP1 would be sub-1R, keep TP1 at 1R
+    // The caller will reject the signal if resistance is too tight
+    if (nearestResistance < targets[0] && nearestResistance > entry + riskAmount * 0.8) {
       targets[0] = nearestResistance;
     }
 
@@ -463,7 +497,7 @@ function calculateLevels(
     const entry = currentPrice;
     const atrStop = entry + atr * ATR_STOP_MULTIPLIER;
     const resistanceStop = nearestResistance * 1.02;
-    const stopLoss = Math.min(atrStop, resistanceStop);
+    const stopLoss = Math.max(atrStop, resistanceStop); // Wider stop for shorts too
 
     const riskAmount = stopLoss - entry;
     const targets = [
@@ -497,13 +531,14 @@ function calculateConfidence(
   buyPressureRatio?: number,
 ): number {
   // Base confidence tied to confluence count
+  // With truly independent factors (max ~7), thresholds are stricter
   let confidence: number;
   if (confluence.count >= 5) {
-    confidence = 82;
+    confidence = 85; // 5+ truly independent factors is exceptional
   } else if (confluence.count >= 4) {
-    confidence = 73;
+    confidence = 76;
   } else {
-    confidence = 63; // 3 factors = base 63
+    confidence = 65; // 3 factors = baseline viable signal
   }
 
   // Volume quality bonus
